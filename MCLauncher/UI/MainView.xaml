@@ -5,7 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:MCLauncher.UI"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    Title="{x:Static local:UIResource.WindowsTitle}"
+    Title="{x:Static local:UIResource.MainTitle}"
     Width="280"
     Height="300"
     d:DataContext="{d:DesignInstance Type=local:MainViewModel}"

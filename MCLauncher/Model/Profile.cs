@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace MCLauncher.Model
+﻿namespace MCLauncher.Model
 {
     public class Profile
     {
         public string Name { get; set; }
         public string Nickname { get; set; }
-        public string JavaDirectory { get; set; }
+        public string JavaFile { get; set; }
         public string GameDirectory { get; set; }
         public string JvmArgs { get; set; }
         public LauncherVisibility LauncherVisibility { get; set; }

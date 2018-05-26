@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.ObjectModel;
 using System.Windows;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
@@ -37,6 +32,13 @@ namespace MCLauncher.UI
             });
             NewProfile = new RelayCommand(() =>
             {
+                var settingsViewModel = new SettingsViewModel();
+                var window = new SettingsView(settingsViewModel)
+                {
+                    Owner = Application.Current.MainWindow,
+                    Title = UIResource.NewProfileTitle
+                };
+                window.Show();
                 //
             });
             EditProfile = new RelayCommand(() =>

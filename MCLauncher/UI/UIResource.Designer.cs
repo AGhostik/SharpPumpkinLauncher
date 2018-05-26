@@ -79,6 +79,15 @@ namespace MCLauncher.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cancel.
+        /// </summary>
+        public static string Cancel {
+            get {
+                return ResourceManager.GetString("Cancel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Custom.
         /// </summary>
         public static string Custom {
@@ -93,6 +102,15 @@ namespace MCLauncher.UI {
         public static string Edit {
             get {
                 return ResourceManager.GetString("Edit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Edit profile.
+        /// </summary>
+        public static string EditProfileTitle {
+            get {
+                return ResourceManager.GetString("EditProfileTitle", resourceCulture);
             }
         }
         
@@ -133,11 +151,29 @@ namespace MCLauncher.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to MCLauncher.
+        /// </summary>
+        public static string MainTitle {
+            get {
+                return ResourceManager.GetString("MainTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Minecraft version:.
         /// </summary>
         public static string MinecraftVersion {
             get {
                 return ResourceManager.GetString("MinecraftVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to New profile.
+        /// </summary>
+        public static string NewProfileTitle {
+            get {
+                return ResourceManager.GetString("NewProfileTitle", resourceCulture);
             }
         }
         
@@ -178,20 +214,20 @@ namespace MCLauncher.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Save.
+        /// </summary>
+        public static string Save {
+            get {
+                return ResourceManager.GetString("Save", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Snapshot.
         /// </summary>
         public static string Snapshot {
             get {
                 return ResourceManager.GetString("Snapshot", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to MCLauncher.
-        /// </summary>
-        public static string WindowsTitle {
-            get {
-                return ResourceManager.GetString("WindowsTitle", resourceCulture);
             }
         }
     }
