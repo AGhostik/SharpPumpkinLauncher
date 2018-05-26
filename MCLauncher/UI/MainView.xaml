@@ -1,5 +1,5 @@
 ﻿<Window
-    x:Class="MCLauncher.UI.Window"
+    x:Class="MCLauncher.UI.MainView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -28,7 +28,7 @@
             Grid.Row="1"
             Margin="5"
             ItemsSource="{Binding Profiles}"
-            SelectedItem="{Binding CurrentProfile}" />
+            SelectedItem="{Binding CurrentProfile, UpdateSourceTrigger=PropertyChanged}" />
         <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />

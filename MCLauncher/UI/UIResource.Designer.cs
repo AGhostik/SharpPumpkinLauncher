@@ -70,6 +70,24 @@ namespace MCLauncher.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Alpha.
+        /// </summary>
+        public static string Alpha {
+            get {
+                return ResourceManager.GetString("Alpha", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Custom.
+        /// </summary>
+        public static string Custom {
+            get {
+                return ResourceManager.GetString("Custom", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to 🖉 Edit.
         /// </summary>
         public static string Edit {
@@ -79,11 +97,92 @@ namespace MCLauncher.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Game directory:.
+        /// </summary>
+        public static string GameDir {
+            get {
+                return ResourceManager.GetString("GameDir", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Java file:.
+        /// </summary>
+        public static string Javafile {
+            get {
+                return ResourceManager.GetString("Javafile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to JVM arguments:.
+        /// </summary>
+        public static string JvmArgs {
+            get {
+                return ResourceManager.GetString("JvmArgs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Launcher visibility:.
+        /// </summary>
+        public static string LauncherVisibility {
+            get {
+                return ResourceManager.GetString("LauncherVisibility", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Minecraft version:.
+        /// </summary>
+        public static string MinecraftVersion {
+            get {
+                return ResourceManager.GetString("MinecraftVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Nickname:.
+        /// </summary>
+        public static string Nickname {
+            get {
+                return ResourceManager.GetString("Nickname", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to OldBeta.
+        /// </summary>
+        public static string OldBeta {
+            get {
+                return ResourceManager.GetString("OldBeta", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Release.
+        /// </summary>
+        public static string Release {
+            get {
+                return ResourceManager.GetString("Release", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to 🗑 Remove.
         /// </summary>
         public static string Remove {
             get {
                 return ResourceManager.GetString("Remove", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Snapshot.
+        /// </summary>
+        public static string Snapshot {
+            get {
+                return ResourceManager.GetString("Snapshot", resourceCulture);
             }
         }
         

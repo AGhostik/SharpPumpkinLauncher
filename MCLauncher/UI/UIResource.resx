@@ -120,11 +120,44 @@
   <data name="Add" xml:space="preserve">
     <value>➕ Add</value>
   </data>
+  <data name="Alpha" xml:space="preserve">
+    <value>Alpha</value>
+  </data>
+  <data name="Custom" xml:space="preserve">
+    <value>Custom</value>
+  </data>
   <data name="Edit" xml:space="preserve">
     <value>🖉 Edit</value>
   </data>
+  <data name="GameDir" xml:space="preserve">
+    <value>Game directory:</value>
+  </data>
+  <data name="Javafile" xml:space="preserve">
+    <value>Java file:</value>
+  </data>
+  <data name="JvmArgs" xml:space="preserve">
+    <value>JVM arguments:</value>
+  </data>
+  <data name="LauncherVisibility" xml:space="preserve">
+    <value>Launcher visibility:</value>
+  </data>
+  <data name="MinecraftVersion" xml:space="preserve">
+    <value>Minecraft version:</value>
+  </data>
+  <data name="Nickname" xml:space="preserve">
+    <value>Nickname:</value>
+  </data>
+  <data name="OldBeta" xml:space="preserve">
+    <value>OldBeta</value>
+  </data>
+  <data name="Release" xml:space="preserve">
+    <value>Release</value>
+  </data>
   <data name="Remove" xml:space="preserve">
     <value>🗑 Remove</value>
+  </data>
+  <data name="Snapshot" xml:space="preserve">
+    <value>Snapshot</value>
   </data>
   <data name="WindowsTitle" xml:space="preserve">
     <value>MCLauncher</value>
