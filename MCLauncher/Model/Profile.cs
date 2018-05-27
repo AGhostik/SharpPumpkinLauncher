@@ -35,6 +35,8 @@ namespace MCLauncher.Model
             ShowAlpha = false;
         }
 
+        public event EventHandler VersionsReload;
+
         public string Name
         {
             get => _name;
@@ -80,31 +82,51 @@ namespace MCLauncher.Model
         public bool ShowCustom
         {
             get => _showCustom;
-            set => Set(ref _showCustom, value);
+            set
+            {
+                Set(ref _showCustom, value);
+                VersionsReload?.Invoke(this, null);
+            }
         }
 
         public bool ShowRelease
         {
             get => _showRelease;
-            set => Set(ref _showRelease, value);
+            set
+            {
+                Set(ref _showRelease, value);
+                VersionsReload?.Invoke(this, null);
+            }
         }
 
         public bool ShowSnapshot
         {
             get => _showSnapshot;
-            set => Set(ref _showSnapshot, value);
+            set
+            {
+                Set(ref _showSnapshot, value);
+                VersionsReload?.Invoke(this, null);
+            }
         }
 
         public bool ShowBeta
         {
             get => _showBeta;
-            set => Set(ref _showBeta, value);
+            set
+            {
+                Set(ref _showBeta, value);
+                VersionsReload?.Invoke(this, null);
+            }
         }
 
         public bool ShowAlpha
         {
             get => _showAlpha;
-            set => Set(ref _showAlpha, value);
+            set
+            {
+                Set(ref _showAlpha, value);
+                VersionsReload?.Invoke(this, null);
+            }
         }
     }
 }

@@ -59,6 +59,7 @@ namespace MCLauncher.UI
                 DataContext = settingsViewModel,
                 Title = title
             };
+            settingsViewModel.CloseSettingsEvent += settingsWindow.CloseSettingsEvent;
             settingsWindow.Show();
         }
     }

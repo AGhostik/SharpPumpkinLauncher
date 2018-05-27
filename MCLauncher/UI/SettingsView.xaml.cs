@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 
 namespace MCLauncher.UI
 {
@@ -7,6 +8,11 @@ namespace MCLauncher.UI
         public SettingsView()
         {
             InitializeComponent();
+        }
+
+        public void CloseSettingsEvent(object sender, EventArgs args)
+        {
+            Close();
         }
     }
 }

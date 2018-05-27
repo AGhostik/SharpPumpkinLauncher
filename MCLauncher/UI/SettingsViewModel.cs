@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
@@ -47,16 +48,20 @@ namespace MCLauncher.UI
         public RelayCommand Save { get; set; }
         public RelayCommand OpenDirectory { get; set; }
 
+        public event EventHandler CloseSettingsEvent;
+
         private void _init()
         {
             _loadProfile();
             _fillVersions();
 
+            CurrentProfile.VersionsReload += (sender, args) => { _fillVersions(); };
+
             Save = new RelayCommand(_saveProfile);
             OpenDirectory = new RelayCommand(() => { _settingsModel.OpenGameDirectory(CurrentProfile); });
         }
 
-        private void _fillVersions()
+        public void _fillVersions()
         {
             Versions.Clear();
             var versions = _settingsModel.GetVersions(CurrentProfile);
@@ -66,6 +71,7 @@ namespace MCLauncher.UI
         private void _saveProfile()
         {
             _settingsModel.SaveLastProfile(CurrentProfile);
+            CloseSettingsEvent?.Invoke(this, null);
         }
 
         private void _loadProfile()
