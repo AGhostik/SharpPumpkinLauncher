@@ -45,10 +45,6 @@ namespace MCLauncher.Model
 
         public void Install()
         {
-            var json = _fileManager.DownloadJson(ModelResource.Versions);
-            var latest = json.ToObject<Latest>();
-
-            MessageBox.Show(latest.Release);
         }
     }
 }

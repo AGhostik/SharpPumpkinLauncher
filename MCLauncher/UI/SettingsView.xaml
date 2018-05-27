@@ -136,10 +136,12 @@
             <Button
                 Grid.Column="0"
                 Margin="5"
+                Command="{Binding Cancel}"
                 Content="{x:Static local:UIResource.Cancel}" />
             <Button
                 Grid.Column="1"
                 Margin="5"
+                Command="{Binding Save}"
                 Content="{x:Static local:UIResource.Save}" />
         </Grid>
     </Grid>

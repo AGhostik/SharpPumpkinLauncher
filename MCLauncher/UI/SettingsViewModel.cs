@@ -1,13 +1,23 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Windows;
 using GalaSoft.MvvmLight;
+using GalaSoft.MvvmLight.Command;
 using MCLauncher.Model;
+using MCLauncher.Properties;
 
 namespace MCLauncher.UI
 {
     public class SettingsViewModel : ViewModelBase
     {
         private readonly Installer _installer;
+        private string _gameDirectory;
+        private string _javaFile;
+        private string _jvmArgs;
+        private LauncherVisibility _launcherVisibility;
+        private string _minecraftVersion;
+        private string _name;
+        private string _nickname;
         private string _selectedVisibility;
         private bool _showAlpha;
         private bool _showBeta;
@@ -21,20 +31,48 @@ namespace MCLauncher.UI
             _init();
         }
 
-        public string Name { get; set; }
-        public string Nickname { get; set; }
-        public string JavaFile { get; set; }
-        public string GameDirectory { get; set; }
-        public string JvmArgs { get; set; }
-        public LauncherVisibility LauncherVisibility { get; set; }
-        public string MinecraftVersion { get; set; }
+        public string Name
+        {
+            get => _name;
+            set => Set(ref _name, value);
+        }
+
+        public string Nickname
+        {
+            get => _nickname;
+            set => Set(ref _nickname, value);
+        }
+
+        public string JavaFile
+        {
+            get => _javaFile;
+            set => Set(ref _javaFile, value);
+        }
+
+        public string GameDirectory
+        {
+            get => _gameDirectory;
+            set => Set(ref _gameDirectory, value);
+        }
+
+        public string JvmArgs
+        {
+            get => _jvmArgs;
+            set => Set(ref _jvmArgs, value);
+        }
+
+        public string MinecraftVersion
+        {
+            get => _minecraftVersion;
+            set => Set(ref _minecraftVersion, value);
+        }
 
         public bool ShowCustom
         {
             get => _showCustom;
             set
             {
-                _showCustom = value;
+                Set(ref _showCustom, value);
                 _fillVersions();
             }
         }
@@ -44,7 +82,7 @@ namespace MCLauncher.UI
             get => _showRelease;
             set
             {
-                _showRelease = value;
+                Set(ref _showRelease, value);
                 _fillVersions();
             }
         }
@@ -54,7 +92,7 @@ namespace MCLauncher.UI
             get => _showSnapshot;
             set
             {
-                _showSnapshot = value;
+                Set(ref _showSnapshot, value);
                 _fillVersions();
             }
         }
@@ -64,7 +102,7 @@ namespace MCLauncher.UI
             get => _showBeta;
             set
             {
-                _showBeta = value;
+                Set(ref _showBeta, value);
                 _fillVersions();
             }
         }
@@ -74,7 +112,7 @@ namespace MCLauncher.UI
             get => _showAlpha;
             set
             {
-                _showAlpha = value;
+                Set(ref _showAlpha, value);
                 _fillVersions();
             }
         }
@@ -84,28 +122,43 @@ namespace MCLauncher.UI
             get => _selectedVisibility;
             set
             {
-                _selectedVisibility = value;
+                Set(ref _selectedVisibility, value);
 
                 if (_selectedVisibility == UIResource.KeepLauncherOpen)
-                    LauncherVisibility = LauncherVisibility.KeepOpen;
+                    _launcherVisibility = LauncherVisibility.KeepOpen;
                 else if (_selectedVisibility == UIResource.HideLauncher)
-                    LauncherVisibility = LauncherVisibility.Hide;
-                else if (_selectedVisibility == UIResource.CloseLauncher) LauncherVisibility = LauncherVisibility.Close;
+                    _launcherVisibility = LauncherVisibility.Hide;
+                else if (_selectedVisibility == UIResource.CloseLauncher)
+                    _launcherVisibility = LauncherVisibility.Close;
             }
         }
 
-        public List<string> Visibilitys { get; private set; }
+        public List<string> Visibilitys { get; } = new List<string>
+        {
+            UIResource.KeepLauncherOpen,
+            UIResource.HideLauncher,
+            UIResource.CloseLauncher
+        };
+
         public ObservableCollection<string> Versions { get; set; } = new ObservableCollection<string>();
+
+        public RelayCommand Save { get; set; }
+        public RelayCommand Cancel { get; set; }
 
         private void _init()
         {
+            _loadProfile();
             _fillVersions();
-            Visibilitys = new List<string>
+
+            Save = new RelayCommand(() =>
             {
-                UIResource.KeepLauncherOpen,
-                UIResource.HideLauncher,
-                UIResource.CloseLauncher
-            };
+                //
+                _saveProfile();
+            });
+            Cancel = new RelayCommand(() =>
+            {
+                //
+            });
         }
 
         private void _fillVersions()
@@ -115,23 +168,45 @@ namespace MCLauncher.UI
             foreach (var version in versions) Versions.Add(version);
         }
 
-        public Profile GetProfile()
+        private void _saveProfile()
         {
-            return new Profile
-            {
-                Name = Name,
-                Nickname = Nickname,
-                JavaFile = JavaFile,
-                GameDirectory = GameDirectory,
-                JvmArgs = JvmArgs,
-                LauncherVisibility = LauncherVisibility,
-                MinecraftVersion = MinecraftVersion,
-                ShowCustom = ShowCustom,
-                ShowRelease = ShowRelease,
-                ShowSnapshot = ShowSnapshot,
-                ShowBeta = ShowBeta,
-                ShowAlpha = ShowAlpha
-            };
+            Settings.Default.LastProfile.Name = Name;
+            Settings.Default.LastProfile.Nickname = Nickname;
+            Settings.Default.LastProfile.JavaFile = JavaFile;
+            Settings.Default.LastProfile.GameDirectory = GameDirectory;
+            Settings.Default.LastProfile.JvmArgs = JvmArgs;
+            Settings.Default.LastProfile.LauncherVisibility = _launcherVisibility;
+            Settings.Default.LastProfile.MinecraftVersion = MinecraftVersion;
+            Settings.Default.LastProfile.ShowCustom = ShowCustom;
+            Settings.Default.LastProfile.ShowRelease = ShowRelease;
+            Settings.Default.LastProfile.ShowSnapshot = ShowSnapshot;
+            Settings.Default.LastProfile.ShowBeta = ShowBeta;
+            Settings.Default.LastProfile.ShowAlpha = ShowAlpha;
+
+            Settings.Default.Save();
+
+            MessageBox.Show("Done!");
+        }
+
+        private void _loadProfile()
+        {
+            if (Settings.Default.LastProfile == null)
+                Settings.Default.LastProfile = new Profile();
+
+            var profile = Settings.Default.LastProfile;
+
+            Name = profile.Name;
+            Nickname = profile.Nickname;
+            JavaFile = profile.JavaFile;
+            GameDirectory = profile.GameDirectory;
+            JvmArgs = profile.JvmArgs;
+            _launcherVisibility = profile.LauncherVisibility;
+            MinecraftVersion = profile.MinecraftVersion;
+            ShowCustom = profile.ShowCustom;
+            ShowRelease = profile.ShowRelease;
+            ShowSnapshot = profile.ShowSnapshot;
+            ShowBeta = profile.ShowBeta;
+            ShowAlpha = profile.ShowAlpha;
         }
     }
 }
