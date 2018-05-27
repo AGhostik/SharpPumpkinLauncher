@@ -28,7 +28,7 @@
             Grid.Row="1"
             Margin="5"
             ItemsSource="{Binding Profiles}"
-            SelectedItem="{Binding CurrentProfile, UpdateSourceTrigger=PropertyChanged}" />
+            SelectedItem="{Binding CurrentProfileName, UpdateSourceTrigger=PropertyChanged}" />
         <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />

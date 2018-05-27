@@ -50,9 +50,12 @@ namespace MCLauncher.UI
 
         public event EventHandler CloseSettingsEvent;
 
+        private Versions _versions;
+
         private void _init()
         {
             _loadProfile();
+            _getVersions();
             _fillVersions();
 
             CurrentProfile.VersionsReload += (sender, args) => { _fillVersions(); };
@@ -64,14 +67,37 @@ namespace MCLauncher.UI
         public void _fillVersions()
         {
             Versions.Clear();
-            var versions = _settingsModel.GetVersions(CurrentProfile);
-            foreach (var version in versions) Versions.Add(version);
+            if (CurrentProfile.ShowRelease)
+            {
+                foreach (var version in _versions.Release)
+                    Versions.Add(version);
+            }
+            if (CurrentProfile.ShowSnapshot)
+            {
+                foreach (var version in _versions.Snapshot)
+                    Versions.Add(version);
+            }
+            if (CurrentProfile.ShowBeta)
+            {
+                foreach (var version in _versions.Beta)
+                    Versions.Add(version);
+            }
+            if (CurrentProfile.ShowAlpha)
+            {
+                foreach (var version in _versions.Alpha)
+                    Versions.Add(version);
+            }
         }
 
         private void _saveProfile()
         {
             _settingsModel.SaveLastProfile(CurrentProfile);
             CloseSettingsEvent?.Invoke(this, null);
+        }
+
+        private void _getVersions()
+        {
+            _versions = _settingsModel.GetVersions();
         }
 
         private void _loadProfile()

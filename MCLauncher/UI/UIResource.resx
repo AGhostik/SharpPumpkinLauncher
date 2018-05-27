@@ -150,6 +150,12 @@
   <data name="KeepLauncherOpen" xml:space="preserve">
     <value>Keep the launcher open</value>
   </data>
+  <data name="LatestRelease" xml:space="preserve">
+    <value>Latest release</value>
+  </data>
+  <data name="LatestSnapshot" xml:space="preserve">
+    <value>Latest snapshot</value>
+  </data>
   <data name="LauncherVisibility" xml:space="preserve">
     <value>Launcher visibility:</value>
   </data>

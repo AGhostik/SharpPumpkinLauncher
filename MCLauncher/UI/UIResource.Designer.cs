@@ -160,6 +160,24 @@ namespace MCLauncher.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Latest release.
+        /// </summary>
+        public static string LatestRelease {
+            get {
+                return ResourceManager.GetString("LatestRelease", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Latest snapshot.
+        /// </summary>
+        public static string LatestSnapshot {
+            get {
+                return ResourceManager.GetString("LatestSnapshot", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Launcher visibility:.
         /// </summary>
         public static string LauncherVisibility {

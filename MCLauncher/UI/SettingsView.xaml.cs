@@ -5,13 +5,19 @@ namespace MCLauncher.UI
 {
     public partial class SettingsView : Window
     {
-        public SettingsView()
+        private readonly SettingsViewModel _settingsViewModel;
+
+        public SettingsView(SettingsViewModel settingsViewModel)
         {
+            _settingsViewModel = settingsViewModel;
+            DataContext = _settingsViewModel;
+            _settingsViewModel.CloseSettingsEvent += _closeSettingsEvent;
             InitializeComponent();
         }
 
-        public void CloseSettingsEvent(object sender, EventArgs args)
+        private void _closeSettingsEvent(object sender, EventArgs args)
         {
+            _settingsViewModel.CloseSettingsEvent -= _closeSettingsEvent;
             Close();
         }
     }

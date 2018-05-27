@@ -2,6 +2,7 @@
 using System.Linq;
 using MCLauncher.Model.VersionsJson;
 using MCLauncher.Properties;
+using MCLauncher.UI;
 
 namespace MCLauncher.Model
 {
@@ -62,21 +63,17 @@ namespace MCLauncher.Model
                 _fileManager.StartProcess(profile.GameDirectory);
         }
 
-        public List<string> GetVersions(Profile profile)
+        public Versions GetVersions()
         {
-            var versions = new List<string>();
+            var versions = new Versions();
 
             var json = _fileManager.DownloadJson(ModelResource.Versions);
             var jVersions = json["versions"].ToObject<Version[]>();
 
-            if (profile.ShowRelease)
-                versions.AddRange(jVersions.Where(_ => _.Type == ModelResource.release).Select(_ => _.Id));
-            if (profile.ShowSnapshot)
-                versions.AddRange(jVersions.Where(_ => _.Type == ModelResource.snapshot).Select(_ => _.Id));
-            if (profile.ShowBeta)
-                versions.AddRange(jVersions.Where(_ => _.Type == ModelResource.beta).Select(_ => _.Id));
-            if (profile.ShowAlpha)
-                versions.AddRange(jVersions.Where(_ => _.Type == ModelResource.alpha).Select(_ => _.Id));
+            versions.Release.AddRange(jVersions.Where(_ => _.Type == ModelResource.release).Select(_ => _.Id));
+            versions.Snapshot.AddRange(jVersions.Where(_ => _.Type == ModelResource.snapshot).Select(_ => _.Id));
+            versions.Beta.AddRange(jVersions.Where(_ => _.Type == ModelResource.beta).Select(_ => _.Id));
+            versions.Alpha.AddRange(jVersions.Where(_ => _.Type == ModelResource.alpha).Select(_ => _.Id));
 
             return versions;
         }

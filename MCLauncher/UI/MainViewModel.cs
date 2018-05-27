@@ -9,14 +9,16 @@ namespace MCLauncher.UI
     public class MainViewModel : ViewModelBase
     {
         private readonly Installer _installer;
+        private readonly SettingsViewModel _settingsViewModel;
 
-        public MainViewModel(Installer installer)
+        public MainViewModel(Installer installer, SettingsViewModel settingsViewModel)
         {
             _installer = installer;
+            _settingsViewModel = settingsViewModel;
             _init();
         }
 
-        public string CurrentProfile { get; set; }
+        public string CurrentProfileName { get; set; }
         public ObservableCollection<string> Profiles { get; set; } = new ObservableCollection<string>();
 
         public RelayCommand Start { get; set; }
@@ -26,7 +28,7 @@ namespace MCLauncher.UI
 
         private void _init()
         {
-            CurrentProfile = "current";
+            CurrentProfileName = "current";
             Profiles.Add("test");
             Profiles.Add("current");
             Start = new RelayCommand(() =>
@@ -52,14 +54,11 @@ namespace MCLauncher.UI
 
         private void _showSettings(string title)
         {
-            var settingsViewModel = new SettingsViewModel(new SettingsModel(new FileManager()));
-            var settingsWindow = new SettingsView()
+            var settingsWindow = new SettingsView(_settingsViewModel)
             {
                 Owner = Application.Current.MainWindow,
-                DataContext = settingsViewModel,
                 Title = title
             };
-            settingsViewModel.CloseSettingsEvent += settingsWindow.CloseSettingsEvent;
             settingsWindow.Show();
         }
     }
