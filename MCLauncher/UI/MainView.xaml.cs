@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using MCLauncher.Model;
 
 namespace MCLauncher.UI
 {
@@ -6,7 +7,9 @@ namespace MCLauncher.UI
     {
         public MainView()
         {
-            DataContext = new MainViewModel();
+            var fileManager = new FileManager();
+            var installer = new Installer(fileManager);
+            DataContext = new MainViewModel(installer);
             InitializeComponent();
         }
     }

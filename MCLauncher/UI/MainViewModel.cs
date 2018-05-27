@@ -2,13 +2,17 @@
 using System.Windows;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
+using MCLauncher.Model;
 
 namespace MCLauncher.UI
 {
     public class MainViewModel : ViewModelBase
     {
-        public MainViewModel()
+        private readonly Installer _installer;
+
+        public MainViewModel(Installer installer)
         {
+            _installer = installer;
             _init();
         }
 
@@ -32,23 +36,29 @@ namespace MCLauncher.UI
             });
             NewProfile = new RelayCommand(() =>
             {
-                var settingsViewModel = new SettingsViewModel();
-                var window = new SettingsView(settingsViewModel)
-                {
-                    Owner = Application.Current.MainWindow,
-                    Title = UIResource.NewProfileTitle
-                };
-                window.Show();
                 //
+                _showSettings(UIResource.NewProfileTitle);
             });
             EditProfile = new RelayCommand(() =>
             {
                 //
+                _showSettings(UIResource.EditProfileTitle);
             });
             DeleteProfile = new RelayCommand(() =>
             {
                 //
             });
+        }
+
+        private void _showSettings(string title)
+        {
+            var settingsViewModel = new SettingsViewModel(_installer);
+            var window = new SettingsView(settingsViewModel)
+            {
+                Owner = Application.Current.MainWindow,
+                Title = title
+            };
+            window.Show();
         }
     }
 }

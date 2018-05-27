@@ -88,6 +88,15 @@ namespace MCLauncher.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Close launcher when game starts.
+        /// </summary>
+        public static string CloseLauncher {
+            get {
+                return ResourceManager.GetString("CloseLauncher", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Custom.
         /// </summary>
         public static string Custom {
@@ -124,6 +133,15 @@ namespace MCLauncher.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Hide launcher and re-open when game closes.
+        /// </summary>
+        public static string HideLauncher {
+            get {
+                return ResourceManager.GetString("HideLauncher", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Java file:.
         /// </summary>
         public static string Javafile {
@@ -138,6 +156,15 @@ namespace MCLauncher.UI {
         public static string JvmArgs {
             get {
                 return ResourceManager.GetString("JvmArgs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Keep the launcher open.
+        /// </summary>
+        public static string KeepLauncherOpen {
+            get {
+                return ResourceManager.GetString("KeepLauncherOpen", resourceCulture);
             }
         }
         

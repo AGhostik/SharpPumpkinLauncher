@@ -46,6 +46,9 @@
     <Reference Include="GalaSoft.MvvmLight.Platform, Version=5.4.1.0, Culture=neutral, PublicKeyToken=5f873c45e98af8a1, processorArchitecture=MSIL">
       <HintPath>..\packages\MvvmLightLibs.5.4.1\lib\net45\GalaSoft.MvvmLight.Platform.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -69,8 +72,27 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Model\AssetsJson\Objects.cs" />
+    <Compile Include="Model\FileManager.cs" />
+    <Compile Include="Model\Installer.cs" />
+    <Compile Include="Model\AssetsJson\Assets.cs" />
+    <Compile Include="Model\AssetsJson\AssetsLegacy.cs" />
+    <Compile Include="Model\MinecraftVersionJson\AssetIndex.cs" />
+    <Compile Include="Model\MinecraftVersionJson\Extract.cs" />
+    <Compile Include="Model\MinecraftVersionJson\Libraries.cs" />
+    <Compile Include="Model\MinecraftVersionJson\MinecraftVersion.cs" />
     <Compile Include="Model\LauncherVisibility.cs" />
+    <Compile Include="Model\MinecraftVersionJson\Natives.cs" />
+    <Compile Include="Model\MinecraftVersionJson\Os.cs" />
+    <Compile Include="Model\MinecraftVersionJson\Rules.cs" />
+    <Compile Include="Model\ModelResource.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ModelResource.resx</DependentUpon>
+    </Compile>
     <Compile Include="Model\Profile.cs" />
+    <Compile Include="Model\VersionsJson\Latest.cs" />
+    <Compile Include="Model\VersionsJson\Version.cs" />
     <Compile Include="UI\MainView.xaml.cs">
       <DependentUpon>MainView.xaml</DependentUpon>
     </Compile>
@@ -103,6 +125,10 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <EmbeddedResource Include="Model\ModelResource.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>ModelResource.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
