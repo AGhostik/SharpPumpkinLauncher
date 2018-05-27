@@ -4,9 +4,8 @@ namespace MCLauncher.UI
 {
     public partial class SettingsView : Window
     {
-        public SettingsView(SettingsViewModel viewModel)
+        public SettingsView()
         {
-            DataContext = viewModel;
             InitializeComponent();
         }
     }

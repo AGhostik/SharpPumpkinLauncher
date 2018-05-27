@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Diagnostics;
+using System.IO;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 
 namespace MCLauncher.Model
@@ -17,9 +14,18 @@ namespace MCLauncher.Model
             {
                 rawJson = webClient.DownloadString(url);
             }
+
             return JObject.Parse(rawJson);
         }
 
-        
+        public bool DirectoryExist(string path)
+        {
+            return Directory.Exists(path);
+        }
+
+        public void StartProcess(string fileName)
+        {
+            Process.Start(fileName);
+        }
     }
 }

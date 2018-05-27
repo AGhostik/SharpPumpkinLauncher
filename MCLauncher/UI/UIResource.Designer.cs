@@ -79,15 +79,6 @@ namespace MCLauncher.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Cancel.
-        /// </summary>
-        public static string Cancel {
-            get {
-                return ResourceManager.GetString("Cancel", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Close launcher when game starts.
         /// </summary>
         public static string CloseLauncher {
@@ -219,6 +210,24 @@ namespace MCLauncher.UI {
         public static string OldBeta {
             get {
                 return ResourceManager.GetString("OldBeta", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Open game directory.
+        /// </summary>
+        public static string OpenDirectory {
+            get {
+                return ResourceManager.GetString("OpenDirectory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Profile name:.
+        /// </summary>
+        public static string ProfileName {
+            get {
+                return ResourceManager.GetString("ProfileName", resourceCulture);
             }
         }
         

@@ -52,13 +52,14 @@ namespace MCLauncher.UI
 
         private void _showSettings(string title)
         {
-            var settingsViewModel = new SettingsViewModel(_installer);
-            var window = new SettingsView(settingsViewModel)
+            var settingsViewModel = new SettingsViewModel(new SettingsModel(new FileManager()));
+            var settingsWindow = new SettingsView()
             {
                 Owner = Application.Current.MainWindow,
+                DataContext = settingsViewModel,
                 Title = title
             };
-            window.Show();
+            settingsWindow.Show();
         }
     }
 }

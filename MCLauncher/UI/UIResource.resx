@@ -123,9 +123,6 @@
   <data name="Alpha" xml:space="preserve">
     <value>Alpha</value>
   </data>
-  <data name="Cancel" xml:space="preserve">
-    <value>Cancel</value>
-  </data>
   <data name="CloseLauncher" xml:space="preserve">
     <value>Close launcher when game starts</value>
   </data>
@@ -170,6 +167,12 @@
   </data>
   <data name="OldBeta" xml:space="preserve">
     <value>OldBeta</value>
+  </data>
+  <data name="OpenDirectory" xml:space="preserve">
+    <value>Open game directory</value>
+  </data>
+  <data name="ProfileName" xml:space="preserve">
+    <value>Profile name:</value>
   </data>
   <data name="Release" xml:space="preserve">
     <value>Release</value>

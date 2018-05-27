@@ -91,6 +91,7 @@
       <DependentUpon>ModelResource.resx</DependentUpon>
     </Compile>
     <Compile Include="Model\Profile.cs" />
+    <Compile Include="Model\SettingsModel.cs" />
     <Compile Include="Model\VersionsJson\Latest.cs" />
     <Compile Include="Model\VersionsJson\Version.cs" />
     <Compile Include="UI\MainView.xaml.cs">
