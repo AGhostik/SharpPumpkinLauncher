@@ -10,7 +10,7 @@ namespace MCLauncher.Model.MinecraftVersionJson
 
         [JsonProperty("assets")] public string Assets { get; set; }
 
-        //[JsonProperty("downloads")] public string Downloads { get; set; }
+        //[JsonProperty("downloads")] public Downloads Downloads { get; set; }
 
         [JsonProperty("id")] public string Id { get; set; }
         

@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using System.Windows;
 using MCLauncher.Model.MinecraftVersionJson;
 
 namespace MCLauncher.Model
@@ -30,6 +31,8 @@ namespace MCLauncher.Model
             await _checkMinecraftVersion(profile.GameDirectory, profile.CurrentVersion);
 
             await _checkLibraries(profile.GameDirectory, profile.CurrentVersion);
+
+            MessageBox.Show("Install completed");
         }
 
         private async Task _checkLibraries(string gameDirectory, string currentVersion)
@@ -49,7 +52,25 @@ namespace MCLauncher.Model
                 var name = libraryNameParts[1];
                 var version = libraryNameParts[2];
 
-                var url = $"{ModelResource.LibrariesUrl}{assembly.Replace('.', '/')}/{name}/{version}/{name}-{version}.jar";
+                string url;
+
+                if (library.Url != null)
+                {
+                    url = $"{library.Url}{assembly.Replace('.', '/')}/{name}/{version}/{name}-{version}.jar";
+                }
+                else if (library.Downloads?.Classifiers?.NativesWindows != null)
+                {
+                    url = library.Downloads.Classifiers.NativesWindows.Url;
+                }
+                else if (library.Downloads?.Artifact != null)
+                {
+                    url = library.Downloads.Artifact.Url;
+                }
+                else
+                {
+                    url = $"{ModelResource.LibrariesUrl}{assembly.Replace('.', '/')}/{name}/{version}/{name}-{version}.jar";
+                }
+
                 var os = string.Empty;
                 if (library.Natives != null)
                 {
@@ -76,7 +97,7 @@ namespace MCLauncher.Model
             await _downloadFromQueue();
             _extractFromQueue(gameDirectory, currentVersion);
         }
-
+        
         private void _chechLibraryExtract(Libraries library, string savingFile)
         {
             if (library.Extract == null || !library.Extract.Exclude.Any()) return;
@@ -100,12 +121,13 @@ namespace MCLauncher.Model
 
         private void _extractFromQueue(string gameDirectory, string currentVersion)
         {
+            var natives = $"{gameDirectory}versions\\{currentVersion}\\natives";
             foreach (var extracTuple in _extractQueue)
             {
-                _fileManager.ExtractToDirectory(extracTuple.Item1, $"{gameDirectory}versions\\{currentVersion}\\natives");
+                _fileManager.ExtractToDirectory(extracTuple.Item1, natives);
                 foreach (var fileOrDirectory in extracTuple.Item2)
                 {
-                    _fileManager.Delete(fileOrDirectory);
+                    _fileManager.Delete($"{natives}\\{fileOrDirectory}");
                 }
             }
         }
@@ -148,9 +170,20 @@ namespace MCLauncher.Model
             using (var client = new WebClient())
             {
                 //client.DownloadFileCompleted += _fileDownloaded;
+
                 foreach (var downloadTuple in _downloadQueue)
                 {
-                    await client.DownloadFileTaskAsync(downloadTuple.Item1, downloadTuple.Item2);
+                    try
+                    {
+                        await client.DownloadFileTaskAsync(downloadTuple.Item1, downloadTuple.Item2);
+                    }
+                    catch (Exception)
+                    {
+                        Console.WriteLine(downloadTuple.Item1);
+                        Console.WriteLine(downloadTuple.Item2);
+                        throw;
+                    }
+                    
                 }
             }
             _downloadQueue.Clear();

@@ -14,5 +14,7 @@ namespace MCLauncher.Model.MinecraftVersionJson
         [JsonProperty("extract")] public Extract Extract { get; set; }
 
         [JsonProperty("rules")] public Rules[] Rules { get; set; }
+
+        [JsonProperty("downloads")] public Downloads Downloads { get; set; }
     }
 }

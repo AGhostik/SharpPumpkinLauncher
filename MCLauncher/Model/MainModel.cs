@@ -13,6 +13,8 @@ namespace MCLauncher.Model
         private readonly Installer _installer;
         private readonly SettingsViewModel _settingsViewModel;
 
+        private Profile _currentProfile;
+
         public MainModel(Installer installer, SettingsViewModel settingsViewModel)
         {
             _installer = installer;
@@ -21,7 +23,8 @@ namespace MCLauncher.Model
 
         public void StartGame()
         {
-
+            _currentProfile = _settingsViewModel.CurrentProfile;
+            _installer.Install(_currentProfile);
         }
 
         public void OpenProfileCreatingWindow()

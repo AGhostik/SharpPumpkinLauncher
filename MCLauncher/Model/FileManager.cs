@@ -2,6 +2,7 @@
 using System.IO;
 using System.Net;
 using System.IO.Compression;
+using Ionic.Zip;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -37,7 +38,13 @@ namespace MCLauncher.Model
 
         public void ExtractToDirectory(string sourceArchive, string destinationDirectory)
         {
-            ZipFile.ExtractToDirectory(sourceArchive, destinationDirectory);
+            using (var zip = ZipFile.Read(sourceArchive))
+            { 
+                foreach (var entry in zip)
+                {
+                    entry.Extract(destinationDirectory, ExtractExistingFileAction.OverwriteSilently);
+                }
+            }
         }
 
         public bool FileExist(string path)
@@ -54,7 +61,7 @@ namespace MCLauncher.Model
 
             if (DirectoryExist(path))
             {
-                Directory.Delete(path);
+                Directory.Delete(path, true);
             }
         }
 
