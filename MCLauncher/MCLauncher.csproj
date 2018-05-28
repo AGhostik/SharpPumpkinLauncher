@@ -51,6 +51,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\MvvmLightLibs.5.4.1\lib\net45\System.Windows.Interactivity.dll</HintPath>
     </Reference>
@@ -77,6 +78,7 @@
     <Compile Include="Model\Installer.cs" />
     <Compile Include="Model\AssetsJson\Assets.cs" />
     <Compile Include="Model\AssetsJson\AssetsLegacy.cs" />
+    <Compile Include="Model\MainModel.cs" />
     <Compile Include="Model\MinecraftVersionJson\AssetIndex.cs" />
     <Compile Include="Model\MinecraftVersionJson\Extract.cs" />
     <Compile Include="Model\MinecraftVersionJson\Libraries.cs" />

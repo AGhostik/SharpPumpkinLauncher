@@ -23,7 +23,7 @@ namespace MCLauncher.Model
             Settings.Default.LastProfile.GameDirectory = profile.GameDirectory;
             Settings.Default.LastProfile.JvmArgs = profile.JvmArgs;
             Settings.Default.LastProfile.LauncherVisibility = profile.LauncherVisibility;
-            Settings.Default.LastProfile.MinecraftVersion = profile.MinecraftVersion;
+            Settings.Default.LastProfile.CurrentVersion = profile.CurrentVersion;
             Settings.Default.LastProfile.ShowCustom = profile.ShowCustom;
             Settings.Default.LastProfile.ShowRelease = profile.ShowRelease;
             Settings.Default.LastProfile.ShowSnapshot = profile.ShowSnapshot;
@@ -48,7 +48,7 @@ namespace MCLauncher.Model
                 GameDirectory = profile.GameDirectory,
                 JvmArgs = profile.JvmArgs,
                 LauncherVisibility = profile.LauncherVisibility,
-                MinecraftVersion = profile.MinecraftVersion,
+                CurrentVersion = profile.CurrentVersion,
                 ShowCustom = profile.ShowCustom,
                 ShowRelease = profile.ShowRelease,
                 ShowSnapshot = profile.ShowSnapshot,
@@ -67,7 +67,7 @@ namespace MCLauncher.Model
         {
             var versions = new Versions();
 
-            var json = _fileManager.DownloadJson(ModelResource.Versions);
+            var json = _fileManager.DownloadJson(ModelResource.VersionsUrl);
             var jVersions = json["versions"].ToObject<Version[]>();
 
             versions.Release.AddRange(jVersions.Where(_ => _.Type == ModelResource.release).Select(_ => _.Id));

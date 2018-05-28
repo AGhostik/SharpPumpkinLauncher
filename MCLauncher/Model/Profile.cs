@@ -10,7 +10,7 @@ namespace MCLauncher.Model
         private string _javaFile;
         private string _jvmArgs;
         private LauncherVisibility _launcherVisibility;
-        private string _minecraftVersion;
+        private string _currentVersion;
         private string _name;
         private string _nickname;
         private bool _showAlpha;
@@ -27,7 +27,7 @@ namespace MCLauncher.Model
             GameDirectory = string.Empty;
             JvmArgs = string.Empty;
             LauncherVisibility = LauncherVisibility.KeepOpen;
-            MinecraftVersion = string.Empty;
+            CurrentVersion = string.Empty;
             ShowCustom = false;
             ShowRelease = false;
             ShowSnapshot = false;
@@ -67,10 +67,10 @@ namespace MCLauncher.Model
             set => Set(ref _jvmArgs, value);
         }
 
-        public string MinecraftVersion
+        public string CurrentVersion
         {
-            get => _minecraftVersion;
-            set => Set(ref _minecraftVersion, value);
+            get => _currentVersion;
+            set => Set(ref _currentVersion, value);
         }
 
         public LauncherVisibility LauncherVisibility

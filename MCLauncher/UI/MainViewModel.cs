@@ -8,13 +8,11 @@ namespace MCLauncher.UI
 {
     public class MainViewModel : ViewModelBase
     {
-        private readonly Installer _installer;
-        private readonly SettingsViewModel _settingsViewModel;
-
-        public MainViewModel(Installer installer, SettingsViewModel settingsViewModel)
+        private readonly MainModel _mainModel;
+        
+        public MainViewModel(MainModel mainModel)
         {
-            _installer = installer;
-            _settingsViewModel = settingsViewModel;
+            _mainModel = mainModel;
             _init();
         }
 
@@ -28,38 +26,29 @@ namespace MCLauncher.UI
 
         private void _init()
         {
-            CurrentProfileName = "current";
-            Profiles.Add("test");
-            Profiles.Add("current");
+            foreach (var profile in _mainModel.GetProfiles())
+            {
+                Profiles.Add(profile);
+            }
+
+            CurrentProfileName = _mainModel.GetLastProfile();
+
             Start = new RelayCommand(() =>
             {
-                MessageBox.Show("Start");
-                //
+                _mainModel.StartGame();
             });
             NewProfile = new RelayCommand(() =>
             {
-                //
-                _showSettings(UIResource.NewProfileTitle);
+                _mainModel.OpenProfileCreatingWindow();
             });
             EditProfile = new RelayCommand(() =>
             {
-                //
-                _showSettings(UIResource.EditProfileTitle);
+                _mainModel.OpenProfileEditingWindow();
             });
             DeleteProfile = new RelayCommand(() =>
             {
-                //
+                _mainModel.DeleteProfile(CurrentProfileName);
             });
-        }
-
-        private void _showSettings(string title)
-        {
-            var settingsWindow = new SettingsView(_settingsViewModel)
-            {
-                Owner = Application.Current.MainWindow,
-                Title = title
-            };
-            settingsWindow.Show();
         }
     }
 }

@@ -106,7 +106,7 @@
             Grid.Column="1"
             Margin="5"
             ItemsSource="{Binding Versions}"
-            SelectedItem="{Binding CurrentProfile.MinecraftVersion}" />
+            SelectedItem="{Binding CurrentProfile.CurrentVersion}" />
 
         <StackPanel
             Grid.Row="7"

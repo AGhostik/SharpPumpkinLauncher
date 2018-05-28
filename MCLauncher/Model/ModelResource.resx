@@ -129,7 +129,13 @@
   <data name="snapshot" xml:space="preserve">
     <value>snapshot</value>
   </data>
-  <data name="Versions" xml:space="preserve">
-    <value>http://s3.amazonaws.com/Minecraft.Download/versions/versions.json</value>
+  <data name="VersionsUrl" xml:space="preserve">
+    <value>https://launchermeta.mojang.com/mc/game/version_manifest.json</value>
+  </data>
+  <data name="VersionsDirectoryUrl" xml:space="preserve">
+    <value>https://s3.amazonaws.com/Minecraft.Download/versions/</value>
+  </data>
+  <data name="LibrariesUrl" xml:space="preserve">
+    <value>https://libraries.minecraft.net/</value>
   </data>
 </root>

@@ -79,6 +79,15 @@ namespace MCLauncher.Model {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to https://libraries.minecraft.net/.
+        /// </summary>
+        internal static string LibrariesUrl {
+            get {
+                return ResourceManager.GetString("LibrariesUrl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to release.
         /// </summary>
         internal static string release {
@@ -97,11 +106,20 @@ namespace MCLauncher.Model {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to http://s3.amazonaws.com/Minecraft.Download/versions/versions.json.
+        ///   Looks up a localized string similar to https://s3.amazonaws.com/Minecraft.Download/versions/.
         /// </summary>
-        internal static string Versions {
+        internal static string VersionsDirectoryUrl {
             get {
-                return ResourceManager.GetString("Versions", resourceCulture);
+                return ResourceManager.GetString("VersionsDirectoryUrl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to https://launchermeta.mojang.com/mc/game/version_manifest.json.
+        /// </summary>
+        internal static string VersionsUrl {
+            get {
+                return ResourceManager.GetString("VersionsUrl", resourceCulture);
             }
         }
     }
