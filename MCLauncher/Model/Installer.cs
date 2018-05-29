@@ -5,7 +5,9 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using System.Windows;
+using MCLauncher.Model.AssetsJson;
 using MCLauncher.Model.MinecraftVersionJson;
+using Newtonsoft.Json.Linq;
 
 namespace MCLauncher.Model
 {
@@ -32,7 +34,33 @@ namespace MCLauncher.Model
 
             await _checkLibraries(profile.GameDirectory, profile.CurrentVersion);
 
+            await _checkAssets(profile.GameDirectory, profile.CurrentVersion);
+
             MessageBox.Show("Install completed");
+        }
+
+        private async Task _checkAssets(string gameDirectory, string currentVersion)
+        {
+            var versionPath = $"{gameDirectory}versions\\{currentVersion}\\{currentVersion}";
+            var minecraftVersion = _fileManager.ParseJson<MinecraftVersion>($"{versionPath}.json");
+            var assetIndex = _fileManager.DownloadJson(minecraftVersion.AssetIndex.Url);
+            
+            var objects = assetIndex["objects"];
+            var assets = objects.Values<JProperty>();
+            foreach (var asset in assets)
+            {
+                var hash = asset.First["hash"].ToString();
+
+                var subDirectory = $"{hash[0]}{hash[1]}";
+
+                var directory = $"{gameDirectory}assets\\objects\\{subDirectory}\\";
+
+                _checkDirectory(directory);
+
+                _addToDownloadQueue($"{ModelResource.AssetsUrl}{subDirectory}/{hash}",$"{directory}{hash}");
+            }
+
+            await _downloadFromQueue();
         }
 
         private async Task _checkLibraries(string gameDirectory, string currentVersion)
@@ -90,7 +118,7 @@ namespace MCLauncher.Model
                 _checkDirectory(savingDirectory);
                 _addToDownloadQueue(url, savingFile);
 
-                _chechLibraryExtract(library, savingFile);
+                _checkLibraryExtract(library, savingFile);
                 //
             }
 
@@ -98,7 +126,7 @@ namespace MCLauncher.Model
             _extractFromQueue(gameDirectory, currentVersion);
         }
         
-        private void _chechLibraryExtract(Libraries library, string savingFile)
+        private void _checkLibraryExtract(Libraries library, string savingFile)
         {
             if (library.Extract == null || !library.Extract.Exclude.Any()) return;
 
@@ -152,8 +180,8 @@ namespace MCLauncher.Model
         {
             _checkDirectory(gameDirectory);
             _checkDirectory($"{gameDirectory}versions\\{currentVersion}\\natives");
-            _checkDirectory($"{gameDirectory}assets\\indexes");
             _checkDirectory($"{gameDirectory}assets\\objects");
+            _checkDirectory($"{gameDirectory}assets\\virtual\\legacy");
             _checkDirectory($"{gameDirectory}libraries");
         }
 
@@ -199,6 +227,9 @@ namespace MCLauncher.Model
 
         private void _addToDownloadQueue(string url, string path)
         {
+            if (_fileManager.FileExist(path))
+                return;
+
             _downloadQueue.Add(new Tuple<Uri, string>(new Uri(url), path));
         }
     }

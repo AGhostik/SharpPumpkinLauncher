@@ -75,11 +75,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Model\AssetsJson\Objects.cs" />
     <Compile Include="Model\FileManager.cs" />
     <Compile Include="Model\Installer.cs" />
-    <Compile Include="Model\AssetsJson\Assets.cs" />
-    <Compile Include="Model\AssetsJson\AssetsLegacy.cs" />
     <Compile Include="Model\MainModel.cs" />
     <Compile Include="Model\MinecraftVersionJson\AssetIndex.cs" />
     <Compile Include="Model\MinecraftVersionJson\Classifiers.cs" />

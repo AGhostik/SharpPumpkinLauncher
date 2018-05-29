@@ -138,4 +138,7 @@
   <data name="LibrariesUrl" xml:space="preserve">
     <value>https://libraries.minecraft.net/</value>
   </data>
+  <data name="AssetsUrl" xml:space="preserve">
+    <value>http://resources.download.minecraft.net/</value>
+  </data>
 </root>

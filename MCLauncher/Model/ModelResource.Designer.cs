@@ -70,6 +70,15 @@ namespace MCLauncher.Model {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to http://resources.download.minecraft.net/.
+        /// </summary>
+        internal static string AssetsUrl {
+            get {
+                return ResourceManager.GetString("AssetsUrl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to old_beta.
         /// </summary>
         internal static string beta {

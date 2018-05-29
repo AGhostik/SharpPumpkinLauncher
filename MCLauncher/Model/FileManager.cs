@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics;
 using System.IO;
 using System.Net;
-using System.IO.Compression;
 using Ionic.Zip;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -33,6 +32,13 @@ namespace MCLauncher.Model
                 }
             }
 
+            return jObject.ToObject<TResult>();
+        }
+
+        public TResult ParseWebJson<TResult>(string url)
+        {
+            var jObject = DownloadJson(url);
+            
             return jObject.ToObject<TResult>();
         }
 
