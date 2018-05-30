@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Diagnostics;
 using System.Windows;
 using MCLauncher.UI;
 
@@ -10,58 +8,86 @@ namespace MCLauncher.Model
 {
     public class MainModel
     {
+        private readonly FileManager _fileManager;
         private readonly Installer _installer;
-        private readonly SettingsViewModel _settingsViewModel;
 
-        private Profile _currentProfile;
-
-        public MainModel(Installer installer, SettingsViewModel settingsViewModel)
+        public MainModel(Installer installer, FileManager fileManager)
         {
             _installer = installer;
-            _settingsViewModel = settingsViewModel;
+            _fileManager = fileManager;
         }
 
         public void StartGame()
         {
-            _currentProfile = _settingsViewModel.CurrentProfile;
-            _installer.Install(_currentProfile);
+            var currentProfile = _fileManager.GetLastProfile();
+            _installer.Install(currentProfile);
+            _launchMinecraft(currentProfile);
+        }
+
+        public void SaveLastProfileName(string name)
+        {
+            _fileManager.SaveLastProfileName(name);
         }
 
         public void OpenProfileCreatingWindow()
         {
-            _showSettings(UIResource.NewProfileTitle);
+            _showSettings(true);
         }
 
         public void OpenProfileEditingWindow()
         {
-            _showSettings(UIResource.EditProfileTitle);
+            _showSettings(false);
         }
 
         public void DeleteProfile(string name)
         {
-
         }
 
         public List<string> GetProfiles()
         {
-            var profiles = new List<string>();
-            //
-            return profiles;
+            var names = new List<string>();
+            var profiles = _fileManager.GetProfiles();
+
+            foreach (var profile in profiles) names.Add(profile.Name);
+
+            return names;
         }
 
         public string GetLastProfile()
         {
-            return "";
+            var lastProfile = _fileManager.GetLastProfileName();
+            return lastProfile;
         }
 
-        private void _showSettings(string title)
+        private void _showSettings(bool createProfile)
         {
-            var settingsWindow = new SettingsView(_settingsViewModel)
+            var settingsModel = new SettingsModel(_fileManager);
+            var settingsViewModel = new SettingsViewModel(settingsModel, createProfile);
+            var settingsWindow = new SettingsView()
             {
                 Owner = Application.Current.MainWindow,
-                Title = title
+                DataContext = settingsViewModel
             };
             settingsWindow.Show();
+        }
+
+        private void _launchMinecraft(Profile profile)
+        {
+            Debug.WriteLine("launch minecraft");
+            var mcProcess = new Process()
+            {
+                StartInfo = new ProcessStartInfo(profile.JavaFile, _installer.LaunchArgs),
+                EnableRaisingEvents = true
+            };
+            mcProcess.Exited += McProcessOnExited;
+            mcProcess.Start();
+
+            //launcher visibility
+        }
+
+        private static void McProcessOnExited(object sender, EventArgs eventArgs)
+        {
+            Debug.WriteLine("McProcessExited");
         }
     }
 }

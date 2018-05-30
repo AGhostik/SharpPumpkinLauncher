@@ -14,7 +14,7 @@ namespace MCLauncher.Model.MinecraftVersionJson
 
         [JsonProperty("id")] public string Id { get; set; }
         
-        [JsonProperty("libraries")] public Libraries[] Libraries { get; set; }
+        [JsonProperty("libraries")] public Library[] Library { get; set; }
 
         //[JsonProperty("logging")] public string Logging { get; set; }
         

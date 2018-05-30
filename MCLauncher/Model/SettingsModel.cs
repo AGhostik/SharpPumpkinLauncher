@@ -1,7 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using MCLauncher.Model.VersionsJson;
-using MCLauncher.Properties;
 using MCLauncher.UI;
 
 namespace MCLauncher.Model
@@ -15,52 +13,25 @@ namespace MCLauncher.Model
             _fileManager = fileManager;
         }
 
-        public void SaveLastProfile(Profile profile)
+        public void SaveProfile(Profile profile)
         {
-            Settings.Default.LastProfile.Name = profile.Name;
-            Settings.Default.LastProfile.Nickname = profile.Nickname;
-            Settings.Default.LastProfile.JavaFile = profile.JavaFile;
-            Settings.Default.LastProfile.GameDirectory = profile.GameDirectory;
-            Settings.Default.LastProfile.JvmArgs = profile.JvmArgs;
-            Settings.Default.LastProfile.LauncherVisibility = profile.LauncherVisibility;
-            Settings.Default.LastProfile.CurrentVersion = profile.CurrentVersion;
-            Settings.Default.LastProfile.ShowCustom = profile.ShowCustom;
-            Settings.Default.LastProfile.ShowRelease = profile.ShowRelease;
-            Settings.Default.LastProfile.ShowSnapshot = profile.ShowSnapshot;
-            Settings.Default.LastProfile.ShowBeta = profile.ShowBeta;
-            Settings.Default.LastProfile.ShowAlpha = profile.ShowAlpha;
-
-            Settings.Default.Save();
+            _fileManager.SaveProfile(profile);
         }
 
         public Profile LoadLastProfile()
         {
-            if (Settings.Default.LastProfile == null)
-                Settings.Default.LastProfile = new Profile();
-
-            var profile = Settings.Default.LastProfile;
-
-            return new Profile()
-            {
-                Name = profile.Name,
-                Nickname = profile.Nickname,
-                JavaFile = profile.JavaFile,
-                GameDirectory = profile.GameDirectory,
-                JvmArgs = profile.JvmArgs,
-                LauncherVisibility = profile.LauncherVisibility,
-                CurrentVersion = profile.CurrentVersion,
-                ShowCustom = profile.ShowCustom,
-                ShowRelease = profile.ShowRelease,
-                ShowSnapshot = profile.ShowSnapshot,
-                ShowBeta = profile.ShowBeta,
-                ShowAlpha = profile.ShowAlpha
-            };
+            return _fileManager.GetLastProfile();
         }
 
-        public void OpenGameDirectory(Profile profile)
+        public void EditProfile(string oldProfileName, Profile newProfile)
         {
-            if (_fileManager.DirectoryExist(profile.GameDirectory))
-                _fileManager.StartProcess(profile.GameDirectory);
+            _fileManager.EditProfile(oldProfileName, newProfile);
+        }
+
+        public void OpenGameDirectory(string directory)
+        {
+            if (_fileManager.DirectoryExist(directory))
+                _fileManager.StartProcess(directory);
         }
 
         public Versions GetVersions()

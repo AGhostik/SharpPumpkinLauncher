@@ -1,20 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
+using GalaSoft.MvvmLight.Messaging;
 using MCLauncher.Model;
 
 namespace MCLauncher.UI
 {
     public class SettingsViewModel : ViewModelBase
     {
+        private readonly bool _isNewProfile;
         private readonly SettingsModel _settingsModel;
+        private string _oldProfileName;
         private string _selectedVisibility;
 
-        public SettingsViewModel(SettingsModel model)
+        private Versions _versions;
+
+        public SettingsViewModel(SettingsModel model, bool isNewProfile)
         {
             _settingsModel = model;
+            _isNewProfile = isNewProfile;
             _init();
         }
 
@@ -48,9 +53,7 @@ namespace MCLauncher.UI
         public RelayCommand Save { get; set; }
         public RelayCommand OpenDirectory { get; set; }
 
-        public event EventHandler CloseSettingsEvent;
-
-        private Versions _versions;
+        public string Title { get; set; }
 
         private void _init()
         {
@@ -58,41 +61,39 @@ namespace MCLauncher.UI
             _getVersions();
             _fillVersions();
 
+            Title = _isNewProfile ? UIResource.NewProfileTitle : UIResource.EditProfileTitle;
+
             CurrentProfile.VersionsReload += (sender, args) => { _fillVersions(); };
 
             Save = new RelayCommand(_saveProfile);
-            OpenDirectory = new RelayCommand(() => { _settingsModel.OpenGameDirectory(CurrentProfile); });
+            OpenDirectory = new RelayCommand(() => { _settingsModel.OpenGameDirectory(CurrentProfile.GameDirectory); });
         }
 
         public void _fillVersions()
         {
             Versions.Clear();
             if (CurrentProfile.ShowRelease)
-            {
                 foreach (var version in _versions.Release)
                     Versions.Add(version);
-            }
             if (CurrentProfile.ShowSnapshot)
-            {
                 foreach (var version in _versions.Snapshot)
                     Versions.Add(version);
-            }
             if (CurrentProfile.ShowBeta)
-            {
                 foreach (var version in _versions.Beta)
                     Versions.Add(version);
-            }
             if (CurrentProfile.ShowAlpha)
-            {
                 foreach (var version in _versions.Alpha)
                     Versions.Add(version);
-            }
         }
 
         private void _saveProfile()
         {
-            _settingsModel.SaveLastProfile(CurrentProfile);
-            CloseSettingsEvent?.Invoke(this, null);
+            if (_isNewProfile)
+                _settingsModel.SaveProfile(CurrentProfile);
+            else
+                _settingsModel.EditProfile(_oldProfileName, CurrentProfile);
+
+            Messenger.Default.Send(new object());
         }
 
         private void _getVersions()
@@ -102,7 +103,9 @@ namespace MCLauncher.UI
 
         private void _loadProfile()
         {
-            CurrentProfile = _settingsModel.LoadLastProfile();
+            CurrentProfile = _settingsModel.LoadLastProfile() ?? new Profile();
+
+            _oldProfileName = CurrentProfile.Name;
 
             switch (CurrentProfile.LauncherVisibility)
             {

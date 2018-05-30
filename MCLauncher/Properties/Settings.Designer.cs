@@ -25,12 +25,24 @@ namespace MCLauncher.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        public global::MCLauncher.Model.Profile LastProfile {
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string LastProfileName {
             get {
-                return ((global::MCLauncher.Model.Profile)(this["LastProfile"]));
+                return ((string)(this["LastProfileName"]));
             }
             set {
-                this["LastProfile"] = value;
+                this["LastProfileName"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public global::MCLauncher.Model.ProfileContainer ProfileContainer {
+            get {
+                return ((global::MCLauncher.Model.ProfileContainer)(this["ProfileContainer"]));
+            }
+            set {
+                this["ProfileContainer"] = value;
             }
         }
     }

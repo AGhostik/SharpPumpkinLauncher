@@ -16,9 +16,7 @@ namespace MCLauncher.UI
         {
             var fileManager = new FileManager();
             var installer = new Installer(fileManager);
-            var settingsModel = new SettingsModel(fileManager);
-            var settingsViewModel = new SettingsViewModel(settingsModel);
-            var mainModel = new MainModel(installer, settingsViewModel);
+            var mainModel = new MainModel(installer, fileManager);
             DataContext = new MainViewModel(mainModel);
         }
     }

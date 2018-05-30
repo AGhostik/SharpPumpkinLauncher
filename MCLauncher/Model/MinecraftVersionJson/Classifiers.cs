@@ -10,5 +10,9 @@ namespace MCLauncher.Model.MinecraftVersionJson
         [JsonProperty("natives-osx")] public DownloadInfo NativesOsx { get; set; }
 
         [JsonProperty("natives-windows")] public DownloadInfo NativesWindows { get; set; }
+
+        [JsonProperty("natives-windows-32")] public DownloadInfo NativesWindows32 { get; set; }
+
+        [JsonProperty("natives-windows-64")] public DownloadInfo NativesWindows64 { get; set; }
     }
 }

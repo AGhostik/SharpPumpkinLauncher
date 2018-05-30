@@ -83,7 +83,7 @@
     <Compile Include="Model\MinecraftVersionJson\DownloadInfo.cs" />
     <Compile Include="Model\MinecraftVersionJson\Downloads.cs" />
     <Compile Include="Model\MinecraftVersionJson\Extract.cs" />
-    <Compile Include="Model\MinecraftVersionJson\Libraries.cs" />
+    <Compile Include="Model\MinecraftVersionJson\Library.cs" />
     <Compile Include="Model\MinecraftVersionJson\MinecraftVersion.cs" />
     <Compile Include="Model\LauncherVisibility.cs" />
     <Compile Include="Model\MinecraftVersionJson\Natives.cs" />
@@ -95,6 +95,7 @@
       <DependentUpon>ModelResource.resx</DependentUpon>
     </Compile>
     <Compile Include="Model\Profile.cs" />
+    <Compile Include="Model\ProfileContainer.cs" />
     <Compile Include="Model\SettingsModel.cs" />
     <Compile Include="Model\VersionsJson\Latest.cs" />
     <Compile Include="Model\VersionsJson\Version.cs" />

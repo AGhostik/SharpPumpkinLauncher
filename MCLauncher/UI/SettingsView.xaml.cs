@@ -1,23 +1,22 @@
 ﻿using System;
 using System.Windows;
+using GalaSoft.MvvmLight.Messaging;
 
 namespace MCLauncher.UI
 {
     public partial class SettingsView : Window
     {
-        private readonly SettingsViewModel _settingsViewModel;
-
-        public SettingsView(SettingsViewModel settingsViewModel)
+        public SettingsView()
         {
-            _settingsViewModel = settingsViewModel;
-            DataContext = _settingsViewModel;
-            _settingsViewModel.CloseSettingsEvent += _closeSettingsEvent;
             InitializeComponent();
+
+            Messenger.Default.Register(this, (object dummy) => {
+                _close();
+            });
         }
 
-        private void _closeSettingsEvent(object sender, EventArgs args)
+        private void _close()
         {
-            _settingsViewModel.CloseSettingsEvent -= _closeSettingsEvent;
             Close();
         }
     }

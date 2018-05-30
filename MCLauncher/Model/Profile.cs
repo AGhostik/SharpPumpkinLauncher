@@ -6,11 +6,11 @@ namespace MCLauncher.Model
     [Serializable]
     public class Profile : ViewModelBase
     {
+        private string _currentVersion;
         private string _gameDirectory;
         private string _javaFile;
         private string _jvmArgs;
         private LauncherVisibility _launcherVisibility;
-        private string _currentVersion;
         private string _name;
         private string _nickname;
         private bool _showAlpha;
@@ -34,8 +34,6 @@ namespace MCLauncher.Model
             ShowBeta = false;
             ShowAlpha = false;
         }
-
-        public event EventHandler VersionsReload;
 
         public string Name
         {
@@ -128,5 +126,7 @@ namespace MCLauncher.Model
                 VersionsReload?.Invoke(this, null);
             }
         }
+
+        public event EventHandler VersionsReload;
     }
 }

@@ -3,7 +3,7 @@
 namespace MCLauncher.Model.MinecraftVersionJson
 {
     [JsonObject(MemberSerialization.OptIn)]
-    public class Libraries
+    public class Library
     {
         [JsonProperty("name")] public string Name { get; set; }
 

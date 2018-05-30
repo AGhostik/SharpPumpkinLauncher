@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Tasks;
-using System.Windows;
-using MCLauncher.Model.AssetsJson;
 using MCLauncher.Model.MinecraftVersionJson;
 using Newtonsoft.Json.Linq;
 
@@ -13,9 +14,11 @@ namespace MCLauncher.Model
 {
     public class Installer
     {
-        private readonly FileManager _fileManager;
         private readonly List<Tuple<Uri, string>> _downloadQueue;
         private readonly List<Tuple<string, string[]>> _extractQueue;
+        private readonly FileManager _fileManager;
+
+        private MinecraftVersion _minecraftVersion;
 
         public Installer(FileManager fileManager)
         {
@@ -24,27 +27,62 @@ namespace MCLauncher.Model
             _extractQueue = new List<Tuple<string, string[]>>();
         }
 
+        public string LaunchArgs { get; private set; }
+
         public async void Install(Profile profile)
         {
             _checkDirectories(profile.GameDirectory, profile.CurrentVersion);
 
-            //checking profile fields
-
             await _checkMinecraftVersion(profile.GameDirectory, profile.CurrentVersion);
 
-            await _checkLibraries(profile.GameDirectory, profile.CurrentVersion);
+            var versionPath = $"{profile.GameDirectory}versions\\{profile.CurrentVersion}\\{profile.CurrentVersion}";
+            _minecraftVersion = _fileManager.ParseJson<MinecraftVersion>($"{versionPath}.json");
 
-            await _checkAssets(profile.GameDirectory, profile.CurrentVersion);
+            LaunchArgs = $"{profile.JvmArgs} ";
+            LaunchArgs +=
+                $"-Djava.library.path=\"{profile.GameDirectory}versions\\{profile.CurrentVersion}\\natives\" -cp \" ";
 
-            MessageBox.Show("Install completed");
+            await _checkLibraries(profile.GameDirectory);
+
+            LaunchArgs += $"{profile.GameDirectory}versions\\{profile.CurrentVersion}\\{profile.CurrentVersion}.jar\" ";
+            LaunchArgs += $"{_minecraftVersion.MainClass} ";
+            LaunchArgs += _getMinecraftArguments(profile);
+
+            await _checkAssets(profile.GameDirectory);
+
+            Debug.WriteLine("Install completed");
         }
 
-        private async Task _checkAssets(string gameDirectory, string currentVersion)
+        private string _getMinecraftArguments(Profile profile)
         {
-            var versionPath = $"{gameDirectory}versions\\{currentVersion}\\{currentVersion}";
-            var minecraftVersion = _fileManager.ParseJson<MinecraftVersion>($"{versionPath}.json");
-            var assetIndex = _fileManager.DownloadJson(minecraftVersion.AssetIndex.Url);
-            
+            var args = _minecraftVersion.MinecraftArguments;
+            args = args.Replace("${auth_player_name}", profile.Nickname);
+            args = args.Replace("${version_name}", profile.CurrentVersion);
+            args = args.Replace("${game_directory}", profile.GameDirectory);
+            args = args.Replace("${assets_root}", profile.GameDirectory + "assets");
+            args = args.Replace("${assets_index_name}", _minecraftVersion.Assets);
+            args = args.Replace("${auth_uuid}", _getUuid(profile.Nickname));
+            args = args.Replace("${auth_access_token}", "null");
+            args = args.Replace("${user_properties}", "{}");
+            args = args.Replace("${user_type}", "mojang");
+            args = args.Replace("${auth_session}", "null");
+            args = args.Replace("${game_assets}", profile.GameDirectory + "assets\\virtual\\legacy");
+
+            return args;
+        }
+
+        private string _getUuid(string input)
+        {
+            var md5Hasher = MD5.Create();
+            var data = md5Hasher.ComputeHash(Encoding.Default.GetBytes(input));
+            var guid = new Guid(data);
+            return guid.ToString();
+        }
+
+        private async Task _checkAssets(string gameDirectory)
+        {
+            var assetIndex = _fileManager.DownloadJson(_minecraftVersion.AssetIndex.Url);
+
             var objects = assetIndex["objects"];
             var assets = objects.Values<JProperty>();
             foreach (var asset in assets)
@@ -57,38 +95,41 @@ namespace MCLauncher.Model
 
                 _checkDirectory(directory);
 
-                _addToDownloadQueue($"{ModelResource.AssetsUrl}{subDirectory}/{hash}",$"{directory}{hash}");
+                if (!_fileManager.FileExist($"{directory}{hash}"))
+                    _addToDownloadQueue($"{ModelResource.AssetsUrl}{subDirectory}/{hash}", $"{directory}{hash}");
             }
 
             await _downloadFromQueue();
         }
 
-        private async Task _checkLibraries(string gameDirectory, string currentVersion)
+        private async Task _checkLibraries(string gameDirectory)
         {
-            var versionPath = $"{gameDirectory}versions\\{currentVersion}\\{currentVersion}";
-            var minecraftVersion = _fileManager.ParseJson<MinecraftVersion>($"{versionPath}.json");
-            foreach (var library in minecraftVersion.Libraries)
+            foreach (var library in _minecraftVersion.Library)
             {
-                if (!_isLibraryAllow(library))
-                {
-                    continue;
-                }
+                if (!_isLibraryAllow(library)) continue;
 
                 //
-                var libraryNameParts = library.Name.Split(new[] { ':' }, StringSplitOptions.RemoveEmptyEntries);
+                var libraryNameParts = library.Name.Split(new[] {':'}, StringSplitOptions.RemoveEmptyEntries);
                 var assembly = libraryNameParts[0];
                 var name = libraryNameParts[1];
                 var version = libraryNameParts[2];
 
-                string url;
+                var url = string.Empty;
 
                 if (library.Url != null)
                 {
                     url = $"{library.Url}{assembly.Replace('.', '/')}/{name}/{version}/{name}-{version}.jar";
                 }
-                else if (library.Downloads?.Classifiers?.NativesWindows != null)
+                else if (library.Downloads?.Classifiers != null)
                 {
-                    url = library.Downloads.Classifiers.NativesWindows.Url;
+                    if (library.Downloads?.Classifiers?.NativesWindows != null)
+                        url = library.Downloads.Classifiers.NativesWindows.Url;
+                    else if (Environment.Is64BitOperatingSystem &&
+                             library.Downloads?.Classifiers?.NativesWindows64 != null)
+                        url = library.Downloads.Classifiers.NativesWindows64.Url;
+                    else if (!Environment.Is64BitOperatingSystem &&
+                             library.Downloads?.Classifiers?.NativesWindows32 != null)
+                        url = library.Downloads.Classifiers.NativesWindows32.Url;
                 }
                 else if (library.Downloads?.Artifact != null)
                 {
@@ -96,65 +137,68 @@ namespace MCLauncher.Model
                 }
                 else
                 {
-                    url = $"{ModelResource.LibrariesUrl}{assembly.Replace('.', '/')}/{name}/{version}/{name}-{version}.jar";
+                    url =
+                        $"{ModelResource.LibrariesUrl}{assembly.Replace('.', '/')}/{name}/{version}/{name}-{version}.jar";
                 }
 
                 var os = string.Empty;
                 if (library.Natives != null)
-                {
                     if (library.Natives.Windows == "natives-windows-${arch}")
-                    {
                         os = Environment.Is64BitOperatingSystem ? "-natives-windows-64" : "-natives-windows-32";
-                    }
                     else
-                    {
                         os = $"-{library.Natives.Windows}";
-                    }
-                }
 
                 var savingDirectory = $"{gameDirectory}libraries\\{assembly.Replace('.', '\\')}\\{name}\\{version}\\";
                 var savingFile = $"{savingDirectory}{name}-{version}{os}.jar";
 
-                _checkDirectory(savingDirectory);
-                _addToDownloadQueue(url, savingFile);
+                LaunchArgs += $"{savingFile};";
 
-                _checkLibraryExtract(library, savingFile);
+                _checkDirectory(savingDirectory);
+
+                if (!_fileManager.FileExist(savingFile)) _addToDownloadQueue(url, savingFile);
+
+                if (_isLibraryNeedExtract(library))
+                {
+                    var extractItem = new Tuple<string, string[]>(savingFile, library.Extract.Exclude);
+                    _extractQueue.Add(extractItem);
+                }
+
                 //
             }
 
             await _downloadFromQueue();
-            _extractFromQueue(gameDirectory, currentVersion);
+            _extractFromQueue(gameDirectory);
         }
-        
-        private void _checkLibraryExtract(Libraries library, string savingFile)
+
+        private bool _isLibraryNeedExtract(Library library)
         {
-            if (library.Extract == null || !library.Extract.Exclude.Any()) return;
-
-            var extractItem = new Tuple<string, string[]>(savingFile, library.Extract.Exclude);
-            _extractQueue.Add(extractItem);
+            return library.Extract != null && library.Extract.Exclude.Any();
         }
 
-        private static bool _isLibraryAllow(Libraries library)
+        private static bool _isLibraryAllow(Library library)
         {
             if (library.Rules == null) return true;
 
             foreach (var rule in library.Rules)
-            {
-                if (rule.Action != null && rule.Action == "disallow" && rule.Os?.Name != null && rule.Os.Name == "windows") 
+                if (rule.Action != null && rule.Action == "disallow" && rule.Os?.Name != null &&
+                    rule.Os.Name == "windows")
                     return false;
-            }
 
             return true;
         }
 
-        private void _extractFromQueue(string gameDirectory, string currentVersion)
+        private void _extractFromQueue(string gameDirectory)
         {
-            var natives = $"{gameDirectory}versions\\{currentVersion}\\natives";
+            var natives = $"{gameDirectory}versions\\{_minecraftVersion.Id}\\natives";
             foreach (var extracTuple in _extractQueue)
             {
+                Debug.WriteLine("start extracting");
+                Debug.WriteLine(extracTuple.Item1);
                 _fileManager.ExtractToDirectory(extracTuple.Item1, natives);
+                Debug.WriteLine("end extracting");
                 foreach (var fileOrDirectory in extracTuple.Item2)
                 {
+                    Debug.WriteLine($"delete {natives}\\{fileOrDirectory}");
                     _fileManager.Delete($"{natives}\\{fileOrDirectory}");
                 }
             }
@@ -164,15 +208,11 @@ namespace MCLauncher.Model
         {
             var versionFilePath = $"{gameDirectory}versions\\{currentVersion}\\{currentVersion}";
             if (!_fileManager.FileExist($"{versionFilePath}.jar"))
-            {
                 _addToDownloadQueue($"{ModelResource.VersionsDirectoryUrl}{currentVersion}/{currentVersion}.jar",
                     $"{versionFilePath}.jar");
-            }
             if (!_fileManager.FileExist($"{versionFilePath}.json"))
-            {
                 _addToDownloadQueue($"{ModelResource.VersionsDirectoryUrl}{currentVersion}/{currentVersion}.json",
                     $"{versionFilePath}.json");
-            }
             await _downloadFromQueue();
         }
 
@@ -187,38 +227,37 @@ namespace MCLauncher.Model
 
         private void _checkDirectory(string directory)
         {
-            if (!_fileManager.DirectoryExist(directory))
-            {
-                _fileManager.CreateDirectory(directory);
-            }
+            if (!_fileManager.DirectoryExist(directory)) _fileManager.CreateDirectory(directory);
         }
 
         private async Task _downloadFromQueue()
         {
             using (var client = new WebClient())
             {
-                //client.DownloadFileCompleted += _fileDownloaded;
+                client.DownloadFileCompleted += _fileDownloaded;
 
                 foreach (var downloadTuple in _downloadQueue)
-                {
                     try
                     {
+                        Debug.WriteLine("start download");
+                        Debug.WriteLine(downloadTuple.Item1);
+                        Debug.WriteLine(downloadTuple.Item2);
                         await client.DownloadFileTaskAsync(downloadTuple.Item1, downloadTuple.Item2);
                     }
                     catch (Exception)
                     {
-                        Console.WriteLine(downloadTuple.Item1);
-                        Console.WriteLine(downloadTuple.Item2);
+                        Debug.WriteLine(downloadTuple.Item1);
+                        Debug.WriteLine(downloadTuple.Item2);
                         throw;
                     }
-                    
-                }
             }
+
             _downloadQueue.Clear();
         }
 
         private void _fileDownloaded(object sender, AsyncCompletedEventArgs asyncCompletedEventArgs)
         {
+            Debug.WriteLine("download complete");
             //
             // percent = downloadedCount / _downloadQueue.Count
             // Invoke(percent);
