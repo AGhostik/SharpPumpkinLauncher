@@ -1,6 +1,6 @@
 ﻿namespace MCLauncher.UI.Messages
 {
-    public class ProfileSavedMessage
+    public class ProfilesChangedMessage
     {
     }
 }

@@ -104,6 +104,22 @@ namespace MCLauncher.Model
             Settings.Default.Save();
         }
 
+        public void DeleteProfile(string name)
+        {
+            if (Settings.Default.ProfileContainer == null)
+                return;
+
+            foreach (var profileFromContainer in Settings.Default.ProfileContainer.Profiles)
+            {
+                if (profileFromContainer.Name != name) continue;
+
+                Settings.Default.ProfileContainer.Profiles.Remove(profileFromContainer);
+                break;
+            }
+
+            Settings.Default.Save();
+        }
+
         public List<Profile> GetProfiles()
         {
             if (Settings.Default.ProfileContainer == null)

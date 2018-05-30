@@ -11,7 +11,7 @@ namespace MCLauncher.UI
         {
             InitializeComponent();
 
-            Messenger.Default.Register(this, (ProfileSavedMessage message) => {
+            Messenger.Default.Register(this, (ProfilesChangedMessage message) => {
                 _close();
             });
         }

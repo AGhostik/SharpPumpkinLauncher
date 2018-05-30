@@ -92,7 +92,7 @@ namespace MCLauncher.UI
             else
                 _settingsModel.EditProfile(_oldProfileName, CurrentProfile);
 
-            Messenger.Default.Send(new ProfileSavedMessage());
+            Messenger.Default.Send(new ProfilesChangedMessage());
         }
 
         private void _getVersions()

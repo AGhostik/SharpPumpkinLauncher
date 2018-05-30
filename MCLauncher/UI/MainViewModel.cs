@@ -82,7 +82,7 @@ namespace MCLauncher.UI
             EditProfile = new RelayCommand(() => { _mainModel.OpenProfileEditingWindow(); });
             DeleteProfile = new RelayCommand(() => { _mainModel.DeleteProfile(CurrentProfileName); });
 
-            Messenger.Default.Register(this, (ProfileSavedMessage message) => { _refreshProfiles(); });
+            Messenger.Default.Register(this, (ProfilesChangedMessage message) => { _refreshProfiles(); });
             Messenger.Default.Register(this, (DownloadProgressMessage message) => { Progress = message.Percentage; });
         }
 

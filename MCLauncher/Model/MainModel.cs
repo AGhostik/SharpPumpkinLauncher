@@ -46,6 +46,8 @@ namespace MCLauncher.Model
 
         public void DeleteProfile(string name)
         {
+            _fileManager.DeleteProfile(name);
+            Messenger.Default.Send(new ProfilesChangedMessage());
         }
 
         public List<string> GetProfiles()

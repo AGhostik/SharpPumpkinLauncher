@@ -104,7 +104,7 @@
       <DependentUpon>MainView.xaml</DependentUpon>
     </Compile>
     <Compile Include="UI\Messages\MinecraftExitedMessage.cs" />
-    <Compile Include="UI\Messages\ProfileSavedMessage.cs" />
+    <Compile Include="UI\Messages\ProfilesChangedMessage.cs" />
     <Compile Include="UI\SettingsView.xaml.cs">
       <DependentUpon>SettingsView.xaml</DependentUpon>
     </Compile>
