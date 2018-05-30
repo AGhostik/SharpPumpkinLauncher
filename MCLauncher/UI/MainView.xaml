@@ -54,6 +54,13 @@
                 IsEnabled="{Binding IsStartActive}" />
         </Grid>
 
+        <ProgressBar
+            Grid.Row="3"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Bottom"
+            Height="20"
+            Value="{Binding Progress}" />
+
         <Button
             Grid.Row="4"
             Margin="5"

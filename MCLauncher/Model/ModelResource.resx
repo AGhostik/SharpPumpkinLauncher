@@ -133,12 +133,12 @@
     <value>https://launchermeta.mojang.com/mc/game/version_manifest.json</value>
   </data>
   <data name="VersionsDirectoryUrl" xml:space="preserve">
-    <value>https://s3.amazonaws.com/Minecraft.Download/versions/</value>
+    <value>https://s3.amazonaws.com/Minecraft.Download/versions</value>
   </data>
   <data name="LibrariesUrl" xml:space="preserve">
-    <value>https://libraries.minecraft.net/</value>
+    <value>https://libraries.minecraft.net</value>
   </data>
   <data name="AssetsUrl" xml:space="preserve">
-    <value>http://resources.download.minecraft.net/</value>
+    <value>http://resources.download.minecraft.net</value>
   </data>
 </root>

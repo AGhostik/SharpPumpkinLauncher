@@ -1,6 +1,7 @@
-﻿using System;
-using System.Windows;
+﻿using System.Windows;
+using GalaSoft.MvvmLight.Messaging;
 using MCLauncher.Model;
+using MCLauncher.UI.Messages;
 
 namespace MCLauncher.UI
 {
@@ -18,6 +19,8 @@ namespace MCLauncher.UI
             var installer = new Installer(fileManager);
             var mainModel = new MainModel(installer, fileManager);
             DataContext = new MainViewModel(mainModel);
+
+            Messenger.Default.Register(this, (MinecraftExitedMessage message) => { Dispatcher.Invoke(Show); });
         }
     }
 }

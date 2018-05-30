@@ -1,19 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using GalaSoft.MvvmLight.Messaging;
 using MCLauncher.UI;
+using MCLauncher.UI.Messages;
 
 namespace MCLauncher.Model
 {
     public class MainModel
     {
-        private readonly Installer _installer;
         private readonly FileManager _fileManager;
-        
+        private readonly Installer _installer;
+
         public MainModel(Installer installer, FileManager fileManager)
         {
             _installer = installer;
@@ -22,8 +22,10 @@ namespace MCLauncher.Model
 
         public async Task StartGame()
         {
+            Debug.WriteLine("Start");
             var currentProfile = _fileManager.GetLastProfile();
             await _installer.Install(currentProfile);
+            Debug.WriteLine("Try launch");
             _launchMinecraft(currentProfile);
         }
 
@@ -44,7 +46,6 @@ namespace MCLauncher.Model
 
         public void DeleteProfile(string name)
         {
-
         }
 
         public List<string> GetProfiles()
@@ -52,10 +53,7 @@ namespace MCLauncher.Model
             var names = new List<string>();
             var profiles = _fileManager.GetProfiles();
 
-            foreach (var profile in profiles)
-            {
-                names.Add(profile.Name);
-            }
+            foreach (var profile in profiles) names.Add(profile.Name);
 
             return names;
         }
@@ -80,22 +78,22 @@ namespace MCLauncher.Model
 
         private void _launchMinecraft(Profile profile)
         {
-            Debug.WriteLine("launch minecraft");
             var mcProcess = new Process()
             {
                 StartInfo = new ProcessStartInfo(profile.JavaFile, _installer.LaunchArgs),
                 EnableRaisingEvents = true
             };
 
+            mcProcess.Exited += MinecraftProcessExited;
+
             switch (profile.LauncherVisibility)
             {
                 case LauncherVisibility.Close:
                     Application.Current.MainWindow.Close();
                     break;
-                case LauncherVisibility.Hide: {
-                    mcProcess.Exited += MinecraftProcessExited;
+                case LauncherVisibility.Hide:
                     Application.Current.MainWindow.Hide();
-                }
+                    mcProcess.Exited += ShowMainWindow;
                     break;
                 case LauncherVisibility.KeepOpen:
                     break;
@@ -106,7 +104,12 @@ namespace MCLauncher.Model
 
         private static void MinecraftProcessExited(object sender, EventArgs eventArgs)
         {
-            Application.Current.MainWindow.Show();
+            Debug.WriteLine("Mc exited");
+        }
+
+        private static void ShowMainWindow(object sender, EventArgs eventArgs)
+        {
+            Messenger.Default.Send(new MinecraftExitedMessage());
         }
     }
 }

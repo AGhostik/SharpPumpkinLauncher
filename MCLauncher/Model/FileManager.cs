@@ -38,6 +38,16 @@ namespace MCLauncher.Model
             return jObject.ToObject<TResult>();
         }
 
+        public string GetPathFilename(string source)
+        {
+            return Path.GetFileName(source);
+        }
+
+        public string GetPathDirectory(string source)
+        {
+            return Path.GetDirectoryName(source);
+        }
+
         public TResult ParseWebJson<TResult>(string url)
         {
             var jObject = DownloadJson(url);

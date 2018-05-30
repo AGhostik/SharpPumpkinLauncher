@@ -99,9 +99,12 @@
     <Compile Include="Model\SettingsModel.cs" />
     <Compile Include="Model\VersionsJson\Latest.cs" />
     <Compile Include="Model\VersionsJson\Version.cs" />
+    <Compile Include="UI\Messages\DownloadProgressMessage.cs" />
     <Compile Include="UI\MainView.xaml.cs">
       <DependentUpon>MainView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UI\Messages\MinecraftExitedMessage.cs" />
+    <Compile Include="UI\Messages\ProfileSavedMessage.cs" />
     <Compile Include="UI\SettingsView.xaml.cs">
       <DependentUpon>SettingsView.xaml</DependentUpon>
     </Compile>

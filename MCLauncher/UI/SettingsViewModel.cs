@@ -4,6 +4,7 @@ using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
 using GalaSoft.MvvmLight.Messaging;
 using MCLauncher.Model;
+using MCLauncher.UI.Messages;
 
 namespace MCLauncher.UI
 {
@@ -63,10 +64,7 @@ namespace MCLauncher.UI
 
             CurrentProfile.VersionsReload += (sender, args) => { _fillVersions(); };
 
-            Save = new RelayCommand(() =>
-            {
-                _saveProfile(isNewProfile);
-            });
+            Save = new RelayCommand(() => { _saveProfile(isNewProfile); });
             OpenDirectory = new RelayCommand(() => { _settingsModel.OpenGameDirectory(CurrentProfile.GameDirectory); });
         }
 
@@ -94,7 +92,7 @@ namespace MCLauncher.UI
             else
                 _settingsModel.EditProfile(_oldProfileName, CurrentProfile);
 
-            Messenger.Default.Send(new object());
+            Messenger.Default.Send(new ProfileSavedMessage());
         }
 
         private void _getVersions()

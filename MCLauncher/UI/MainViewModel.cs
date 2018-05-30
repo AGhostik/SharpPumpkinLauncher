@@ -3,6 +3,7 @@ using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
 using GalaSoft.MvvmLight.Messaging;
 using MCLauncher.Model;
+using MCLauncher.UI.Messages;
 
 namespace MCLauncher.UI
 {
@@ -12,6 +13,7 @@ namespace MCLauncher.UI
         private string _currentProfileName;
         private bool _isEditActive;
         private bool _isStartActive;
+        private float _progress;
 
         public MainViewModel(MainModel mainModel)
         {
@@ -53,13 +55,25 @@ namespace MCLauncher.UI
         public RelayCommand EditProfile { get; set; }
         public RelayCommand DeleteProfile { get; set; }
 
-        public bool IsStartActive { get => _isStartActive; set => Set(ref _isStartActive, value); }
+        public float Progress
+        {
+            get => _progress;
+            set => Set(ref _progress, value);
+        }
+
+        public bool IsStartActive
+        {
+            get => _isStartActive;
+            set => Set(ref _isStartActive, value);
+        }
 
         private void _init()
         {
             IsStartActive = false;
             IsEditActive = false;
             _refreshProfiles();
+
+            Progress = 0;
 
             CurrentProfileName = _mainModel.GetLastProfile();
 
@@ -68,7 +82,8 @@ namespace MCLauncher.UI
             EditProfile = new RelayCommand(() => { _mainModel.OpenProfileEditingWindow(); });
             DeleteProfile = new RelayCommand(() => { _mainModel.DeleteProfile(CurrentProfileName); });
 
-            Messenger.Default.Register(this, (object dummy) => { _refreshProfiles(); });
+            Messenger.Default.Register(this, (ProfileSavedMessage message) => { _refreshProfiles(); });
+            Messenger.Default.Register(this, (DownloadProgressMessage message) => { Progress = message.Percentage; });
         }
 
         private void _refreshProfiles()

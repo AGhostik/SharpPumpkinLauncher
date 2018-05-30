@@ -7,7 +7,9 @@ using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using GalaSoft.MvvmLight.Messaging;
 using MCLauncher.Model.MinecraftVersionJson;
+using MCLauncher.UI.Messages;
 using Newtonsoft.Json.Linq;
 
 namespace MCLauncher.Model
@@ -17,6 +19,7 @@ namespace MCLauncher.Model
         private readonly List<Tuple<Uri, string>> _downloadQueue;
         private readonly List<Tuple<string, string[]>> _extractQueue;
         private readonly FileManager _fileManager;
+        private long _downloadRemainingBytes;
 
         private MinecraftVersion _minecraftVersion;
 
@@ -31,8 +34,12 @@ namespace MCLauncher.Model
 
         public async Task Install(Profile profile)
         {
+            profile.GameDirectory = _fileManager.GetPathDirectory(profile.GameDirectory + '\\');
+
+            Debug.WriteLine("check directories");
             _checkDirectories(profile.GameDirectory, profile.CurrentVersion);
 
+            Debug.WriteLine("check minecraft versions");
             await _checkMinecraftVersion(profile.GameDirectory, profile.CurrentVersion);
 
             var versionPath = $"{profile.GameDirectory}\\versions\\{profile.CurrentVersion}\\{profile.CurrentVersion}";
@@ -40,17 +47,20 @@ namespace MCLauncher.Model
 
             LaunchArgs = $"{profile.JvmArgs} ";
             LaunchArgs +=
-                $"-Djava.library.path=\"{profile.GameDirectory}\\versions\\{profile.CurrentVersion}\\natives\" -cp \" ";
+                $"-Djava.library.path=\"{profile.GameDirectory}\\versions\\{profile.CurrentVersion}\\natives\" -cp \"";
 
+            Debug.WriteLine("check libraries");
             await _checkLibraries(profile.GameDirectory);
 
-            LaunchArgs += $"{profile.GameDirectory}\\versions\\{profile.CurrentVersion}\\{profile.CurrentVersion}.jar\" ";
+            LaunchArgs +=
+                $"{profile.GameDirectory}\\versions\\{profile.CurrentVersion}\\{profile.CurrentVersion}.jar\" ";
             LaunchArgs += $"{_minecraftVersion.MainClass} ";
             LaunchArgs += _getMinecraftArguments(profile);
 
+            Debug.WriteLine("check assets");
             await _checkAssets(profile.GameDirectory);
 
-            Debug.WriteLine("Install completed");
+            Debug.WriteLine("install completed");
         }
 
         private string _getMinecraftArguments(Profile profile)
@@ -88,15 +98,34 @@ namespace MCLauncher.Model
             foreach (var asset in assets)
             {
                 var hash = asset.First["hash"].ToString();
-
                 var subDirectory = $"{hash[0]}{hash[1]}";
 
-                var directory = $"{gameDirectory}\\assets\\objects\\{subDirectory}";
+                var size = long.Parse(asset.First["size"].ToString());
+                _downloadRemainingBytes += size;
 
-                _checkDirectory(directory);
+                if (_minecraftVersion.Assets == "legacy")
+                {
+                    var legacyFilename = _fileManager.GetPathFilename(asset.Name);
 
-                if (!_fileManager.FileExist($"{directory}\\{hash}"))
-                    _addToDownloadQueue($"{ModelResource.AssetsUrl}{subDirectory}/{hash}", $"{directory}\\{hash}");
+                    var legacySubdirectory = _fileManager.GetPathDirectory(asset.Name);
+
+                    var directory = $"{gameDirectory}\\assets\\virtual\\legacy\\{legacySubdirectory}";
+
+                    _checkDirectory(directory);
+
+                    if (!_fileManager.FileExist($"{directory}\\{legacyFilename}"))
+                        _addToDownloadQueue($"{ModelResource.AssetsUrl}/{subDirectory}/{hash}",
+                            $"{directory}\\{legacyFilename}");
+                }
+                else
+                {
+                    var directory = $"{gameDirectory}\\assets\\objects\\{subDirectory}";
+
+                    _checkDirectory(directory);
+
+                    if (!_fileManager.FileExist($"{directory}\\{hash}"))
+                        _addToDownloadQueue($"{ModelResource.AssetsUrl}/{subDirectory}/{hash}", $"{directory}\\{hash}");
+                }
             }
 
             await _downloadFromQueue();
@@ -108,7 +137,6 @@ namespace MCLauncher.Model
             {
                 if (!_isLibraryAllow(library)) continue;
 
-                //
                 var libraryNameParts = library.Name.Split(new[] {':'}, StringSplitOptions.RemoveEmptyEntries);
                 var assembly = libraryNameParts[0];
                 var name = libraryNameParts[1];
@@ -138,7 +166,7 @@ namespace MCLauncher.Model
                 else
                 {
                     url =
-                        $"{ModelResource.LibrariesUrl}{assembly.Replace('.', '/')}/{name}/{version}/{name}-{version}.jar";
+                        $"{ModelResource.LibrariesUrl}/{assembly.Replace('.', '/')}/{name}/{version}/{name}-{version}.jar";
                 }
 
                 var os = string.Empty;
@@ -155,7 +183,7 @@ namespace MCLauncher.Model
 
                 _checkDirectory(savingDirectory);
 
-                if (!_fileManager.FileExist(savingFile)) 
+                if (!_fileManager.FileExist(savingFile))
                     _addToDownloadQueue(url, savingFile);
 
                 if (_isLibraryNeedExtract(library))
@@ -163,8 +191,6 @@ namespace MCLauncher.Model
                     var extractItem = new Tuple<string, string[]>(savingFile, library.Extract.Exclude);
                     _extractQueue.Add(extractItem);
                 }
-
-                //
             }
 
             await _downloadFromQueue();
@@ -187,15 +213,9 @@ namespace MCLauncher.Model
                 if (rule.Action == null)
                     continue;
 
-                if (rule.Os == null)
-                {
-                    allowToAll = rule.Action == "allow";
-                }
+                if (rule.Os == null) allowToAll = rule.Action == "allow";
 
-                if (rule.Action == "disallow" && rule.Os?.Name != null && rule.Os.Name == "windows")
-                {
-                    return false;
-                }
+                if (rule.Action == "disallow" && rule.Os?.Name != null && rule.Os.Name == "windows") return false;
             }
 
             return allowToAll;
@@ -208,10 +228,7 @@ namespace MCLauncher.Model
             {
                 _fileManager.ExtractToDirectory(extracTuple.Item1, natives);
 
-                foreach (var fileOrDirectory in extracTuple.Item2)
-                {
-                    _fileManager.Delete($"{natives}\\{fileOrDirectory}");
-                }
+                foreach (var fileOrDirectory in extracTuple.Item2) _fileManager.Delete($"{natives}\\{fileOrDirectory}");
             }
         }
 
@@ -219,12 +236,14 @@ namespace MCLauncher.Model
         {
             var jarFile = $"{gameDirectory}\\versions\\{currentVersion}\\{currentVersion}.jar";
             var jsonFile = $"{gameDirectory}\\versions\\{currentVersion}\\{currentVersion}.json";
-            
+
             if (!_fileManager.FileExist(jarFile))
-                _addToDownloadQueue($"{ModelResource.VersionsDirectoryUrl}{currentVersion}/{currentVersion}.jar", jarFile);
+                _addToDownloadQueue($"{ModelResource.VersionsDirectoryUrl}/{currentVersion}/{currentVersion}.jar",
+                    jarFile);
 
             if (!_fileManager.FileExist(jsonFile))
-                _addToDownloadQueue($"{ModelResource.VersionsDirectoryUrl}{currentVersion}/{currentVersion}.json", jsonFile);
+                _addToDownloadQueue($"{ModelResource.VersionsDirectoryUrl}/{currentVersion}/{currentVersion}.json",
+                    jsonFile);
 
             await _downloadFromQueue();
         }
@@ -245,43 +264,49 @@ namespace MCLauncher.Model
 
         private async Task _downloadFromQueue()
         {
+            _downloadRemainingBytes = 0;
+            long previousBytesReceived = 0;
+            var totalRemainingBytes = _downloadRemainingBytes;
+
+            void DownloadProgressChanged(object sender, DownloadProgressChangedEventArgs args)
+            {
+                if (totalRemainingBytes == 0)
+                    return;
+
+                var thisCallReceived = args.BytesReceived - previousBytesReceived;
+
+                _downloadRemainingBytes -= thisCallReceived;
+
+                var unitReversedPercentage = (float) _downloadRemainingBytes / totalRemainingBytes;
+                var percentage = (1 - unitReversedPercentage) * 100;
+                Messenger.Default.Send(new DownloadProgressMessage(percentage));
+
+                previousBytesReceived = args.BytesReceived;
+            }
+
+            void FileDownloaded(object sender, AsyncCompletedEventArgs asyncCompletedEventArgs)
+            {
+                previousBytesReceived = 0;
+            }
+
             using (var client = new WebClient())
             {
-                client.DownloadFileCompleted += _fileDownloaded;
+                client.DownloadFileCompleted += FileDownloaded;
+
+                client.DownloadProgressChanged += DownloadProgressChanged;
 
                 foreach (var downloadTuple in _downloadQueue)
-                    try
-                    {
-                        Debug.WriteLine("start download");
-                        Debug.WriteLine(downloadTuple.Item1);
-                        Debug.WriteLine(downloadTuple.Item2);
-                        await client.DownloadFileTaskAsync(downloadTuple.Item1, downloadTuple.Item2);
-                    }
-                    catch (Exception)
-                    {
-                        Debug.WriteLine(downloadTuple.Item1);
-                        Debug.WriteLine(downloadTuple.Item2);
-                        throw;
-                    }
+                    await client.DownloadFileTaskAsync(downloadTuple.Item1, downloadTuple.Item2);
             }
 
             _downloadQueue.Clear();
         }
 
-        private void _fileDownloaded(object sender, AsyncCompletedEventArgs asyncCompletedEventArgs)
-        {
-            Debug.WriteLine("download complete");
-            //
-            // percent = downloadedCount / _downloadQueue.Count
-            // Invoke(percent);
-            //
-        }
-        
         private void _addToDownloadQueue(string url, string path)
         {
             if (_fileManager.FileExist(path))
                 return;
-            
+
             _downloadQueue.Add(new Tuple<Uri, string>(new Uri(url), path));
         }
     }

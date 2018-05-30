@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows;
 using GalaSoft.MvvmLight.Messaging;
+using MCLauncher.UI.Messages;
 
 namespace MCLauncher.UI
 {
@@ -10,7 +11,7 @@ namespace MCLauncher.UI
         {
             InitializeComponent();
 
-            Messenger.Default.Register(this, (object dummy) => {
+            Messenger.Default.Register(this, (ProfileSavedMessage message) => {
                 _close();
             });
         }

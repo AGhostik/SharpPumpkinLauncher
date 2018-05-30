@@ -70,7 +70,7 @@ namespace MCLauncher.Model {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to http://resources.download.minecraft.net/.
+        ///   Looks up a localized string similar to http://resources.download.minecraft.net.
         /// </summary>
         internal static string AssetsUrl {
             get {
@@ -88,7 +88,7 @@ namespace MCLauncher.Model {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to https://libraries.minecraft.net/.
+        ///   Looks up a localized string similar to https://libraries.minecraft.net.
         /// </summary>
         internal static string LibrariesUrl {
             get {
@@ -115,7 +115,7 @@ namespace MCLauncher.Model {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to https://s3.amazonaws.com/Minecraft.Download/versions/.
+        ///   Looks up a localized string similar to https://s3.amazonaws.com/Minecraft.Download/versions.
         /// </summary>
         internal static string VersionsDirectoryUrl {
             get {
