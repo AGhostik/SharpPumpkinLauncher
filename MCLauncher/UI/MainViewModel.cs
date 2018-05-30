@@ -11,6 +11,7 @@ namespace MCLauncher.UI
         private readonly MainModel _mainModel;
         private string _currentProfileName;
         private bool _isEditActive;
+        private bool _isStartActive;
 
         public MainViewModel(MainModel mainModel)
         {
@@ -29,12 +30,18 @@ namespace MCLauncher.UI
             get => _currentProfileName;
             set
             {
-                _currentProfileName = value;
+                Set(ref _currentProfileName, value);
 
                 if (!string.IsNullOrEmpty(value))
                 {
                     IsEditActive = true;
+                    IsStartActive = true;
                     _mainModel.SaveLastProfileName(value);
+                }
+                else
+                {
+                    IsEditActive = false;
+                    IsStartActive = false;
                 }
             }
         }
@@ -46,14 +53,17 @@ namespace MCLauncher.UI
         public RelayCommand EditProfile { get; set; }
         public RelayCommand DeleteProfile { get; set; }
 
+        public bool IsStartActive { get => _isStartActive; set => Set(ref _isStartActive, value); }
+
         private void _init()
         {
+            IsStartActive = false;
             IsEditActive = false;
             _refreshProfiles();
 
             CurrentProfileName = _mainModel.GetLastProfile();
 
-            Start = new RelayCommand(() => { _mainModel.StartGame(); });
+            Start = new RelayCommand(async () => { await _mainModel.StartGame(); });
             NewProfile = new RelayCommand(() => { _mainModel.OpenProfileCreatingWindow(); });
             EditProfile = new RelayCommand(() => { _mainModel.OpenProfileEditingWindow(); });
             DeleteProfile = new RelayCommand(() => { _mainModel.DeleteProfile(CurrentProfileName); });
@@ -65,6 +75,7 @@ namespace MCLauncher.UI
         {
             Profiles.Clear();
             foreach (var profile in _mainModel.GetProfiles()) Profiles.Add(profile);
+            CurrentProfileName = _mainModel.GetLastProfile();
         }
     }
 }

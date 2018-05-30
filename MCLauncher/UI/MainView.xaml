@@ -50,7 +50,8 @@
                 Grid.Column="2"
                 Margin="5"
                 Command="{Binding DeleteProfile}"
-                Content="{x:Static local:UIResource.Remove}" />
+                Content="{x:Static local:UIResource.Remove}"
+                IsEnabled="{Binding IsStartActive}" />
         </Grid>
 
         <Button

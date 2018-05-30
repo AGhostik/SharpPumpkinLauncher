@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
 using MCLauncher.UI;
 
@@ -8,19 +11,19 @@ namespace MCLauncher.Model
 {
     public class MainModel
     {
-        private readonly FileManager _fileManager;
         private readonly Installer _installer;
-
+        private readonly FileManager _fileManager;
+        
         public MainModel(Installer installer, FileManager fileManager)
         {
             _installer = installer;
             _fileManager = fileManager;
         }
 
-        public void StartGame()
+        public async Task StartGame()
         {
             var currentProfile = _fileManager.GetLastProfile();
-            _installer.Install(currentProfile);
+            await _installer.Install(currentProfile);
             _launchMinecraft(currentProfile);
         }
 
@@ -41,6 +44,7 @@ namespace MCLauncher.Model
 
         public void DeleteProfile(string name)
         {
+
         }
 
         public List<string> GetProfiles()
@@ -48,7 +52,10 @@ namespace MCLauncher.Model
             var names = new List<string>();
             var profiles = _fileManager.GetProfiles();
 
-            foreach (var profile in profiles) names.Add(profile.Name);
+            foreach (var profile in profiles)
+            {
+                names.Add(profile.Name);
+            }
 
             return names;
         }
@@ -79,15 +86,27 @@ namespace MCLauncher.Model
                 StartInfo = new ProcessStartInfo(profile.JavaFile, _installer.LaunchArgs),
                 EnableRaisingEvents = true
             };
-            mcProcess.Exited += McProcessOnExited;
-            mcProcess.Start();
 
-            //launcher visibility
+            switch (profile.LauncherVisibility)
+            {
+                case LauncherVisibility.Close:
+                    Application.Current.MainWindow.Close();
+                    break;
+                case LauncherVisibility.Hide: {
+                    mcProcess.Exited += MinecraftProcessExited;
+                    Application.Current.MainWindow.Hide();
+                }
+                    break;
+                case LauncherVisibility.KeepOpen:
+                    break;
+            }
+
+            mcProcess.Start();
         }
 
-        private static void McProcessOnExited(object sender, EventArgs eventArgs)
+        private static void MinecraftProcessExited(object sender, EventArgs eventArgs)
         {
-            Debug.WriteLine("McProcessExited");
+            Application.Current.MainWindow.Show();
         }
     }
 }

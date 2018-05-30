@@ -9,7 +9,6 @@ namespace MCLauncher.UI
 {
     public class SettingsViewModel : ViewModelBase
     {
-        private readonly bool _isNewProfile;
         private readonly SettingsModel _settingsModel;
         private string _oldProfileName;
         private string _selectedVisibility;
@@ -19,8 +18,7 @@ namespace MCLauncher.UI
         public SettingsViewModel(SettingsModel model, bool isNewProfile)
         {
             _settingsModel = model;
-            _isNewProfile = isNewProfile;
-            _init();
+            _init(isNewProfile);
         }
 
         public Profile CurrentProfile { get; set; }
@@ -55,17 +53,20 @@ namespace MCLauncher.UI
 
         public string Title { get; set; }
 
-        private void _init()
+        private void _init(bool isNewProfile)
         {
-            _loadProfile();
+            _loadProfile(isNewProfile);
             _getVersions();
             _fillVersions();
 
-            Title = _isNewProfile ? UIResource.NewProfileTitle : UIResource.EditProfileTitle;
+            Title = isNewProfile ? UIResource.NewProfileTitle : UIResource.EditProfileTitle;
 
             CurrentProfile.VersionsReload += (sender, args) => { _fillVersions(); };
 
-            Save = new RelayCommand(_saveProfile);
+            Save = new RelayCommand(() =>
+            {
+                _saveProfile(isNewProfile);
+            });
             OpenDirectory = new RelayCommand(() => { _settingsModel.OpenGameDirectory(CurrentProfile.GameDirectory); });
         }
 
@@ -86,9 +87,9 @@ namespace MCLauncher.UI
                     Versions.Add(version);
         }
 
-        private void _saveProfile()
+        private void _saveProfile(bool isNewProfile)
         {
-            if (_isNewProfile)
+            if (isNewProfile)
                 _settingsModel.SaveProfile(CurrentProfile);
             else
                 _settingsModel.EditProfile(_oldProfileName, CurrentProfile);
@@ -101,9 +102,9 @@ namespace MCLauncher.UI
             _versions = _settingsModel.GetVersions();
         }
 
-        private void _loadProfile()
+        private void _loadProfile(bool isNewProfile)
         {
-            CurrentProfile = _settingsModel.LoadLastProfile() ?? new Profile();
+            CurrentProfile = isNewProfile ? new Profile() : _settingsModel.LoadLastProfile();
 
             _oldProfileName = CurrentProfile.Name;
 

@@ -16,16 +16,18 @@ namespace MCLauncher.Model
         public void SaveProfile(Profile profile)
         {
             _fileManager.SaveProfile(profile);
+            _fileManager.SaveLastProfileName(profile.Name);
         }
 
         public Profile LoadLastProfile()
         {
-            return _fileManager.GetLastProfile();
+            return _fileManager.GetLastProfile() ?? new Profile();
         }
 
         public void EditProfile(string oldProfileName, Profile newProfile)
         {
             _fileManager.EditProfile(oldProfileName, newProfile);
+            _fileManager.SaveLastProfileName(newProfile.Name);
         }
 
         public void OpenGameDirectory(string directory)

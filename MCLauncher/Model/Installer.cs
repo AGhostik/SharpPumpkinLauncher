@@ -29,22 +29,22 @@ namespace MCLauncher.Model
 
         public string LaunchArgs { get; private set; }
 
-        public async void Install(Profile profile)
+        public async Task Install(Profile profile)
         {
             _checkDirectories(profile.GameDirectory, profile.CurrentVersion);
 
             await _checkMinecraftVersion(profile.GameDirectory, profile.CurrentVersion);
 
-            var versionPath = $"{profile.GameDirectory}versions\\{profile.CurrentVersion}\\{profile.CurrentVersion}";
+            var versionPath = $"{profile.GameDirectory}\\versions\\{profile.CurrentVersion}\\{profile.CurrentVersion}";
             _minecraftVersion = _fileManager.ParseJson<MinecraftVersion>($"{versionPath}.json");
 
             LaunchArgs = $"{profile.JvmArgs} ";
             LaunchArgs +=
-                $"-Djava.library.path=\"{profile.GameDirectory}versions\\{profile.CurrentVersion}\\natives\" -cp \" ";
+                $"-Djava.library.path=\"{profile.GameDirectory}\\versions\\{profile.CurrentVersion}\\natives\" -cp \" ";
 
             await _checkLibraries(profile.GameDirectory);
 
-            LaunchArgs += $"{profile.GameDirectory}versions\\{profile.CurrentVersion}\\{profile.CurrentVersion}.jar\" ";
+            LaunchArgs += $"{profile.GameDirectory}\\versions\\{profile.CurrentVersion}\\{profile.CurrentVersion}.jar\" ";
             LaunchArgs += $"{_minecraftVersion.MainClass} ";
             LaunchArgs += _getMinecraftArguments(profile);
 
@@ -66,7 +66,7 @@ namespace MCLauncher.Model
             args = args.Replace("${user_properties}", "{}");
             args = args.Replace("${user_type}", "mojang");
             args = args.Replace("${auth_session}", "null");
-            args = args.Replace("${game_assets}", profile.GameDirectory + "assets\\virtual\\legacy");
+            args = args.Replace("${game_assets}", profile.GameDirectory + "\\assets\\virtual\\legacy");
 
             return args;
         }
@@ -91,12 +91,12 @@ namespace MCLauncher.Model
 
                 var subDirectory = $"{hash[0]}{hash[1]}";
 
-                var directory = $"{gameDirectory}assets\\objects\\{subDirectory}\\";
+                var directory = $"{gameDirectory}\\assets\\objects\\{subDirectory}";
 
                 _checkDirectory(directory);
 
-                if (!_fileManager.FileExist($"{directory}{hash}"))
-                    _addToDownloadQueue($"{ModelResource.AssetsUrl}{subDirectory}/{hash}", $"{directory}{hash}");
+                if (!_fileManager.FileExist($"{directory}\\{hash}"))
+                    _addToDownloadQueue($"{ModelResource.AssetsUrl}{subDirectory}/{hash}", $"{directory}\\{hash}");
             }
 
             await _downloadFromQueue();
@@ -148,14 +148,15 @@ namespace MCLauncher.Model
                     else
                         os = $"-{library.Natives.Windows}";
 
-                var savingDirectory = $"{gameDirectory}libraries\\{assembly.Replace('.', '\\')}\\{name}\\{version}\\";
-                var savingFile = $"{savingDirectory}{name}-{version}{os}.jar";
+                var savingDirectory = $"{gameDirectory}\\libraries\\{assembly.Replace('.', '\\')}\\{name}\\{version}";
+                var savingFile = $"{savingDirectory}\\{name}-{version}{os}.jar";
 
                 LaunchArgs += $"{savingFile};";
 
                 _checkDirectory(savingDirectory);
 
-                if (!_fileManager.FileExist(savingFile)) _addToDownloadQueue(url, savingFile);
+                if (!_fileManager.FileExist(savingFile)) 
+                    _addToDownloadQueue(url, savingFile);
 
                 if (_isLibraryNeedExtract(library))
                 {
@@ -179,26 +180,36 @@ namespace MCLauncher.Model
         {
             if (library.Rules == null) return true;
 
-            foreach (var rule in library.Rules)
-                if (rule.Action != null && rule.Action == "disallow" && rule.Os?.Name != null &&
-                    rule.Os.Name == "windows")
-                    return false;
+            var allowToAll = false;
 
-            return true;
+            foreach (var rule in library.Rules)
+            {
+                if (rule.Action == null)
+                    continue;
+
+                if (rule.Os == null)
+                {
+                    allowToAll = rule.Action == "allow";
+                }
+
+                if (rule.Action == "disallow" && rule.Os?.Name != null && rule.Os.Name == "windows")
+                {
+                    return false;
+                }
+            }
+
+            return allowToAll;
         }
 
         private void _extractFromQueue(string gameDirectory)
         {
-            var natives = $"{gameDirectory}versions\\{_minecraftVersion.Id}\\natives";
+            var natives = $"{gameDirectory}\\versions\\{_minecraftVersion.Id}\\natives";
             foreach (var extracTuple in _extractQueue)
             {
-                Debug.WriteLine("start extracting");
-                Debug.WriteLine(extracTuple.Item1);
                 _fileManager.ExtractToDirectory(extracTuple.Item1, natives);
-                Debug.WriteLine("end extracting");
+
                 foreach (var fileOrDirectory in extracTuple.Item2)
                 {
-                    Debug.WriteLine($"delete {natives}\\{fileOrDirectory}");
                     _fileManager.Delete($"{natives}\\{fileOrDirectory}");
                 }
             }
@@ -206,23 +217,25 @@ namespace MCLauncher.Model
 
         private async Task _checkMinecraftVersion(string gameDirectory, string currentVersion)
         {
-            var versionFilePath = $"{gameDirectory}versions\\{currentVersion}\\{currentVersion}";
-            if (!_fileManager.FileExist($"{versionFilePath}.jar"))
-                _addToDownloadQueue($"{ModelResource.VersionsDirectoryUrl}{currentVersion}/{currentVersion}.jar",
-                    $"{versionFilePath}.jar");
-            if (!_fileManager.FileExist($"{versionFilePath}.json"))
-                _addToDownloadQueue($"{ModelResource.VersionsDirectoryUrl}{currentVersion}/{currentVersion}.json",
-                    $"{versionFilePath}.json");
+            var jarFile = $"{gameDirectory}\\versions\\{currentVersion}\\{currentVersion}.jar";
+            var jsonFile = $"{gameDirectory}\\versions\\{currentVersion}\\{currentVersion}.json";
+            
+            if (!_fileManager.FileExist(jarFile))
+                _addToDownloadQueue($"{ModelResource.VersionsDirectoryUrl}{currentVersion}/{currentVersion}.jar", jarFile);
+
+            if (!_fileManager.FileExist(jsonFile))
+                _addToDownloadQueue($"{ModelResource.VersionsDirectoryUrl}{currentVersion}/{currentVersion}.json", jsonFile);
+
             await _downloadFromQueue();
         }
 
         private void _checkDirectories(string gameDirectory, string currentVersion)
         {
             _checkDirectory(gameDirectory);
-            _checkDirectory($"{gameDirectory}versions\\{currentVersion}\\natives");
-            _checkDirectory($"{gameDirectory}assets\\objects");
-            _checkDirectory($"{gameDirectory}assets\\virtual\\legacy");
-            _checkDirectory($"{gameDirectory}libraries");
+            _checkDirectory($"{gameDirectory}\\versions\\{currentVersion}\\natives\\");
+            _checkDirectory($"{gameDirectory}\\assets\\objects\\");
+            _checkDirectory($"{gameDirectory}\\assets\\virtual\\legacy\\");
+            _checkDirectory($"{gameDirectory}\\libraries\\");
         }
 
         private void _checkDirectory(string directory)
@@ -263,12 +276,12 @@ namespace MCLauncher.Model
             // Invoke(percent);
             //
         }
-
+        
         private void _addToDownloadQueue(string url, string path)
         {
             if (_fileManager.FileExist(path))
                 return;
-
+            
             _downloadQueue.Add(new Tuple<Uri, string>(new Uri(url), path));
         }
     }
