@@ -22,10 +22,8 @@ namespace MCLauncher.Model
 
         public async Task StartGame()
         {
-            Debug.WriteLine("Start");
             var currentProfile = _fileManager.GetLastProfile();
             await _installer.Install(currentProfile);
-            Debug.WriteLine("Try launch");
             _launchMinecraft(currentProfile);
         }
 
@@ -101,12 +99,13 @@ namespace MCLauncher.Model
                     break;
             }
 
+            Messenger.Default.Send(new StatusMessage(UIResource.LaunchGameStatus));
             mcProcess.Start();
         }
 
         private static void MinecraftProcessExited(object sender, EventArgs eventArgs)
         {
-            Debug.WriteLine("Mc exited");
+            Messenger.Default.Send(new StatusMessage(UIResource.GameExitedStatus));
         }
 
         private static void ShowMainWindow(object sender, EventArgs eventArgs)

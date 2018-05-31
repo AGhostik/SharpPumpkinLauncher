@@ -123,11 +123,26 @@
   <data name="Alpha" xml:space="preserve">
     <value>Alpha</value>
   </data>
+  <data name="CheckDirectoriesStatus" xml:space="preserve">
+    <value>check directories...</value>
+  </data>
+  <data name="CheckVersionFIlesStatus_part1" xml:space="preserve">
+    <value>check</value>
+  </data>
+  <data name="CheckVersionFIlesStatus_part2" xml:space="preserve">
+    <value>version main files...</value>
+  </data>
   <data name="CloseLauncher" xml:space="preserve">
     <value>Close launcher when game starts</value>
   </data>
   <data name="Custom" xml:space="preserve">
     <value>Custom</value>
+  </data>
+  <data name="DownloadAssetsStatus" xml:space="preserve">
+    <value>download assets...</value>
+  </data>
+  <data name="DownloadLibrariesStatus" xml:space="preserve">
+    <value>download libraries...</value>
   </data>
   <data name="Edit" xml:space="preserve">
     <value>🖉 Edit</value>
@@ -135,11 +150,20 @@
   <data name="EditProfileTitle" xml:space="preserve">
     <value>Edit profile</value>
   </data>
+  <data name="ExtractLibrariesStatus" xml:space="preserve">
+    <value>extract libraries...</value>
+  </data>
   <data name="GameDir" xml:space="preserve">
     <value>Game directory:</value>
   </data>
+  <data name="GameExitedStatus" xml:space="preserve">
+    <value>game exited</value>
+  </data>
   <data name="HideLauncher" xml:space="preserve">
     <value>Hide launcher and re-open when game closes</value>
+  </data>
+  <data name="InstallCompletedStatus" xml:space="preserve">
+    <value>install completed</value>
   </data>
   <data name="Javafile" xml:space="preserve">
     <value>Java file:</value>
@@ -159,11 +183,17 @@
   <data name="LauncherVisibility" xml:space="preserve">
     <value>Launcher visibility:</value>
   </data>
+  <data name="LaunchGameStatus" xml:space="preserve">
+    <value>launch game</value>
+  </data>
   <data name="MainTitle" xml:space="preserve">
     <value>MCLauncher</value>
   </data>
   <data name="MinecraftVersion" xml:space="preserve">
     <value>Minecraft version:</value>
+  </data>
+  <data name="NewProfileStatus" xml:space="preserve">
+    <value>new profile created</value>
   </data>
   <data name="NewProfileTitle" xml:space="preserve">
     <value>New profile</value>
@@ -177,8 +207,14 @@
   <data name="OpenDirectory" xml:space="preserve">
     <value>Open game directory</value>
   </data>
+  <data name="ProfileEditedStatus" xml:space="preserve">
+    <value>profile edited</value>
+  </data>
   <data name="ProfileName" xml:space="preserve">
     <value>Profile name:</value>
+  </data>
+  <data name="ProfileTitle" xml:space="preserve">
+    <value>Profile:</value>
   </data>
   <data name="Release" xml:space="preserve">
     <value>Release</value>

@@ -88,9 +88,15 @@ namespace MCLauncher.UI
         private void _saveProfile(bool isNewProfile)
         {
             if (isNewProfile)
+            {
                 _settingsModel.SaveProfile(CurrentProfile);
+                Messenger.Default.Send(new StatusMessage(UIResource.NewProfileStatus));
+            }
             else
+            {
                 _settingsModel.EditProfile(_oldProfileName, CurrentProfile);
+                Messenger.Default.Send(new StatusMessage(UIResource.ProfileEditedStatus));
+            }
 
             Messenger.Default.Send(new ProfilesChangedMessage());
         }

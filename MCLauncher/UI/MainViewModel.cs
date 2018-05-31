@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Windows;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
 using GalaSoft.MvvmLight.Messaging;
@@ -13,7 +14,9 @@ namespace MCLauncher.UI
         private string _currentProfileName;
         private bool _isEditActive;
         private bool _isStartActive;
+        private Visibility _progresBarVisibility;
         private float _progress;
+        private string _status;
 
         public MainViewModel(MainModel mainModel)
         {
@@ -55,6 +58,12 @@ namespace MCLauncher.UI
         public RelayCommand EditProfile { get; set; }
         public RelayCommand DeleteProfile { get; set; }
 
+        public string Status
+        {
+            get => _status;
+            set => Set(ref _status, value);
+        }
+
         public float Progress
         {
             get => _progress;
@@ -67,6 +76,12 @@ namespace MCLauncher.UI
             set => Set(ref _isStartActive, value);
         }
 
+        public Visibility ProgresBarVisibility
+        {
+            get => _progresBarVisibility;
+            set => Set(ref _progresBarVisibility, value);
+        }
+
         private void _init()
         {
             IsStartActive = false;
@@ -74,6 +89,7 @@ namespace MCLauncher.UI
             _refreshProfiles();
 
             Progress = 0;
+            ProgresBarVisibility = Visibility.Collapsed;
 
             CurrentProfileName = _mainModel.GetLastProfile();
 
@@ -83,7 +99,12 @@ namespace MCLauncher.UI
             DeleteProfile = new RelayCommand(() => { _mainModel.DeleteProfile(CurrentProfileName); });
 
             Messenger.Default.Register(this, (ProfilesChangedMessage message) => { _refreshProfiles(); });
-            Messenger.Default.Register(this, (DownloadProgressMessage message) => { Progress = message.Percentage; });
+            Messenger.Default.Register(this, (StatusMessage message) => { Status = message.Status; });
+            Messenger.Default.Register(this, (InstallProgressMessage message) =>
+            {
+                ProgresBarVisibility = message.Percentage < 100 ? Visibility.Visible : Visibility.Collapsed;
+                Progress = message.Percentage;
+            });
         }
 
         private void _refreshProfiles()

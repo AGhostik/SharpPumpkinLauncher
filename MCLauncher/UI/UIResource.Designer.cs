@@ -79,6 +79,33 @@ namespace MCLauncher.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to check directories....
+        /// </summary>
+        public static string CheckDirectoriesStatus {
+            get {
+                return ResourceManager.GetString("CheckDirectoriesStatus", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to check.
+        /// </summary>
+        public static string CheckVersionFIlesStatus_part1 {
+            get {
+                return ResourceManager.GetString("CheckVersionFIlesStatus_part1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to version main files....
+        /// </summary>
+        public static string CheckVersionFIlesStatus_part2 {
+            get {
+                return ResourceManager.GetString("CheckVersionFIlesStatus_part2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Close launcher when game starts.
         /// </summary>
         public static string CloseLauncher {
@@ -93,6 +120,24 @@ namespace MCLauncher.UI {
         public static string Custom {
             get {
                 return ResourceManager.GetString("Custom", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to download assets....
+        /// </summary>
+        public static string DownloadAssetsStatus {
+            get {
+                return ResourceManager.GetString("DownloadAssetsStatus", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to download libraries....
+        /// </summary>
+        public static string DownloadLibrariesStatus {
+            get {
+                return ResourceManager.GetString("DownloadLibrariesStatus", resourceCulture);
             }
         }
         
@@ -115,6 +160,15 @@ namespace MCLauncher.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to extract libraries....
+        /// </summary>
+        public static string ExtractLibrariesStatus {
+            get {
+                return ResourceManager.GetString("ExtractLibrariesStatus", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Game directory:.
         /// </summary>
         public static string GameDir {
@@ -124,11 +178,29 @@ namespace MCLauncher.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to game exited.
+        /// </summary>
+        public static string GameExitedStatus {
+            get {
+                return ResourceManager.GetString("GameExitedStatus", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Hide launcher and re-open when game closes.
         /// </summary>
         public static string HideLauncher {
             get {
                 return ResourceManager.GetString("HideLauncher", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to install completed.
+        /// </summary>
+        public static string InstallCompletedStatus {
+            get {
+                return ResourceManager.GetString("InstallCompletedStatus", resourceCulture);
             }
         }
         
@@ -187,6 +259,15 @@ namespace MCLauncher.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to launch game.
+        /// </summary>
+        public static string LaunchGameStatus {
+            get {
+                return ResourceManager.GetString("LaunchGameStatus", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to MCLauncher.
         /// </summary>
         public static string MainTitle {
@@ -201,6 +282,15 @@ namespace MCLauncher.UI {
         public static string MinecraftVersion {
             get {
                 return ResourceManager.GetString("MinecraftVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to new profile created.
+        /// </summary>
+        public static string NewProfileStatus {
+            get {
+                return ResourceManager.GetString("NewProfileStatus", resourceCulture);
             }
         }
         
@@ -241,11 +331,29 @@ namespace MCLauncher.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to profile edited.
+        /// </summary>
+        public static string ProfileEditedStatus {
+            get {
+                return ResourceManager.GetString("ProfileEditedStatus", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Profile name:.
         /// </summary>
         public static string ProfileName {
             get {
                 return ResourceManager.GetString("ProfileName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Profile:.
+        /// </summary>
+        public static string ProfileTitle {
+            get {
+                return ResourceManager.GetString("ProfileTitle", resourceCulture);
             }
         }
         

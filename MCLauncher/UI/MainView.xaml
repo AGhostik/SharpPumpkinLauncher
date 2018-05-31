@@ -22,8 +22,8 @@
 
         <Label
             Grid.Row="0"
-            HorizontalAlignment="Center"
-            Content="Profile" />
+            HorizontalAlignment="Left"
+            Content="{x:Static local:UIResource.ProfileTitle}" />
         <ComboBox
             Grid.Row="1"
             Margin="5"
@@ -54,12 +54,25 @@
                 IsEnabled="{Binding IsStartActive}" />
         </Grid>
 
-        <ProgressBar
+        <Border
             Grid.Row="3"
-            HorizontalAlignment="Stretch"
+            BorderBrush="LightGray"
+            BorderThickness="0,1,0,1" />
+
+        <StackPanel
+            Grid.Row="3"
             VerticalAlignment="Bottom"
-            Height="20"
-            Value="{Binding Progress}" />
+            Orientation="Vertical">
+            <TextBlock
+                Margin="5"
+                Text="{Binding Status}"
+                TextWrapping="Wrap" />
+            <ProgressBar
+                Height="20"
+                Margin="5,0,5,5"
+                Visibility="{Binding ProgresBarVisibility}"
+                Value="{Binding Progress}" />
+        </StackPanel>
 
         <Button
             Grid.Row="4"

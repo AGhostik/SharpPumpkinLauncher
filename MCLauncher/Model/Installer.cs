@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Security.Cryptography;
@@ -9,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using GalaSoft.MvvmLight.Messaging;
 using MCLauncher.Model.MinecraftVersionJson;
+using MCLauncher.UI;
 using MCLauncher.UI.Messages;
 using Newtonsoft.Json.Linq;
 
@@ -19,9 +18,9 @@ namespace MCLauncher.Model
         private readonly List<Tuple<Uri, string>> _downloadQueue;
         private readonly List<Tuple<string, string[]>> _extractQueue;
         private readonly FileManager _fileManager;
-        private long _downloadRemainingBytes;
 
         private MinecraftVersion _minecraftVersion;
+        private float _progress;
 
         public Installer(FileManager fileManager)
         {
@@ -34,12 +33,12 @@ namespace MCLauncher.Model
 
         public async Task Install(Profile profile)
         {
-            profile.GameDirectory = _fileManager.GetPathDirectory(profile.GameDirectory + '\\');
+            _progress = 0;
+            Messenger.Default.Send(new InstallProgressMessage(0));
+            _fixProfileDirectoryString(profile);
 
-            Debug.WriteLine("check directories");
             _checkDirectories(profile.GameDirectory, profile.CurrentVersion);
 
-            Debug.WriteLine("check minecraft versions");
             await _checkMinecraftVersion(profile.GameDirectory, profile.CurrentVersion);
 
             var versionPath = $"{profile.GameDirectory}\\versions\\{profile.CurrentVersion}\\{profile.CurrentVersion}";
@@ -49,7 +48,6 @@ namespace MCLauncher.Model
             LaunchArgs +=
                 $"-Djava.library.path=\"{profile.GameDirectory}\\versions\\{profile.CurrentVersion}\\natives\" -cp \"";
 
-            Debug.WriteLine("check libraries");
             await _checkLibraries(profile.GameDirectory);
 
             LaunchArgs +=
@@ -57,10 +55,34 @@ namespace MCLauncher.Model
             LaunchArgs += $"{_minecraftVersion.MainClass} ";
             LaunchArgs += _getMinecraftArguments(profile);
 
-            Debug.WriteLine("check assets");
             await _checkAssets(profile.GameDirectory);
 
-            Debug.WriteLine("install completed");
+            _sendProgressText(UIResource.InstallCompletedStatus);
+            Messenger.Default.Send(new InstallProgressMessage(100));
+        }
+
+        private void _addProgressAndSend(float value)
+        {
+            //1 - check directories
+            //1 - chechVersions
+            //80 - download total // 50 - libraries, 30 - assets
+            //8 - checking // 4 - libraries, 4 - assets
+            //10 - extract libraries
+
+            if (value <= 0)
+                return;
+            _progress += value;
+            Messenger.Default.Send(new InstallProgressMessage(_progress));
+        }
+
+        private void _sendProgressText(string text)
+        {
+            Messenger.Default.Send(new StatusMessage(text));
+        }
+
+        private void _fixProfileDirectoryString(Profile profile)
+        {
+            profile.GameDirectory = _fileManager.GetPathDirectory(profile.GameDirectory + '\\');
         }
 
         private string _getMinecraftArguments(Profile profile)
@@ -95,13 +117,13 @@ namespace MCLauncher.Model
 
             var objects = assetIndex["objects"];
             var assets = objects.Values<JProperty>();
+
+            var progressForEach = 4 / assets.Count();
+
             foreach (var asset in assets)
             {
                 var hash = asset.First["hash"].ToString();
                 var subDirectory = $"{hash[0]}{hash[1]}";
-
-                var size = long.Parse(asset.First["size"].ToString());
-                _downloadRemainingBytes += size;
 
                 if (_minecraftVersion.Assets == "legacy")
                 {
@@ -126,13 +148,17 @@ namespace MCLauncher.Model
                     if (!_fileManager.FileExist($"{directory}\\{hash}"))
                         _addToDownloadQueue($"{ModelResource.AssetsUrl}/{subDirectory}/{hash}", $"{directory}\\{hash}");
                 }
+
+                _addProgressAndSend(progressForEach);
             }
 
-            await _downloadFromQueue();
+            _sendProgressText(UIResource.DownloadAssetsStatus);
+            await _downloadFromQueue(50);
         }
 
         private async Task _checkLibraries(string gameDirectory)
         {
+            var progressForEach = 4 / _minecraftVersion.Library.Length;
             foreach (var library in _minecraftVersion.Library)
             {
                 if (!_isLibraryAllow(library)) continue;
@@ -158,6 +184,8 @@ namespace MCLauncher.Model
                     else if (!Environment.Is64BitOperatingSystem &&
                              library.Downloads?.Classifiers?.NativesWindows32 != null)
                         url = library.Downloads.Classifiers.NativesWindows32.Url;
+                    else if (library.Downloads?.Artifact != null)
+                        url = library.Downloads.Artifact.Url;
                 }
                 else if (library.Downloads?.Artifact != null)
                 {
@@ -191,9 +219,14 @@ namespace MCLauncher.Model
                     var extractItem = new Tuple<string, string[]>(savingFile, library.Extract.Exclude);
                     _extractQueue.Add(extractItem);
                 }
+
+                _addProgressAndSend(progressForEach);
             }
 
-            await _downloadFromQueue();
+            _sendProgressText(UIResource.DownloadLibrariesStatus);
+            await _downloadFromQueue(30);
+
+            _sendProgressText(UIResource.ExtractLibrariesStatus);
             _extractFromQueue(gameDirectory);
         }
 
@@ -223,9 +256,12 @@ namespace MCLauncher.Model
 
         private void _extractFromQueue(string gameDirectory)
         {
+            var progressForEach = 10 / _extractQueue.Count;
             var natives = $"{gameDirectory}\\versions\\{_minecraftVersion.Id}\\natives";
             foreach (var extracTuple in _extractQueue)
             {
+                _addProgressAndSend(progressForEach);
+
                 _fileManager.ExtractToDirectory(extracTuple.Item1, natives);
 
                 foreach (var fileOrDirectory in extracTuple.Item2) _fileManager.Delete($"{natives}\\{fileOrDirectory}");
@@ -234,6 +270,10 @@ namespace MCLauncher.Model
 
         private async Task _checkMinecraftVersion(string gameDirectory, string currentVersion)
         {
+            _sendProgressText(
+                $"{UIResource.CheckVersionFIlesStatus_part1} {currentVersion} {UIResource.CheckVersionFIlesStatus_part2}");
+            _addProgressAndSend(1);
+
             var jarFile = $"{gameDirectory}\\versions\\{currentVersion}\\{currentVersion}.jar";
             var jsonFile = $"{gameDirectory}\\versions\\{currentVersion}\\{currentVersion}.json";
 
@@ -250,6 +290,8 @@ namespace MCLauncher.Model
 
         private void _checkDirectories(string gameDirectory, string currentVersion)
         {
+            _sendProgressText(UIResource.CheckDirectoriesStatus);
+            _addProgressAndSend(1);
             _checkDirectory(gameDirectory);
             _checkDirectory($"{gameDirectory}\\versions\\{currentVersion}\\natives\\");
             _checkDirectory($"{gameDirectory}\\assets\\objects\\");
@@ -262,41 +304,17 @@ namespace MCLauncher.Model
             if (!_fileManager.DirectoryExist(directory)) _fileManager.CreateDirectory(directory);
         }
 
-        private async Task _downloadFromQueue()
+        private async Task _downloadFromQueue(float progressForQueue = 0)
         {
-            _downloadRemainingBytes = 0;
-            long previousBytesReceived = 0;
-            var totalRemainingBytes = _downloadRemainingBytes;
-
-            void DownloadProgressChanged(object sender, DownloadProgressChangedEventArgs args)
-            {
-                if (totalRemainingBytes == 0)
-                    return;
-
-                var thisCallReceived = args.BytesReceived - previousBytesReceived;
-
-                _downloadRemainingBytes -= thisCallReceived;
-
-                var unitReversedPercentage = (float) _downloadRemainingBytes / totalRemainingBytes;
-                var percentage = (1 - unitReversedPercentage) * 100;
-                Messenger.Default.Send(new DownloadProgressMessage(percentage));
-
-                previousBytesReceived = args.BytesReceived;
-            }
-
-            void FileDownloaded(object sender, AsyncCompletedEventArgs asyncCompletedEventArgs)
-            {
-                previousBytesReceived = 0;
-            }
+            var progressForEach = progressForQueue / _downloadQueue.Count;
 
             using (var client = new WebClient())
             {
-                client.DownloadFileCompleted += FileDownloaded;
-
-                client.DownloadProgressChanged += DownloadProgressChanged;
-
                 foreach (var downloadTuple in _downloadQueue)
+                {
+                    _addProgressAndSend(progressForEach);
                     await client.DownloadFileTaskAsync(downloadTuple.Item1, downloadTuple.Item2);
+                }
             }
 
             _downloadQueue.Clear();
