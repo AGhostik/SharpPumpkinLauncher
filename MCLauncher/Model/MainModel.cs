@@ -9,12 +9,12 @@ using MCLauncher.UI.Messages;
 
 namespace MCLauncher.Model
 {
-    public class MainModel
+    public class MainModel : IMainModel
     {
-        private readonly FileManager _fileManager;
-        private readonly Installer _installer;
+        private readonly IFileManager _fileManager;
+        private readonly IInstaller _installer;
 
-        public MainModel(Installer installer, FileManager fileManager)
+        public MainModel(IInstaller installer, IFileManager fileManager)
         {
             _installer = installer;
             _fileManager = fileManager;

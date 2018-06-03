@@ -14,7 +14,7 @@ namespace MCLauncher.UI
         private string _oldProfileName;
         private string _selectedVisibility;
 
-        private Versions _versions;
+        private AllVersions _allVersions;
 
         public SettingsViewModel(ISettingsModel model, bool isNewProfile)
         {
@@ -72,23 +72,23 @@ namespace MCLauncher.UI
         {
             Versions.Clear();
             if (CurrentProfile.ShowAlpha)
-                foreach (var version in _versions.Alpha)
+                foreach (var version in _allVersions.Alpha)
                     Versions.Add(version);
 
             if (CurrentProfile.ShowBeta)
-                foreach (var version in _versions.Beta)
+                foreach (var version in _allVersions.Beta)
                     Versions.Add(version);
 
             if (CurrentProfile.ShowRelease)
-                foreach (var version in _versions.Release)
+                foreach (var version in _allVersions.Release)
                     Versions.Add(version);
 
             if (CurrentProfile.ShowSnapshot)
-                foreach (var version in _versions.Snapshot)
+                foreach (var version in _allVersions.Snapshot)
                     Versions.Add(version);
 
             if (CurrentProfile.ShowCustom)
-                foreach (var version in _versions.Custom)
+                foreach (var version in _allVersions.Custom)
                     Versions.Add(version);
         }
 
@@ -110,7 +110,7 @@ namespace MCLauncher.UI
 
         private void _getVersions()
         {
-            _versions = _settingsModel.GetVersions();
+            _allVersions = _settingsModel.GetVersions();
         }
 
         private void _loadProfile(bool isNewProfile)

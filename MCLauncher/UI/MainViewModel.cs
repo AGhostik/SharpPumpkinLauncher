@@ -10,7 +10,7 @@ namespace MCLauncher.UI
 {
     public class MainViewModel : ViewModelBase
     {
-        private readonly MainModel _mainModel;
+        private readonly IMainModel _mainModel;
         private string _currentProfileName;
         private bool _isEditActive;
         private bool _isStartActive;
@@ -18,7 +18,7 @@ namespace MCLauncher.UI
         private float _progress;
         private string _status;
 
-        public MainViewModel(MainModel mainModel)
+        public MainViewModel(IMainModel mainModel)
         {
             _mainModel = mainModel;
             _init();

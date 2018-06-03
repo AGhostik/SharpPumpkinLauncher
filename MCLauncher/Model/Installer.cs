@@ -13,16 +13,16 @@ using Newtonsoft.Json.Linq;
 
 namespace MCLauncher.Model
 {
-    public class Installer
+    public class Installer : IInstaller
     {
         private readonly List<Tuple<Uri, string>> _downloadQueue;
         private readonly List<Tuple<string, string[]>> _extractQueue;
-        private readonly FileManager _fileManager;
+        private readonly IFileManager _fileManager;
 
         private MinecraftVersion _minecraftVersion;
         private float _progress;
 
-        public Installer(FileManager fileManager)
+        public Installer(IFileManager fileManager)
         {
             _fileManager = fileManager;
             _downloadQueue = new List<Tuple<Uri, string>>();

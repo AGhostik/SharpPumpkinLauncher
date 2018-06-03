@@ -77,6 +77,8 @@
     </ApplicationDefinition>
     <Compile Include="Model\FileManager.cs" />
     <Compile Include="Model\IFileManager.cs" />
+    <Compile Include="Model\IInstaller.cs" />
+    <Compile Include="Model\IMainModel.cs" />
     <Compile Include="Model\Installer.cs" />
     <Compile Include="Model\ISettingsModel.cs" />
     <Compile Include="Model\MainModel.cs" />
@@ -122,7 +124,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="UI\MainViewModel.cs" />
-    <Compile Include="UI\Versions.cs" />
+    <Compile Include="UI\AllVersions.cs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">

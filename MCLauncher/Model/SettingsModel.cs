@@ -41,9 +41,9 @@ namespace MCLauncher.Model
             return _fileManager.FindJava();
         }
 
-        public Versions GetVersions()
+        public AllVersions GetVersions()
         {
-            var versions = new Versions();
+            var versions = new AllVersions();
 
             var json = _fileManager.DownloadJson(ModelResource.VersionsUrl);
             var jVersions = json["versions"].ToObject<Version[]>();

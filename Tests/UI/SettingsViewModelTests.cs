@@ -14,7 +14,7 @@ namespace Tests.UI
         {
             _model = Substitute.For<ISettingsModel>();
             _model.LoadLastProfile().Returns(new Profile());
-            _model.GetVersions().Returns(new Versions()
+            _model.GetVersions().Returns(new AllVersions()
             {
                 Alpha = new List<string>() {"alpha1"},
                 Beta = new List<string>() {"beta1"},
@@ -33,6 +33,39 @@ namespace Tests.UI
             vm.OpenDirectory.Execute(null);
 
             _model.Received().OpenGameDirectory(string.Empty);
+        }
+
+        [Test]
+        public void ProfileVisibility_Close_SelectedVisibilityChanged()
+        {
+            var vm = new SettingsViewModel(_model, true)
+            {
+                SelectedVisibility = UIResource.CloseLauncher
+            };
+
+            Assert.AreEqual(vm.CurrentProfile.LauncherVisibility, LauncherVisibility.Close);
+        }
+
+        [Test]
+        public void ProfileVisibility_Hide_SelectedVisibilityChanged()
+        {
+            var vm = new SettingsViewModel(_model, true)
+            {
+                SelectedVisibility = UIResource.HideLauncher
+            };
+
+            Assert.AreEqual(vm.CurrentProfile.LauncherVisibility, LauncherVisibility.Hide);
+        }
+
+        [Test]
+        public void ProfileVisibility_KeepOpen_SelectedVisibilityChanged()
+        {
+            var vm = new SettingsViewModel(_model, true)
+            {
+                SelectedVisibility = UIResource.KeepLauncherOpen
+            };
+
+            Assert.AreEqual(vm.CurrentProfile.LauncherVisibility, LauncherVisibility.KeepOpen);
         }
 
         [Test]

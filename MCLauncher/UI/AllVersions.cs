@@ -2,7 +2,7 @@
 
 namespace MCLauncher.UI
 {
-    public class Versions
+    public class AllVersions
     {
         public List<string> Custom { get; set; } = new List<string>();
         public List<string> Release { get; set; } = new List<string>();
