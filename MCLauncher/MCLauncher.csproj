@@ -77,6 +77,7 @@
     </ApplicationDefinition>
     <Compile Include="Model\FileManager.cs" />
     <Compile Include="Model\Installer.cs" />
+    <Compile Include="Model\ISettingsModel.cs" />
     <Compile Include="Model\MainModel.cs" />
     <Compile Include="Model\MinecraftVersionJson\AssetIndex.cs" />
     <Compile Include="Model\MinecraftVersionJson\Classifiers.cs" />

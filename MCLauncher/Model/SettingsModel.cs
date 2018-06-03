@@ -4,7 +4,7 @@ using MCLauncher.UI;
 
 namespace MCLauncher.Model
 {
-    public class SettingsModel
+    public class SettingsModel : ISettingsModel
     {
         private readonly FileManager _fileManager;
 

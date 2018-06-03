@@ -10,13 +10,13 @@ namespace MCLauncher.UI
 {
     public class SettingsViewModel : ViewModelBase
     {
-        private readonly SettingsModel _settingsModel;
+        private readonly ISettingsModel _settingsModel;
         private string _oldProfileName;
         private string _selectedVisibility;
 
         private Versions _versions;
 
-        public SettingsViewModel(SettingsModel model, bool isNewProfile)
+        public SettingsViewModel(ISettingsModel model, bool isNewProfile)
         {
             _settingsModel = model;
             _init(isNewProfile);
@@ -71,17 +71,24 @@ namespace MCLauncher.UI
         public void _fillVersions()
         {
             Versions.Clear();
-            if (CurrentProfile.ShowRelease)
-                foreach (var version in _versions.Release)
+            if (CurrentProfile.ShowAlpha)
+                foreach (var version in _versions.Alpha)
                     Versions.Add(version);
-            if (CurrentProfile.ShowSnapshot)
-                foreach (var version in _versions.Snapshot)
-                    Versions.Add(version);
+
             if (CurrentProfile.ShowBeta)
                 foreach (var version in _versions.Beta)
                     Versions.Add(version);
-            if (CurrentProfile.ShowAlpha)
-                foreach (var version in _versions.Alpha)
+
+            if (CurrentProfile.ShowRelease)
+                foreach (var version in _versions.Release)
+                    Versions.Add(version);
+
+            if (CurrentProfile.ShowSnapshot)
+                foreach (var version in _versions.Snapshot)
+                    Versions.Add(version);
+
+            if (CurrentProfile.ShowCustom)
+                foreach (var version in _versions.Custom)
                     Versions.Add(version);
         }
 
