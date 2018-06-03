@@ -141,4 +141,7 @@
   <data name="AssetsUrl" xml:space="preserve">
     <value>http://resources.download.minecraft.net</value>
   </data>
+  <data name="JavaKey" xml:space="preserve">
+    <value>SOFTWARE\JavaSoft\Java Runtime Environment</value>
+  </data>
 </root>

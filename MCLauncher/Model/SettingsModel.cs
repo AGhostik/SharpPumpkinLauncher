@@ -6,9 +6,9 @@ namespace MCLauncher.Model
 {
     public class SettingsModel : ISettingsModel
     {
-        private readonly FileManager _fileManager;
+        private readonly IFileManager _fileManager;
 
-        public SettingsModel(FileManager fileManager)
+        public SettingsModel(IFileManager fileManager)
         {
             _fileManager = fileManager;
         }
@@ -34,6 +34,11 @@ namespace MCLauncher.Model
         {
             if (_fileManager.DirectoryExist(directory))
                 _fileManager.StartProcess(directory);
+        }
+
+        public string FindJava()
+        {
+            return _fileManager.FindJava();
         }
 
         public Versions GetVersions()

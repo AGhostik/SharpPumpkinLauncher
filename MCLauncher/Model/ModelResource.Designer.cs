@@ -88,6 +88,15 @@ namespace MCLauncher.Model {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to SOFTWARE\JavaSoft\Java Runtime Environment.
+        /// </summary>
+        internal static string JavaKey {
+            get {
+                return ResourceManager.GetString("JavaKey", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to https://libraries.minecraft.net.
         /// </summary>
         internal static string LibrariesUrl {

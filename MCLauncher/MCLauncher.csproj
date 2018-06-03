@@ -76,6 +76,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Model\FileManager.cs" />
+    <Compile Include="Model\IFileManager.cs" />
     <Compile Include="Model\Installer.cs" />
     <Compile Include="Model\ISettingsModel.cs" />
     <Compile Include="Model\MainModel.cs" />

@@ -8,6 +8,7 @@ namespace MCLauncher.Model
         Versions GetVersions();
         Profile LoadLastProfile();
         void OpenGameDirectory(string directory);
+        string FindJava();
         void SaveProfile(Profile profile);
     }
 }

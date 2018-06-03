@@ -63,7 +63,7 @@ namespace MCLauncher.UI
             Title = isNewProfile ? UIResource.NewProfileTitle : UIResource.EditProfileTitle;
 
             CurrentProfile.VersionsReload += (sender, args) => { _fillVersions(); };
-
+            
             Save = new RelayCommand(() => { _saveProfile(isNewProfile); });
             OpenDirectory = new RelayCommand(() => { _settingsModel.OpenGameDirectory(CurrentProfile.GameDirectory); });
         }
@@ -115,8 +115,18 @@ namespace MCLauncher.UI
 
         private void _loadProfile(bool isNewProfile)
         {
-            CurrentProfile = isNewProfile ? new Profile() : _settingsModel.LoadLastProfile();
-
+            if (isNewProfile)
+            {
+                CurrentProfile = new Profile
+                {
+                    JavaFile = _settingsModel.FindJava()
+                };
+            }
+            else
+            {
+                CurrentProfile = _settingsModel.LoadLastProfile();
+            }
+            
             _oldProfileName = CurrentProfile.Name;
 
             switch (CurrentProfile.LauncherVisibility)

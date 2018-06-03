@@ -5,12 +5,13 @@ using System.IO;
 using System.Net;
 using Ionic.Zip;
 using MCLauncher.Properties;
+using Microsoft.Win32;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace MCLauncher.Model
 {
-    public class FileManager
+    public class FileManager : IFileManager
     {
         public JObject DownloadJson(string url)
         {
@@ -168,6 +169,26 @@ namespace MCLauncher.Model
                 return string.Empty;
 
             return Settings.Default.LastProfileName;
+        }
+
+        public string FindJava()
+        {
+            string java;
+
+            using (var baseKey = Registry.LocalMachine.OpenSubKey(ModelResource.JavaKey))
+            {
+                if (baseKey == null) return string.Empty;
+
+                var currentVersion = baseKey.GetValue("CurrentVersion").ToString();
+                using (var homeKey = Registry.LocalMachine.OpenSubKey($"{ModelResource.JavaKey}\\{currentVersion}"))
+                {
+                    if (homeKey == null) return string.Empty;
+
+                    java = $"{homeKey.GetValue("JavaHome")}\\bin\\javaw.exe";
+                }
+            }
+
+            return java;
         }
     }
 }
