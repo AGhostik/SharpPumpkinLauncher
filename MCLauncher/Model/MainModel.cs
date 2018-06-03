@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Windows;
 using GalaSoft.MvvmLight.Messaging;
@@ -78,37 +77,36 @@ namespace MCLauncher.Model
 
         private void _launchMinecraft(Profile profile)
         {
-            var mcProcess = new Process()
-            {
-                StartInfo = new ProcessStartInfo(profile.JavaFile, _installer.LaunchArgs),
-                EnableRaisingEvents = true
-            };
-
-            mcProcess.Exited += MinecraftProcessExited;
-
+            Action exitedAction = MinecraftProcessExited;
+            
             switch (profile.LauncherVisibility)
             {
                 case LauncherVisibility.Close:
-                    Application.Current.MainWindow.Close();
+                    Application.Current?.MainWindow?.Close();
                     break;
                 case LauncherVisibility.Hide:
-                    Application.Current.MainWindow.Hide();
-                    mcProcess.Exited += ShowMainWindow;
+                    Application.Current?.MainWindow?.Hide();
+                    exitedAction = () =>
+                    {
+                        ShowMainWindow();
+                        MinecraftProcessExited();
+                    };
                     break;
                 case LauncherVisibility.KeepOpen:
                     break;
             }
 
             Messenger.Default.Send(new StatusMessage(UIResource.LaunchGameStatus));
-            mcProcess.Start();
+
+            _fileManager.StartProcess(profile.JavaFile, _installer.LaunchArgs, exitedAction);
         }
 
-        private static void MinecraftProcessExited(object sender, EventArgs eventArgs)
+        private static void MinecraftProcessExited()
         {
             Messenger.Default.Send(new StatusMessage(UIResource.GameExitedStatus));
         }
 
-        private static void ShowMainWindow(object sender, EventArgs eventArgs)
+        private static void ShowMainWindow()
         {
             Messenger.Default.Send(new MinecraftExitedMessage());
         }

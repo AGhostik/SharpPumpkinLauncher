@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 
 namespace MCLauncher.Model
@@ -24,5 +25,6 @@ namespace MCLauncher.Model
         void SaveLastProfileName(string name);
         void SaveProfile(Profile profile);
         void StartProcess(string fileName);
+        void StartProcess(string fileName, string args, Action exitedAction);
     }
 }

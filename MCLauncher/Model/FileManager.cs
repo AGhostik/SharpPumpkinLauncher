@@ -24,6 +24,23 @@ namespace MCLauncher.Model
             return JObject.Parse(rawJson);
         }
 
+        public void StartProcess(string fileName, string args, Action exitedAction)
+        {
+            var process = new Process()
+            {
+                StartInfo = new ProcessStartInfo(fileName, args),
+                EnableRaisingEvents = true
+            };
+
+            process.Exited += (sender, eventArgs) =>
+            {
+                exitedAction.Invoke();
+                Debug.WriteLine(process.ExitCode);
+            };
+
+            process.Start();
+        }
+
         public TResult ParseJson<TResult>(string path)
         {
             JObject jObject;
