@@ -75,12 +75,15 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Model\FileManager.cs" />
-    <Compile Include="Model\IFileManager.cs" />
+    <Compile Include="Model\Managers\FileManager.cs" />
+    <Compile Include="Model\Managers\IFileManager.cs" />
     <Compile Include="Model\IInstaller.cs" />
+    <Compile Include="Model\Managers\IJsonManager.cs" />
     <Compile Include="Model\ILauncherModel.cs" />
     <Compile Include="Model\Installer.cs" />
+    <Compile Include="Model\Managers\IProfileManager.cs" />
     <Compile Include="Model\ISettingsModel.cs" />
+    <Compile Include="Model\Managers\JsonManager.cs" />
     <Compile Include="Model\LauncherModel.cs" />
     <Compile Include="Model\MinecraftVersionJson\AssetIndex.cs" />
     <Compile Include="Model\MinecraftVersionJson\Classifiers.cs" />
@@ -100,6 +103,7 @@
     </Compile>
     <Compile Include="Model\Profile.cs" />
     <Compile Include="Model\ProfileContainer.cs" />
+    <Compile Include="Model\Managers\ProfileManager.cs" />
     <Compile Include="Model\SettingsModel.cs" />
     <Compile Include="Model\VersionsJson\Latest.cs" />
     <Compile Include="Model\VersionsJson\Version.cs" />

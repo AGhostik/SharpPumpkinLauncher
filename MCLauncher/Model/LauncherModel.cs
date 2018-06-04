@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows;
 using GalaSoft.MvvmLight.Messaging;
+using MCLauncher.Model.Managers;
 using MCLauncher.UI;
 using MCLauncher.UI.Messages;
 

@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using MCLauncher.Model.Managers;
 using MCLauncher.Model.VersionsJson;
 using MCLauncher.UI;
 

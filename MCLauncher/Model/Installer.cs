@@ -6,6 +6,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using GalaSoft.MvvmLight.Messaging;
+using MCLauncher.Model.Managers;
 using MCLauncher.Model.MinecraftVersionJson;
 using MCLauncher.UI;
 using MCLauncher.UI.Messages;

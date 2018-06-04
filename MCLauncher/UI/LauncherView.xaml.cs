@@ -1,6 +1,7 @@
 ﻿using System.Windows;
 using GalaSoft.MvvmLight.Messaging;
 using MCLauncher.Model;
+using MCLauncher.Model.Managers;
 using MCLauncher.UI.Messages;
 
 namespace MCLauncher.UI

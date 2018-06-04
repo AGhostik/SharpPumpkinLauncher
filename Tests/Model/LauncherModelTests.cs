@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using MCLauncher.Model;
+using MCLauncher.Model.Managers;
 using NSubstitute;
 using NUnit.Framework;
 
