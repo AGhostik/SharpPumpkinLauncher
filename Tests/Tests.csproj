@@ -73,9 +73,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Model\MainModelTests.cs" />
+    <Compile Include="Model\LauncherModelTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="UI\MainViewModelTests.cs" />
+    <Compile Include="UI\LauncherViewModelTests.cs" />
     <Compile Include="UI\SettingsViewModelTests.cs" />
   </ItemGroup>
   <ItemGroup>

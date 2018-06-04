@@ -5,9 +5,9 @@ using MCLauncher.UI.Messages;
 
 namespace MCLauncher.UI
 {
-    public partial class MainView : Window
+    public partial class LauncherView : Window
     {
-        public MainView()
+        public LauncherView()
         {
             InitializeComponent();
             _init();
@@ -17,8 +17,8 @@ namespace MCLauncher.UI
         {
             var fileManager = new FileManager();
             var installer = new Installer(fileManager);
-            var mainModel = new MainModel(installer, fileManager);
-            DataContext = new MainViewModel(mainModel);
+            var mainModel = new LauncherModel(installer, fileManager);
+            DataContext = new LauncherViewModel(mainModel);
 
             Messenger.Default.Register(this, (MinecraftExitedMessage message) => { Dispatcher.Invoke(Show); });
         }

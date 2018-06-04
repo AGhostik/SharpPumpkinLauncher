@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace MCLauncher.Model
 {
-    public interface IMainModel
+    public interface ILauncherModel
     {
         void DeleteProfile(string name);
         string GetLastProfile();

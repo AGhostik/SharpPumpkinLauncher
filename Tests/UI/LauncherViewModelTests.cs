@@ -10,7 +10,7 @@ using NUnit.Framework;
 namespace Tests.UI
 {
     [TestFixture]
-    public class MainViewModelTests
+    public class LauncherViewModelTests
     {
         [SetUp]
         public void SetUp()
@@ -21,43 +21,43 @@ namespace Tests.UI
                 "profile1"
             };
 
-            _mainModel = Substitute.For<IMainModel>();
-            _mainModel.GetLastProfile().Returns("lastProfile");
-            _mainModel.GetProfiles().Returns(_profileList);
+            _launcherModel = Substitute.For<ILauncherModel>();
+            _launcherModel.GetLastProfile().Returns("lastProfile");
+            _launcherModel.GetProfiles().Returns(_profileList);
         }
 
         private List<string> _profileList;
-        private IMainModel _mainModel;
+        private ILauncherModel _launcherModel;
 
         [Test]
         public void EditProfile_OpenProfileEditingWindow()
         {
-            var vm = new MainViewModel(_mainModel);
+            var vm = new LauncherViewModel(_launcherModel);
             vm.EditProfile.Execute(null);
 
-            _mainModel.Received().OpenProfileEditingWindow();
+            _launcherModel.Received().OpenProfileEditingWindow();
         }
 
         [Test]
         public void NewProfile_OpenProfileCreatingWindow()
         {
-            var vm = new MainViewModel(_mainModel);
+            var vm = new LauncherViewModel(_launcherModel);
             vm.NewProfile.Execute(null);
 
-            _mainModel.Received().OpenProfileCreatingWindow();
+            _launcherModel.Received().OpenProfileCreatingWindow();
         }
 
         [Test]
         public void Profiles_Loaded_Init()
         {
-            var vm = new MainViewModel(_mainModel);
+            var vm = new LauncherViewModel(_launcherModel);
             Assert.AreEqual(vm.Profiles, _profileList);
         }
 
         [Test]
         public void Progress_EqualsMessageProgress_RecievedInstallProgressMessage()
         {
-            var vm = new MainViewModel(_mainModel);
+            var vm = new LauncherViewModel(_launcherModel);
             Messenger.Default.Send(new InstallProgressMessage(50));
 
             Assert.AreEqual(vm.Progress, 50);
@@ -66,7 +66,7 @@ namespace Tests.UI
         [Test]
         public void ProgressBarVisibility_Collapsed_ProgressEquals100()
         {
-            var vm = new MainViewModel(_mainModel);
+            var vm = new LauncherViewModel(_launcherModel);
             Messenger.Default.Send(new InstallProgressMessage(100));
 
             Assert.AreEqual(vm.ProgresBarVisibility, Visibility.Collapsed);
@@ -75,7 +75,7 @@ namespace Tests.UI
         [Test]
         public void ProgressBarVisibility_Visible_ProgressLess100()
         {
-            var vm = new MainViewModel(_mainModel);
+            var vm = new LauncherViewModel(_launcherModel);
             Messenger.Default.Send(new InstallProgressMessage(50));
 
             Assert.AreEqual(vm.ProgresBarVisibility, Visibility.Visible);
@@ -84,7 +84,7 @@ namespace Tests.UI
         [Test]
         public void RefreshProfiles_UpdateProfiles_RecievedProfilesChangedMessage()
         {
-            var vm = new MainViewModel(_mainModel);
+            var vm = new LauncherViewModel(_launcherModel);
             vm.Profiles.Clear();
             Messenger.Default.Send(new ProfilesChangedMessage());
 
@@ -94,16 +94,16 @@ namespace Tests.UI
         [Test]
         public void Start_ExecuteStartGame()
         {
-            var vm = new MainViewModel(_mainModel);
+            var vm = new LauncherViewModel(_launcherModel);
             vm.Start.Execute(null);
 
-            _mainModel.Received().StartGame();
+            _launcherModel.Received().StartGame();
         }
 
         [Test]
         public void Status_UpdateStatus_RecievedStatusMessage()
         {
-            var vm = new MainViewModel(_mainModel);
+            var vm = new LauncherViewModel(_launcherModel);
             Messenger.Default.Send(new StatusMessage("testStatus"));
 
             Assert.AreEqual(vm.Status, "testStatus");

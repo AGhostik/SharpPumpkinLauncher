@@ -8,12 +8,12 @@ using MCLauncher.UI.Messages;
 
 namespace MCLauncher.Model
 {
-    public class MainModel : IMainModel
+    public class LauncherModel : ILauncherModel
     {
         private readonly IFileManager _fileManager;
         private readonly IInstaller _installer;
 
-        public MainModel(IInstaller installer, IFileManager fileManager)
+        public LauncherModel(IInstaller installer, IFileManager fileManager)
         {
             _installer = installer;
             _fileManager = fileManager;

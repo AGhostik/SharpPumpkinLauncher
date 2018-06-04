@@ -8,9 +8,9 @@ using MCLauncher.UI.Messages;
 
 namespace MCLauncher.UI
 {
-    public class MainViewModel : ViewModelBase
+    public class LauncherViewModel : ViewModelBase
     {
-        private readonly IMainModel _mainModel;
+        private readonly ILauncherModel _launcherModel;
         private string _currentProfileName;
         private bool _isEditActive;
         private bool _isStartActive;
@@ -18,9 +18,9 @@ namespace MCLauncher.UI
         private float _progress;
         private string _status;
 
-        public MainViewModel(IMainModel mainModel)
+        public LauncherViewModel(ILauncherModel launcherModel)
         {
-            _mainModel = mainModel;
+            _launcherModel = launcherModel;
             _init();
         }
 
@@ -41,7 +41,7 @@ namespace MCLauncher.UI
                 {
                     IsEditActive = true;
                     IsStartActive = true;
-                    _mainModel.SaveLastProfileName(value);
+                    _launcherModel.SaveLastProfileName(value);
                 }
                 else
                 {
@@ -91,12 +91,12 @@ namespace MCLauncher.UI
             Progress = 0;
             ProgresBarVisibility = Visibility.Collapsed;
 
-            CurrentProfileName = _mainModel.GetLastProfile();
+            CurrentProfileName = _launcherModel.GetLastProfile();
 
-            Start = new RelayCommand(async () => { await _mainModel.StartGame(); });
-            NewProfile = new RelayCommand(() => { _mainModel.OpenProfileCreatingWindow(); });
-            EditProfile = new RelayCommand(() => { _mainModel.OpenProfileEditingWindow(); });
-            DeleteProfile = new RelayCommand(() => { _mainModel.DeleteProfile(CurrentProfileName); });
+            Start = new RelayCommand(async () => { await _launcherModel.StartGame(); });
+            NewProfile = new RelayCommand(() => { _launcherModel.OpenProfileCreatingWindow(); });
+            EditProfile = new RelayCommand(() => { _launcherModel.OpenProfileEditingWindow(); });
+            DeleteProfile = new RelayCommand(() => { _launcherModel.DeleteProfile(CurrentProfileName); });
 
             Messenger.Default.Register(this, (ProfilesChangedMessage message) => { _refreshProfiles(); });
             Messenger.Default.Register(this, (StatusMessage message) => { Status = message.Status; });
@@ -110,8 +110,8 @@ namespace MCLauncher.UI
         private void _refreshProfiles()
         {
             Profiles.Clear();
-            foreach (var profile in _mainModel.GetProfiles()) Profiles.Add(profile);
-            CurrentProfileName = _mainModel.GetLastProfile();
+            foreach (var profile in _launcherModel.GetProfiles()) Profiles.Add(profile);
+            CurrentProfileName = _launcherModel.GetLastProfile();
         }
     }
 }

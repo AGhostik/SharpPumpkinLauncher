@@ -8,7 +8,7 @@ using NUnit.Framework;
 namespace Tests.Model
 {
     [TestFixture]
-    public class MainModelTests
+    public class LauncherModelTests
     {
         [SetUp]
         public void SetUp()
@@ -42,7 +42,7 @@ namespace Tests.Model
         [Test]
         public void DeleteProfile_ReceivedDeleteProfile()
         {
-            var model = new MainModel(_installer, _fileManager);
+            var model = new LauncherModel(_installer, _fileManager);
             model.DeleteProfile("name");
 
             _fileManager.Received().DeleteProfile("name");
@@ -51,7 +51,7 @@ namespace Tests.Model
         [Test]
         public void GetProfiles_ReturnNotEmptyList_RecievedGetProfiles()
         {
-            var model = new MainModel(_installer, _fileManager);
+            var model = new LauncherModel(_installer, _fileManager);
             var profiles = model.GetProfiles();
 
             _fileManager.Received().GetProfiles();
@@ -62,7 +62,7 @@ namespace Tests.Model
         [Test]
         public void SaveLastProfileName_ReceivedSaveLastProfileName()
         {
-            var model = new MainModel(_installer, _fileManager);
+            var model = new LauncherModel(_installer, _fileManager);
             model.SaveLastProfileName("name");
 
             _fileManager.Received().SaveLastProfileName("name");
@@ -71,7 +71,7 @@ namespace Tests.Model
         [Test]
         public async Task StartGame_ReceivedStartProcess()
         {
-            var model = new MainModel(_installer, _fileManager);
+            var model = new LauncherModel(_installer, _fileManager);
             await model.StartGame();
 
             _fileManager.ReceivedWithAnyArgs().StartProcess("", "", null);
