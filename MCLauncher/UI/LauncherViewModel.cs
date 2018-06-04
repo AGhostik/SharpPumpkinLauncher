@@ -50,7 +50,7 @@ namespace MCLauncher.UI
                 }
             }
         }
-
+        
         public ObservableCollection<string> Profiles { get; set; } = new ObservableCollection<string>();
 
         public RelayCommand Start { get; set; }

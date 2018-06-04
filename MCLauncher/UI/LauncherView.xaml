@@ -20,6 +20,8 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
+        <!--<local:SettingsView DataContext="{Binding SettingsViewModel}" />-->
+
         <Label
             Grid.Row="0"
             HorizontalAlignment="Left"

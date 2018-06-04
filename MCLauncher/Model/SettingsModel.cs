@@ -46,7 +46,7 @@ namespace MCLauncher.Model
             return _fileManager.FindJava();
         }
 
-        public AllVersions GetVersions()
+        public AllVersions DownloadAllVersions()
         {
             var versions = new AllVersions();
 

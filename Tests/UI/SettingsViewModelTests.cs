@@ -14,7 +14,7 @@ namespace Tests.UI
         {
             _model = Substitute.For<ISettingsModel>();
             _model.LoadLastProfile().Returns(new Profile());
-            _model.GetVersions().Returns(new AllVersions()
+            _model.DownloadAllVersions().Returns(new AllVersions()
             {
                 Alpha = new List<string>() {"alpha1"},
                 Beta = new List<string>() {"beta1"},

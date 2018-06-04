@@ -14,7 +14,7 @@ namespace MCLauncher.UI
         private string _oldProfileName;
         private string _selectedVisibility;
 
-        private AllVersions _allVersions;
+        private AllVersions _versionsCache;
 
         public SettingsViewModel(ISettingsModel model, bool isNewProfile)
         {
@@ -56,77 +56,83 @@ namespace MCLauncher.UI
 
         private void _init(bool isNewProfile)
         {
-            _loadProfile(isNewProfile);
-            _getVersions();
-            _fillVersions();
+            if (isNewProfile)
+                _createProfile();
+            else
+                _loadProfile();
+
+            _saveVersionsToCache();
+            _showSelectedVersions();
 
             Title = isNewProfile ? UIResource.NewProfileTitle : UIResource.EditProfileTitle;
 
-            CurrentProfile.VersionsReload += (sender, args) => { _fillVersions(); };
-            
-            Save = new RelayCommand(() => { _saveProfile(isNewProfile); });
+            CurrentProfile.SelectedVersionsChanged += (sender, args) => { _showSelectedVersions(); };
+
+            Save = new RelayCommand(() =>
+            {
+                if (isNewProfile)
+                    _saveNewProfile();
+                else
+                    _saveEditedProfile();
+
+                Messenger.Default.Send(new ProfilesChangedMessage());
+            });
             OpenDirectory = new RelayCommand(() => { _settingsModel.OpenGameDirectory(CurrentProfile.GameDirectory); });
         }
 
-        public void _fillVersions()
+        public void _showSelectedVersions()
         {
             Versions.Clear();
             if (CurrentProfile.ShowAlpha)
-                foreach (var version in _allVersions.Alpha)
+                foreach (var version in _versionsCache.Alpha)
                     Versions.Add(version);
 
             if (CurrentProfile.ShowBeta)
-                foreach (var version in _allVersions.Beta)
+                foreach (var version in _versionsCache.Beta)
                     Versions.Add(version);
 
             if (CurrentProfile.ShowRelease)
-                foreach (var version in _allVersions.Release)
+                foreach (var version in _versionsCache.Release)
                     Versions.Add(version);
 
             if (CurrentProfile.ShowSnapshot)
-                foreach (var version in _allVersions.Snapshot)
+                foreach (var version in _versionsCache.Snapshot)
                     Versions.Add(version);
 
             if (CurrentProfile.ShowCustom)
-                foreach (var version in _allVersions.Custom)
+                foreach (var version in _versionsCache.Custom)
                     Versions.Add(version);
         }
 
-        private void _saveProfile(bool isNewProfile)
+        private void _saveNewProfile()
         {
-            if (isNewProfile)
-            {
-                _settingsModel.SaveProfile(CurrentProfile);
-                Messenger.Default.Send(new StatusMessage(UIResource.NewProfileStatus));
-            }
-            else
-            {
-                _settingsModel.EditProfile(_oldProfileName, CurrentProfile);
-                Messenger.Default.Send(new StatusMessage(UIResource.ProfileEditedStatus));
-            }
-
-            Messenger.Default.Send(new ProfilesChangedMessage());
+            _settingsModel.SaveProfile(CurrentProfile);
+            Messenger.Default.Send(new StatusMessage(UIResource.NewProfileStatus));
         }
 
-        private void _getVersions()
+        private void _saveEditedProfile()
         {
-            _allVersions = _settingsModel.GetVersions();
+            _settingsModel.EditProfile(_oldProfileName, CurrentProfile);
+            Messenger.Default.Send(new StatusMessage(UIResource.ProfileEditedStatus));
         }
 
-        private void _loadProfile(bool isNewProfile)
+        private void _saveVersionsToCache()
         {
-            if (isNewProfile)
+            _versionsCache = _settingsModel.DownloadAllVersions();
+        }
+
+        private void _createProfile()
+        {
+            CurrentProfile = new Profile
             {
-                CurrentProfile = new Profile
-                {
-                    JavaFile = _settingsModel.FindJava()
-                };
-            }
-            else
-            {
-                CurrentProfile = _settingsModel.LoadLastProfile();
-            }
-            
+                JavaFile = _settingsModel.FindJava()
+            };
+        }
+
+        private void _loadProfile()
+        {
+            CurrentProfile = _settingsModel.LoadLastProfile();
+
             _oldProfileName = CurrentProfile.Name;
 
             switch (CurrentProfile.LauncherVisibility)

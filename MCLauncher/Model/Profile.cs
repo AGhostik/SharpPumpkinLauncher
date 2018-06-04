@@ -83,7 +83,7 @@ namespace MCLauncher.Model
             set
             {
                 Set(ref _showCustom, value);
-                VersionsReload?.Invoke(this, null);
+                SelectedVersionsChanged?.Invoke(this, null);
             }
         }
 
@@ -93,7 +93,7 @@ namespace MCLauncher.Model
             set
             {
                 Set(ref _showRelease, value);
-                VersionsReload?.Invoke(this, null);
+                SelectedVersionsChanged?.Invoke(this, null);
             }
         }
 
@@ -103,7 +103,7 @@ namespace MCLauncher.Model
             set
             {
                 Set(ref _showSnapshot, value);
-                VersionsReload?.Invoke(this, null);
+                SelectedVersionsChanged?.Invoke(this, null);
             }
         }
 
@@ -113,7 +113,7 @@ namespace MCLauncher.Model
             set
             {
                 Set(ref _showBeta, value);
-                VersionsReload?.Invoke(this, null);
+                SelectedVersionsChanged?.Invoke(this, null);
             }
         }
 
@@ -123,10 +123,10 @@ namespace MCLauncher.Model
             set
             {
                 Set(ref _showAlpha, value);
-                VersionsReload?.Invoke(this, null);
+                SelectedVersionsChanged?.Invoke(this, null);
             }
         }
 
-        public event EventHandler VersionsReload;
+        public event EventHandler SelectedVersionsChanged;
     }
 }

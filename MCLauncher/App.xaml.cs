@@ -11,6 +11,7 @@ using MCLauncher.Model.Managers;
 using MCLauncher.UI;
 using MCLauncher.UI.Messages;
 using Unity;
+using Unity.Resolution;
 
 namespace MCLauncher
 {
@@ -27,6 +28,8 @@ namespace MCLauncher
             container.RegisterType<IProfileManager, ProfileManager>();
             container.RegisterType<IJsonManager, JsonManager>();
 
+            container.RegisterType<ISettingsModel, SettingsModel>();
+
             var launcherView = container.Resolve<LauncherView>();
 
             MainWindow = launcherView;
@@ -34,18 +37,20 @@ namespace MCLauncher
 
             launcherView.Show();
 
-            Messenger.Default.Register(this, (ShowSettingsMessage message) => { _showSettings(message.IsNewProfile); });
+            Messenger.Default.Register(this, (ShowSettingsMessage message) =>
+            {
+                var viewModel = container.Resolve<SettingsViewModel>(new DependencyOverride(typeof(bool), message.IsNewProfile));
+                var settingsWindow = container.Resolve<SettingsView>(new DependencyOverride(typeof(SettingsViewModel), viewModel));
+                settingsWindow.Show();
+            });
         }
 
         private void _showSettings(bool createProfile)
         {
             var settingsModel = new SettingsModel(new FileManager(), new ProfileManager(), new JsonManager());
             var settingsViewModel = new SettingsViewModel(settingsModel, createProfile);
-            var settingsWindow = new SettingsView()
-            {
-                Owner = MainWindow,
-                DataContext = settingsViewModel
-            };
+            var settingsWindow = new SettingsView(settingsViewModel);
+
             settingsWindow.Show();
         }
     }

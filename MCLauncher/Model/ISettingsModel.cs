@@ -5,7 +5,7 @@ namespace MCLauncher.Model
     public interface ISettingsModel
     {
         void EditProfile(string oldProfileName, Profile newProfile);
-        AllVersions GetVersions();
+        AllVersions DownloadAllVersions();
         Profile LoadLastProfile();
         void OpenGameDirectory(string directory);
         string FindJava();
