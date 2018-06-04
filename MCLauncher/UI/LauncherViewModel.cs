@@ -94,8 +94,8 @@ namespace MCLauncher.UI
             CurrentProfileName = _launcherModel.GetLastProfile();
 
             Start = new RelayCommand(async () => { await _launcherModel.StartGame(); });
-            NewProfile = new RelayCommand(() => { _launcherModel.OpenProfileCreatingWindow(); });
-            EditProfile = new RelayCommand(() => { _launcherModel.OpenProfileEditingWindow(); });
+            NewProfile = new RelayCommand(() => { _launcherModel.OpenNewProfileWindow(); });
+            EditProfile = new RelayCommand(() => { _launcherModel.OpenEditProfileWindow(); });
             DeleteProfile = new RelayCommand(() => { _launcherModel.DeleteProfile(CurrentProfileName); });
 
             Messenger.Default.Register(this, (ProfilesChangedMessage message) => { _refreshProfiles(); });

@@ -8,27 +8,31 @@ namespace MCLauncher.Model
     public class SettingsModel : ISettingsModel
     {
         private readonly IFileManager _fileManager;
+        private readonly IProfileManager _profileManager;
+        private readonly IJsonManager _jsonManager;
 
-        public SettingsModel(IFileManager fileManager)
+        public SettingsModel(IFileManager fileManager, IProfileManager profileManager, IJsonManager jsonManager)
         {
             _fileManager = fileManager;
+            _profileManager = profileManager;
+            _jsonManager = jsonManager;
         }
 
         public void SaveProfile(Profile profile)
         {
-            _fileManager.SaveProfile(profile);
-            _fileManager.SaveLastProfileName(profile.Name);
+            _profileManager.Save(profile);
+            _profileManager.SaveLastProfileName(profile.Name);
         }
 
         public Profile LoadLastProfile()
         {
-            return _fileManager.GetLastProfile() ?? new Profile();
+            return _profileManager.GetLast() ?? new Profile();
         }
 
-        public void EditProfile(string oldProfileName, Profile newProfile)
+        public void EditProfile(string profileName, Profile newProfile)
         {
-            _fileManager.EditProfile(oldProfileName, newProfile);
-            _fileManager.SaveLastProfileName(newProfile.Name);
+            _profileManager.Edit(profileName, newProfile);
+            _profileManager.SaveLastProfileName(newProfile.Name);
         }
 
         public void OpenGameDirectory(string directory)
@@ -46,7 +50,7 @@ namespace MCLauncher.Model
         {
             var versions = new AllVersions();
 
-            var json = _fileManager.DownloadJson(ModelResource.VersionsUrl);
+            var json = _jsonManager.DownloadJson(ModelResource.VersionsUrl);
             var jVersions = json["versions"].ToObject<Version[]>();
 
             versions.Release.AddRange(jVersions.Where(_ => _.Type == ModelResource.release).Select(_ => _.Id));

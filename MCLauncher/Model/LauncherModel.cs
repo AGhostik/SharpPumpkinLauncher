@@ -12,46 +12,48 @@ namespace MCLauncher.Model
     public class LauncherModel : ILauncherModel
     {
         private readonly IFileManager _fileManager;
+        private readonly IProfileManager _profileManager;
         private readonly IInstaller _installer;
 
-        public LauncherModel(IInstaller installer, IFileManager fileManager)
+        public LauncherModel(IInstaller installer, IProfileManager profileManager, IFileManager fileManager)
         {
             _installer = installer;
+            _profileManager = profileManager;
             _fileManager = fileManager;
         }
 
         public async Task StartGame()
         {
-            var currentProfile = _fileManager.GetLastProfile();
+            var currentProfile = _profileManager.GetLast();
             await _installer.Install(currentProfile);
             _launchMinecraft(currentProfile);
         }
 
         public void SaveLastProfileName(string name)
         {
-            _fileManager.SaveLastProfileName(name);
+            _profileManager.SaveLastProfileName(name);
         }
 
-        public void OpenProfileCreatingWindow()
+        public void OpenNewProfileWindow()
         {
-            _showSettings(true);
+            Messenger.Default.Send(new ShowSettingsMessage(true));
         }
 
-        public void OpenProfileEditingWindow()
+        public void OpenEditProfileWindow()
         {
-            _showSettings(false);
+            Messenger.Default.Send(new ShowSettingsMessage(false));
         }
 
         public void DeleteProfile(string name)
         {
-            _fileManager.DeleteProfile(name);
+            _profileManager.Delete(name);
             Messenger.Default.Send(new ProfilesChangedMessage());
         }
 
         public List<string> GetProfiles()
         {
             var names = new List<string>();
-            var profiles = _fileManager.GetProfiles();
+            var profiles = _profileManager.GetProfiles();
 
             foreach (var profile in profiles) names.Add(profile.Name);
 
@@ -60,20 +62,8 @@ namespace MCLauncher.Model
 
         public string GetLastProfile()
         {
-            var lastProfile = _fileManager.GetLastProfileName();
+            var lastProfile = _profileManager.GetLastProfileName();
             return lastProfile;
-        }
-
-        private void _showSettings(bool createProfile)
-        {
-            var settingsModel = new SettingsModel(_fileManager);
-            var settingsViewModel = new SettingsViewModel(settingsModel, createProfile);
-            var settingsWindow = new SettingsView()
-            {
-                Owner = Application.Current.MainWindow,
-                DataContext = settingsViewModel
-            };
-            settingsWindow.Show();
         }
 
         private void _launchMinecraft(Profile profile)

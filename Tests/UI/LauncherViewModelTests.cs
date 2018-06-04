@@ -35,7 +35,7 @@ namespace Tests.UI
             var vm = new LauncherViewModel(_launcherModel);
             vm.EditProfile.Execute(null);
 
-            _launcherModel.Received().OpenProfileEditingWindow();
+            _launcherModel.Received().OpenEditProfileWindow();
         }
 
         [Test]
@@ -44,7 +44,7 @@ namespace Tests.UI
             var vm = new LauncherViewModel(_launcherModel);
             vm.NewProfile.Execute(null);
 
-            _launcherModel.Received().OpenProfileCreatingWindow();
+            _launcherModel.Received().OpenNewProfileWindow();
         }
 
         [Test]

@@ -21,13 +21,15 @@ namespace Tests.Model
 
             _installer = Substitute.For<IInstaller>();
             _fileManager = Substitute.For<IFileManager>();
-            _fileManager.GetLastProfile().Returns(new Profile()
+            _profileManager = Substitute.For<IProfileManager>();
+
+            _profileManager.GetLast().Returns(new Profile()
             {
                 LauncherVisibility = LauncherVisibility.Hide,
                 JavaFile = "javafile",
                 JvmArgs = "jvmargs"
             });
-            _fileManager.GetProfiles().Returns(new List<Profile>()
+            _profileManager.GetProfiles().Returns(new List<Profile>()
             {
                 new Profile()
                 {
@@ -39,23 +41,24 @@ namespace Tests.Model
         private List<string> _profiles;
         private IInstaller _installer;
         private IFileManager _fileManager;
+        private IProfileManager _profileManager;
 
         [Test]
         public void DeleteProfile_ReceivedDeleteProfile()
         {
-            var model = new LauncherModel(_installer, _fileManager);
+            var model = new LauncherModel(_installer, _profileManager, _fileManager);
             model.DeleteProfile("name");
 
-            _fileManager.Received().DeleteProfile("name");
+            _profileManager.Received().Delete("name");
         }
 
         [Test]
         public void GetProfiles_ReturnNotEmptyList_RecievedGetProfiles()
         {
-            var model = new LauncherModel(_installer, _fileManager);
+            var model = new LauncherModel(_installer, _profileManager, _fileManager);
             var profiles = model.GetProfiles();
 
-            _fileManager.Received().GetProfiles();
+            _profileManager.Received().GetProfiles();
 
             Assert.AreEqual(profiles, _profiles);
         }
@@ -63,16 +66,16 @@ namespace Tests.Model
         [Test]
         public void SaveLastProfileName_ReceivedSaveLastProfileName()
         {
-            var model = new LauncherModel(_installer, _fileManager);
+            var model = new LauncherModel(_installer, _profileManager, _fileManager);
             model.SaveLastProfileName("name");
 
-            _fileManager.Received().SaveLastProfileName("name");
+            _profileManager.Received().SaveLastProfileName("name");
         }
 
         [Test]
         public async Task StartGame_ReceivedStartProcess()
         {
-            var model = new LauncherModel(_installer, _fileManager);
+            var model = new LauncherModel(_installer, _profileManager, _fileManager);
             await model.StartGame();
 
             _fileManager.ReceivedWithAnyArgs().StartProcess("", "", null);

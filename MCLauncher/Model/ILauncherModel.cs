@@ -8,8 +8,8 @@ namespace MCLauncher.Model
         void DeleteProfile(string name);
         string GetLastProfile();
         List<string> GetProfiles();
-        void OpenProfileCreatingWindow();
-        void OpenProfileEditingWindow();
+        void OpenNewProfileWindow();
+        void OpenEditProfileWindow();
         void SaveLastProfileName(string name);
         Task StartGame();
     }

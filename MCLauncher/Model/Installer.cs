@@ -19,13 +19,15 @@ namespace MCLauncher.Model
         private readonly List<Tuple<Uri, string>> _downloadQueue;
         private readonly List<Tuple<string, string[]>> _extractQueue;
         private readonly IFileManager _fileManager;
+        private readonly IJsonManager _jsonManager;
 
         private MinecraftVersion _minecraftVersion;
         private float _progress;
 
-        public Installer(IFileManager fileManager)
+        public Installer(IFileManager fileManager, IJsonManager jsonManager)
         {
             _fileManager = fileManager;
+            _jsonManager = jsonManager;
             _downloadQueue = new List<Tuple<Uri, string>>();
             _extractQueue = new List<Tuple<string, string[]>>();
         }
@@ -43,7 +45,7 @@ namespace MCLauncher.Model
             await _checkMinecraftVersion(profile.GameDirectory, profile.CurrentVersion);
 
             var versionPath = $"{profile.GameDirectory}\\versions\\{profile.CurrentVersion}\\{profile.CurrentVersion}";
-            _minecraftVersion = _fileManager.ParseJson<MinecraftVersion>($"{versionPath}.json");
+            _minecraftVersion = _jsonManager.ParseToObject<MinecraftVersion>($"{versionPath}.json");
 
             LaunchArgs = $"{profile.JvmArgs} ";
             LaunchArgs +=
@@ -114,7 +116,7 @@ namespace MCLauncher.Model
 
         private async Task _checkAssets(string gameDirectory)
         {
-            var assetIndex = _fileManager.DownloadJson(_minecraftVersion.AssetIndex.Url);
+            var assetIndex = _jsonManager.DownloadJson(_minecraftVersion.AssetIndex.Url);
 
             var objects = assetIndex["objects"];
             var assets = objects.Values<JProperty>();
