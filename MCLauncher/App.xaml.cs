@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using System.Windows;
 using GalaSoft.MvvmLight.Messaging;
 using MCLauncher.Model;
 using MCLauncher.Model.Managers;
@@ -39,8 +33,10 @@ namespace MCLauncher
 
             Messenger.Default.Register(this, (ShowSettingsMessage message) =>
             {
-                var viewModel = container.Resolve<SettingsViewModel>(new DependencyOverride(typeof(bool), message.IsNewProfile));
-                var settingsWindow = container.Resolve<SettingsView>(new DependencyOverride(typeof(SettingsViewModel), viewModel));
+                var viewModel =
+                    container.Resolve<SettingsViewModel>(new DependencyOverride(typeof(bool), message.IsNewProfile));
+                var settingsWindow =
+                    container.Resolve<SettingsView>(new DependencyOverride(typeof(SettingsViewModel), viewModel));
                 settingsWindow.Show();
             });
         }

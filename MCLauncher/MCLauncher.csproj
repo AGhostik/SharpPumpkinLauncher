@@ -96,6 +96,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Model\LaunchArguments.cs" />
     <Compile Include="Model\Managers\FileManager.cs" />
     <Compile Include="Model\Managers\IFileManager.cs" />
     <Compile Include="Model\IInstaller.cs" />

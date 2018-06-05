@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading.Tasks;
 using GalaSoft.MvvmLight.Messaging;
 using MCLauncher.Model.Managers;
@@ -20,14 +18,16 @@ namespace MCLauncher.Model
         private readonly List<Tuple<string, string[]>> _extractQueue;
         private readonly IFileManager _fileManager;
         private readonly IJsonManager _jsonManager;
+        private readonly LaunchArguments _launchArguments;
 
         private MinecraftVersion _minecraftVersion;
         private float _progress;
 
-        public Installer(IFileManager fileManager, IJsonManager jsonManager)
+        public Installer(IFileManager fileManager, IJsonManager jsonManager, LaunchArguments launchArguments)
         {
             _fileManager = fileManager;
             _jsonManager = jsonManager;
+            _launchArguments = launchArguments;
             _downloadQueue = new List<Tuple<Uri, string>>();
             _extractQueue = new List<Tuple<string, string[]>>();
         }
@@ -36,32 +36,45 @@ namespace MCLauncher.Model
 
         public async Task Install(Profile profile)
         {
-            _progress = 0;
-            Messenger.Default.Send(new InstallProgressMessage(0));
+            _resetProgress();
             _fixProfileDirectoryString(profile);
-
             _checkDirectories(profile.GameDirectory, profile.CurrentVersion);
 
             await _checkMinecraftVersion(profile.GameDirectory, profile.CurrentVersion);
 
-            var versionPath = $"{profile.GameDirectory}\\versions\\{profile.CurrentVersion}\\{profile.CurrentVersion}";
-            _minecraftVersion = _jsonManager.ParseToObject<MinecraftVersion>($"{versionPath}.json");
-
-            LaunchArgs = $"{profile.JvmArgs} ";
-            LaunchArgs +=
-                $"-Djava.library.path=\"{profile.GameDirectory}\\versions\\{profile.CurrentVersion}\\natives\" -cp \"";
+            _setMinecraftVersion(profile);
 
             await _checkLibraries(profile.GameDirectory);
 
-            LaunchArgs +=
-                $"{profile.GameDirectory}\\versions\\{profile.CurrentVersion}\\{profile.CurrentVersion}.jar\" ";
-            LaunchArgs += $"{_minecraftVersion.MainClass} ";
-            LaunchArgs += _getMinecraftArguments(profile);
+            _setArgs(profile);
 
             await _checkAssets(profile.GameDirectory);
 
+            _finish();
+        }
+
+        private void _setArgs(Profile profile)
+        {
+            _launchArguments.Create(profile, _minecraftVersion);
+            LaunchArgs = _launchArguments.Get();
+        }
+
+        private void _finish()
+        {
             _sendProgressText(UIResource.InstallCompletedStatus);
             Messenger.Default.Send(new InstallProgressMessage(100));
+        }
+
+        private void _setMinecraftVersion(Profile profile)
+        {
+            var versionPath = $"{profile.GameDirectory}\\versions\\{profile.CurrentVersion}\\{profile.CurrentVersion}";
+            _minecraftVersion = _jsonManager.ParseToObject<MinecraftVersion>($"{versionPath}.json");
+        }
+
+        private void _resetProgress()
+        {
+            _progress = 0;
+            Messenger.Default.Send(new InstallProgressMessage(0));
         }
 
         private void _addProgressAndSend(float value)
@@ -86,32 +99,6 @@ namespace MCLauncher.Model
         private void _fixProfileDirectoryString(Profile profile)
         {
             profile.GameDirectory = _fileManager.GetPathDirectory(profile.GameDirectory + '\\');
-        }
-
-        private string _getMinecraftArguments(Profile profile)
-        {
-            var args = _minecraftVersion.MinecraftArguments;
-            args = args.Replace("${auth_player_name}", profile.Nickname);
-            args = args.Replace("${version_name}", profile.CurrentVersion);
-            args = args.Replace("${game_directory}", profile.GameDirectory);
-            args = args.Replace("${assets_root}", profile.GameDirectory + "assets");
-            args = args.Replace("${assets_index_name}", _minecraftVersion.Assets);
-            args = args.Replace("${auth_uuid}", _getUuid(profile.Nickname));
-            args = args.Replace("${auth_access_token}", "null");
-            args = args.Replace("${user_properties}", "{}");
-            args = args.Replace("${user_type}", "mojang");
-            args = args.Replace("${auth_session}", "null");
-            args = args.Replace("${game_assets}", profile.GameDirectory + "\\assets\\virtual\\legacy");
-
-            return args;
-        }
-
-        private string _getUuid(string input)
-        {
-            var md5Hasher = MD5.Create();
-            var data = md5Hasher.ComputeHash(Encoding.Default.GetBytes(input));
-            var guid = new Guid(data);
-            return guid.ToString();
         }
 
         private async Task _checkAssets(string gameDirectory)
@@ -210,7 +197,7 @@ namespace MCLauncher.Model
                 var savingDirectory = $"{gameDirectory}\\libraries\\{assembly.Replace('.', '\\')}\\{name}\\{version}";
                 var savingFile = $"{savingDirectory}\\{name}-{version}{os}.jar";
 
-                LaunchArgs += $"{savingFile};";
+                _launchArguments.AddLibrary(savingFile);
 
                 _checkDirectory(savingDirectory);
 
