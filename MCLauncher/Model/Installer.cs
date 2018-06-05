@@ -106,8 +106,8 @@ namespace MCLauncher.Model
             var assetIndex = _jsonManager.DownloadJson(_minecraftVersion.AssetIndex.Url);
 
             var objects = assetIndex["objects"];
-            var assets = objects.Values<JProperty>();
-
+            var assets = objects.Values<JProperty>().ToArray();
+            
             var progressForEach = 4 / assets.Count();
 
             foreach (var asset in assets)
