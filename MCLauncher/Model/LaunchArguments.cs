@@ -5,7 +5,7 @@ using MCLauncher.Model.MinecraftVersionJson;
 
 namespace MCLauncher.Model
 {
-    public class LaunchArguments
+    public class LaunchArguments : ILaunchArguments
     {
         private readonly StringBuilder _afterLibraries;
         private readonly StringBuilder _beforeLibraries;
@@ -20,7 +20,16 @@ namespace MCLauncher.Model
 
         public string Get()
         {
-            return _beforeLibraries.Append(_libraries).Append(_afterLibraries).ToString();
+            var output = _beforeLibraries.Append(_libraries).Append(_afterLibraries).ToString();
+            _clear();
+            return output;
+        }
+
+        private void _clear()
+        {
+            _beforeLibraries.Clear();
+            _libraries.Clear();
+            _afterLibraries.Clear();
         }
 
         public void AddLibrary(string fileName)

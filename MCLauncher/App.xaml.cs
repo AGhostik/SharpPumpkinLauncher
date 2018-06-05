@@ -21,7 +21,7 @@ namespace MCLauncher
             container.RegisterType<IFileManager, FileManager>();
             container.RegisterType<IProfileManager, ProfileManager>();
             container.RegisterType<IJsonManager, JsonManager>();
-
+            container.RegisterType<ILaunchArguments, LaunchArguments>();
             container.RegisterType<ISettingsModel, SettingsModel>();
 
             var launcherView = container.Resolve<LauncherView>();

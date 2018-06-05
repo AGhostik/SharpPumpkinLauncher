@@ -11,17 +11,25 @@ namespace MCLauncher.Model.Managers
 {
     public class FileManager : IFileManager
     {
-        public void StartProcess(string fileName, string args, Action exitedAction)
+        public void StartProcess(string fileName, string args, Action exitedAction = null)
         {
-            var process = new Process()
+            var startInfo = new ProcessStartInfo()
             {
-                StartInfo = new ProcessStartInfo(fileName, args),
-                EnableRaisingEvents = true
+                FileName = fileName,
+                Arguments = args,
+                UseShellExecute = false,
+                RedirectStandardError = true,
+                RedirectStandardOutput = true
             };
 
+            var process = new Process
+            {
+                StartInfo = startInfo,
+                EnableRaisingEvents = true
+            };
             process.Exited += (sender, eventArgs) =>
             {
-                exitedAction.Invoke();
+                exitedAction?.Invoke();
                 Debug.WriteLine(process.ExitCode);
             };
 
@@ -102,7 +110,7 @@ namespace MCLauncher.Model.Managers
             }
         }
 
-        public async Task DownloadFile(List<Tuple<Uri, string>> urlFileName, Action downloadedEvent = null)
+        public async Task DownloadFiles(List<Tuple<Uri, string>> urlFileName, Action downloadedEvent = null)
         {
             using (var client = new WebClient())
             {

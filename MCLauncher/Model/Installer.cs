@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Threading.Tasks;
 using GalaSoft.MvvmLight.Messaging;
 using MCLauncher.Model.Managers;
@@ -18,12 +17,12 @@ namespace MCLauncher.Model
         private readonly List<Tuple<string, string[]>> _extractQueue;
         private readonly IFileManager _fileManager;
         private readonly IJsonManager _jsonManager;
-        private readonly LaunchArguments _launchArguments;
+        private readonly ILaunchArguments _launchArguments;
 
         private MinecraftVersion _minecraftVersion;
         private float _progress;
 
-        public Installer(IFileManager fileManager, IJsonManager jsonManager, LaunchArguments launchArguments)
+        public Installer(IFileManager fileManager, IJsonManager jsonManager, ILaunchArguments launchArguments)
         {
             _fileManager = fileManager;
             _jsonManager = jsonManager;
@@ -79,11 +78,11 @@ namespace MCLauncher.Model
 
         private void _addProgressAndSend(float value)
         {
-            //1 - check directories
-            //1 - chechVersions
-            //80 - download total // 50 - libraries, 30 - assets
-            //8 - checking // 4 - libraries, 4 - assets
-            //10 - extract libraries
+            //1% - check directories
+            //1% - chechVersions
+            //80% - download total // 50% - libraries, 30% - assets
+            //8% - checking // 4% - libraries, 4% - assets
+            //10% - extract libraries
 
             if (value <= 0)
                 return;
@@ -107,43 +106,54 @@ namespace MCLauncher.Model
 
             var objects = assetIndex["objects"];
             var assets = objects.Values<JProperty>().ToArray();
-            
+
             var progressForEach = 4 / assets.Count();
 
             foreach (var asset in assets)
             {
-                var hash = asset.First["hash"].ToString();
-                var subDirectory = $"{hash[0]}{hash[1]}";
-
                 if (_minecraftVersion.Assets == "legacy")
-                {
-                    var legacyFilename = _fileManager.GetPathFilename(asset.Name);
-
-                    var legacySubdirectory = _fileManager.GetPathDirectory(asset.Name);
-
-                    var directory = $"{gameDirectory}\\assets\\virtual\\legacy\\{legacySubdirectory}";
-
-                    _checkDirectory(directory);
-
-                    if (!_fileManager.FileExist($"{directory}\\{legacyFilename}"))
-                        _addToDownloadQueue($"{ModelResource.AssetsUrl}/{subDirectory}/{hash}",
-                            $"{directory}\\{legacyFilename}");
-                }
+                    _addLegacyAsset(gameDirectory, asset);
                 else
-                {
-                    var directory = $"{gameDirectory}\\assets\\objects\\{subDirectory}";
-
-                    _checkDirectory(directory);
-
-                    if (!_fileManager.FileExist($"{directory}\\{hash}"))
-                        _addToDownloadQueue($"{ModelResource.AssetsUrl}/{subDirectory}/{hash}", $"{directory}\\{hash}");
-                }
+                    _addAsset(gameDirectory, asset);
 
                 _addProgressAndSend(progressForEach);
             }
 
             _sendProgressText(UIResource.DownloadAssetsStatus);
             await _downloadFromQueue(50);
+        }
+
+        private void _addAsset(string gameDirectory, JProperty asset)
+        {
+            var hash = asset.First["hash"].ToString();
+
+            var subDirectory = $"{hash[0]}{hash[1]}";
+
+            var directory = $"{gameDirectory}\\assets\\objects\\{subDirectory}";
+
+            _checkDirectory(directory);
+
+            if (!_fileManager.FileExist($"{directory}\\{hash}"))
+                _addToDownloadQueue($"{ModelResource.AssetsUrl}/{subDirectory}/{hash}", $"{directory}\\{hash}");
+        }
+
+        private void _addLegacyAsset(string gameDirectory, JProperty asset)
+        {
+            var hash = asset.First["hash"].ToString();
+
+            var subDirectory = $"{hash[0]}{hash[1]}";
+
+            var legacyFilename = _fileManager.GetPathFilename(asset.Name);
+
+            var legacySubdirectory = _fileManager.GetPathDirectory(asset.Name);
+
+            var directory = $"{gameDirectory}\\assets\\virtual\\legacy\\{legacySubdirectory}";
+
+            _checkDirectory(directory);
+
+            if (!_fileManager.FileExist($"{directory}\\{legacyFilename}"))
+                _addToDownloadQueue($"{ModelResource.AssetsUrl}/{subDirectory}/{hash}",
+                    $"{directory}\\{legacyFilename}");
         }
 
         private async Task _checkLibraries(string gameDirectory)
@@ -264,24 +274,27 @@ namespace MCLauncher.Model
                 $"{UIResource.CheckVersionFIlesStatus_part1} {currentVersion} {UIResource.CheckVersionFIlesStatus_part2}");
             _addProgressAndSend(1);
 
-            var jarFile = $"{gameDirectory}\\versions\\{currentVersion}\\{currentVersion}.jar";
-            var jsonFile = $"{gameDirectory}\\versions\\{currentVersion}\\{currentVersion}.json";
-
-            if (!_fileManager.FileExist(jarFile))
-                _addToDownloadQueue($"{ModelResource.VersionsDirectoryUrl}/{currentVersion}/{currentVersion}.jar",
-                    jarFile);
-
-            if (!_fileManager.FileExist(jsonFile))
-                _addToDownloadQueue($"{ModelResource.VersionsDirectoryUrl}/{currentVersion}/{currentVersion}.json",
-                    jsonFile);
+            _checkMinecraftVersionFile(gameDirectory, currentVersion, "jar");
+            _checkMinecraftVersionFile(gameDirectory, currentVersion, "json");
 
             await _downloadFromQueue();
+        }
+
+        private void _checkMinecraftVersionFile(string gameDirectory, string currentVersion, string fileType)
+        {
+            var jarFile = $"{gameDirectory}\\versions\\{currentVersion}\\{currentVersion}.{fileType}";
+
+            if (!_fileManager.FileExist(jarFile))
+                _addToDownloadQueue(
+                    $"{ModelResource.VersionsDirectoryUrl}/{currentVersion}/{currentVersion}.{fileType}",
+                    jarFile);
         }
 
         private void _checkDirectories(string gameDirectory, string currentVersion)
         {
             _sendProgressText(UIResource.CheckDirectoriesStatus);
             _addProgressAndSend(1);
+
             _checkDirectory(gameDirectory);
             _checkDirectory($"{gameDirectory}\\versions\\{currentVersion}\\natives\\");
             _checkDirectory($"{gameDirectory}\\assets\\objects\\");
@@ -296,16 +309,15 @@ namespace MCLauncher.Model
 
         private async Task _downloadFromQueue(float progressForQueue = 0)
         {
+            if (!_downloadQueue.Any())
+            {
+                _addProgressAndSend(progressForQueue);
+                return;
+            }
+
             var progressForEach = progressForQueue / _downloadQueue.Count;
 
-            using (var client = new WebClient())
-            {
-                foreach (var downloadTuple in _downloadQueue)
-                {
-                    _addProgressAndSend(progressForEach);
-                    await client.DownloadFileTaskAsync(downloadTuple.Item1, downloadTuple.Item2);
-                }
-            }
+            await _fileManager.DownloadFiles(_downloadQueue, () => { _addProgressAndSend(progressForEach); });
 
             _downloadQueue.Clear();
         }

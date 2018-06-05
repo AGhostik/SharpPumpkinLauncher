@@ -70,6 +70,8 @@ namespace MCLauncher.Model
         {
             Action exitedAction = MinecraftProcessExited;
 
+            Messenger.Default.Send(new StatusMessage(UIResource.LaunchGameStatus));
+
             switch (profile.LauncherVisibility)
             {
                 case LauncherVisibility.Close:
@@ -86,8 +88,6 @@ namespace MCLauncher.Model
                 case LauncherVisibility.KeepOpen:
                     break;
             }
-
-            Messenger.Default.Send(new StatusMessage(UIResource.LaunchGameStatus));
 
             _fileManager.StartProcess(profile.JavaFile, _installer.LaunchArgs, exitedAction);
         }
