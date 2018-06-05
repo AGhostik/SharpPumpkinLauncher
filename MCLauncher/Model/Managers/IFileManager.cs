@@ -9,7 +9,7 @@ namespace MCLauncher.Model.Managers
         bool DirectoryExist(string path);
         void ExtractToDirectory(string sourceArchive, string destinationDirectory);
         bool FileExist(string path);
-        string FindJava();
+        string GetJavawPath();
         string GetPathDirectory(string source);
         string GetPathFilename(string source);
         void StartProcess(string fileName);

@@ -8,8 +8,8 @@ namespace MCLauncher.Model
     public class SettingsModel : ISettingsModel
     {
         private readonly IFileManager _fileManager;
-        private readonly IProfileManager _profileManager;
         private readonly IJsonManager _jsonManager;
+        private readonly IProfileManager _profileManager;
 
         public SettingsModel(IFileManager fileManager, IProfileManager profileManager, IJsonManager jsonManager)
         {
@@ -43,7 +43,7 @@ namespace MCLauncher.Model
 
         public string FindJava()
         {
-            return _fileManager.FindJava();
+            return _fileManager.GetJavawPath();
         }
 
         public AllVersions DownloadAllVersions()

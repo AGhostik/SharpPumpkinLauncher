@@ -12,10 +12,10 @@ namespace MCLauncher.Model
     public class LauncherModel : ILauncherModel
     {
         private readonly IFileManager _fileManager;
-        private readonly IProfileManager _profileManager;
         private readonly IInstaller _installer;
+        private readonly IProfileManager _profileManager;
 
-        public LauncherModel(IInstaller installer, IProfileManager profileManager, IFileManager fileManager)
+        public LauncherModel(IFileManager fileManager, IProfileManager profileManager, IInstaller installer)
         {
             _installer = installer;
             _profileManager = profileManager;
@@ -69,7 +69,7 @@ namespace MCLauncher.Model
         private void _launchMinecraft(Profile profile)
         {
             Action exitedAction = MinecraftProcessExited;
-            
+
             switch (profile.LauncherVisibility)
             {
                 case LauncherVisibility.Close:

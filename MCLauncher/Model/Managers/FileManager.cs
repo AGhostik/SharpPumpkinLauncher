@@ -74,7 +74,7 @@ namespace MCLauncher.Model.Managers
             Directory.CreateDirectory(directory);
         }
 
-        public string FindJava()
+        public string GetJavawPath()
         {
             string java;
 

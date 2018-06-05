@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
+using GalaSoft.MvvmLight.Messaging;
 using MCLauncher.Model;
 using MCLauncher.Model.Managers;
+using MCLauncher.UI.Messages;
 using NSubstitute;
 using NUnit.Framework;
 
@@ -46,7 +47,7 @@ namespace Tests.Model
         [Test]
         public void DeleteProfile_ReceivedDeleteProfile()
         {
-            var model = new LauncherModel(_installer, _profileManager, _fileManager);
+            var model = new LauncherModel(_fileManager, _profileManager, _installer);
             model.DeleteProfile("name");
 
             _profileManager.Received().Delete("name");
@@ -55,7 +56,7 @@ namespace Tests.Model
         [Test]
         public void GetProfiles_ReturnNotEmptyList_RecievedGetProfiles()
         {
-            var model = new LauncherModel(_installer, _profileManager, _fileManager);
+            var model = new LauncherModel(_fileManager, _profileManager, _installer);
             var profiles = model.GetProfiles();
 
             _profileManager.Received().GetProfiles();
@@ -64,19 +65,47 @@ namespace Tests.Model
         }
 
         [Test]
+        public void OpenEditProfileWindow_ShowSettingsMessage_IsNewProfileFalse()
+        {
+            var model = new LauncherModel(_fileManager, _profileManager, _installer);
+            var pass = false;
+            Messenger.Default.Register(this, (ShowSettingsMessage message) => { pass = !message.IsNewProfile; });
+            model.OpenEditProfileWindow();
+
+            if (pass)
+                Assert.Pass();
+            else
+                Assert.Fail();
+        }
+
+        [Test]
+        public void OpenNewProfileWindow_ShowSettingsMessage_IsNewProfileTrue()
+        {
+            var model = new LauncherModel(_fileManager, _profileManager, _installer);
+            var pass = false;
+            Messenger.Default.Register(this, (ShowSettingsMessage message) => { pass = message.IsNewProfile; });
+            model.OpenNewProfileWindow();
+
+            if (pass)
+                Assert.Pass();
+            else
+                Assert.Fail();
+        }
+
+        [Test]
         public void SaveLastProfileName_ReceivedSaveLastProfileName()
         {
-            var model = new LauncherModel(_installer, _profileManager, _fileManager);
+            var model = new LauncherModel(_fileManager, _profileManager, _installer);
             model.SaveLastProfileName("name");
 
             _profileManager.Received().SaveLastProfileName("name");
         }
 
         [Test]
-        public async Task StartGame_ReceivedStartProcess()
+        public void StartGame_ReceivedStartProcess()
         {
-            var model = new LauncherModel(_installer, _profileManager, _fileManager);
-            await model.StartGame();
+            var model = new LauncherModel(_fileManager, _profileManager, _installer);
+            model.StartGame().Wait();
 
             _fileManager.ReceivedWithAnyArgs().StartProcess("", "", null);
         }

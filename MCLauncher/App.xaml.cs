@@ -44,14 +44,5 @@ namespace MCLauncher
                 settingsWindow.Show();
             });
         }
-
-        private void _showSettings(bool createProfile)
-        {
-            var settingsModel = new SettingsModel(new FileManager(), new ProfileManager(), new JsonManager());
-            var settingsViewModel = new SettingsViewModel(settingsModel, createProfile);
-            var settingsWindow = new SettingsView(settingsViewModel);
-
-            settingsWindow.Show();
-        }
     }
 }
