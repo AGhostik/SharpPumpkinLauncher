@@ -1,11 +1,11 @@
-﻿namespace MCLauncher.UI.Messages
+﻿namespace MCLauncher.UI.Messages;
+
+public class ShowSettingsMessage
 {
-    public class ShowSettingsMessage
+    public ShowSettingsMessage(bool isNewProfile)
     {
-        public ShowSettingsMessage(bool isNewProfile)
-        {
-            IsNewProfile = isNewProfile;
-        }
-        public bool IsNewProfile { get; set; }
+        IsNewProfile = isNewProfile;
     }
+    
+    public bool IsNewProfile { get; }
 }

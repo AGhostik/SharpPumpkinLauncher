@@ -126,10 +126,10 @@
   <data name="CheckDirectoriesStatus" xml:space="preserve">
     <value>check directories...</value>
   </data>
-  <data name="CheckVersionFIlesStatus_part1" xml:space="preserve">
+  <data name="CheckVersionFilesStatus_part1" xml:space="preserve">
     <value>check</value>
   </data>
-  <data name="CheckVersionFIlesStatus_part2" xml:space="preserve">
+  <data name="CheckVersionFilesStatus_part2" xml:space="preserve">
     <value>version main files...</value>
   </data>
   <data name="CloseLauncher" xml:space="preserve">

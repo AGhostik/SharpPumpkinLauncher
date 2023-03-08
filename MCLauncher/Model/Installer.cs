@@ -9,340 +9,372 @@ using MCLauncher.UI;
 using MCLauncher.UI.Messages;
 using Newtonsoft.Json.Linq;
 
-namespace MCLauncher.Model
+namespace MCLauncher.Model;
+
+public sealed class Installer : IInstaller
 {
-    public sealed class Installer : IInstaller
+    private readonly List<Tuple<Uri, string>> _downloadQueue;
+    private readonly List<Tuple<string, string[]>> _extractQueue;
+    private readonly IFileManager _fileManager;
+    private readonly IJsonManager _jsonManager;
+    private readonly ILaunchArguments _launchArguments;
+
+    private MinecraftVersion? _minecraftVersion;
+    private float _progress;
+
+    public Installer(IFileManager fileManager, IJsonManager jsonManager, ILaunchArguments launchArguments)
     {
-        private readonly List<Tuple<Uri, string>> _downloadQueue;
-        private readonly List<Tuple<string, string[]>> _extractQueue;
-        private readonly IFileManager _fileManager;
-        private readonly IJsonManager _jsonManager;
-        private readonly ILaunchArguments _launchArguments;
+        _fileManager = fileManager;
+        _jsonManager = jsonManager;
+        _launchArguments = launchArguments;
+        _downloadQueue = new List<Tuple<Uri, string>>();
+        _extractQueue = new List<Tuple<string, string[]>>();
+    }
 
-        private MinecraftVersion _minecraftVersion;
-        private float _progress;
+    public string? LaunchArgs { get; private set; }
 
-        public Installer(IFileManager fileManager, IJsonManager jsonManager, ILaunchArguments launchArguments)
-        {
-            _fileManager = fileManager;
-            _jsonManager = jsonManager;
-            _launchArguments = launchArguments;
-            _downloadQueue = new List<Tuple<Uri, string>>();
-            _extractQueue = new List<Tuple<string, string[]>>();
-        }
+    public async Task Install(Profile? profile)
+    {
+        if (profile == null)
+            return;
+        
+        ResetProgress();
+        FixProfileDirectoryString(profile);
+        CheckDirectories(profile.GameDirectory, profile.CurrentVersion);
 
-        public string LaunchArgs { get; private set; }
+        await CheckMinecraftVersion(profile.GameDirectory, profile.CurrentVersion);
 
-        public async Task Install(Profile profile)
-        {
-            ResetProgress();
-            FixProfileDirectoryString(profile);
-            CheckDirectories(profile.GameDirectory, profile.CurrentVersion);
+        await SetMinecraftVersion(profile);
 
-            await CheckMinecraftVersion(profile.GameDirectory, profile.CurrentVersion);
+        await CheckLibraries(profile.GameDirectory);
 
-            await SetMinecraftVersion(profile);
+        SetArgs(profile);
 
-            await CheckLibraries(profile.GameDirectory);
+        await CheckAssets(profile.GameDirectory);
 
-            SetArgs(profile);
+        Finish();
+    }
 
-            await CheckAssets(profile.GameDirectory);
+    private void SetArgs(Profile profile)
+    {
+        _launchArguments.Create(profile, _minecraftVersion);
+        LaunchArgs = _launchArguments.Get();
+    }
 
-            Finish();
-        }
+    private void Finish()
+    {
+        SendProgressText(UIResource.InstallCompletedStatus);
+        WeakReferenceMessenger.Default.Send(new InstallProgressMessage(100));
+    }
 
-        private void SetArgs(Profile profile)
-        {
-            _launchArguments.Create(profile, _minecraftVersion);
-            LaunchArgs = _launchArguments.Get();
-        }
+    private async Task SetMinecraftVersion(Profile profile)
+    {
+        var versionPath = $"{profile.GameDirectory}\\versions\\{profile.CurrentVersion}\\{profile.CurrentVersion}";
+        _minecraftVersion = await _jsonManager.ParseToObjectAsync<MinecraftVersion>($"{versionPath}.json");
+    }
 
-        private void Finish()
-        {
-            SendProgressText(UIResource.InstallCompletedStatus);
-            WeakReferenceMessenger.Default.Send(new InstallProgressMessage(100));
-        }
+    private void ResetProgress()
+    {
+        _progress = 0;
+        WeakReferenceMessenger.Default.Send(new InstallProgressMessage(0));
+    }
 
-        private async Task SetMinecraftVersion(Profile profile)
-        {
-            var versionPath = $"{profile.GameDirectory}\\versions\\{profile.CurrentVersion}\\{profile.CurrentVersion}";
-            _minecraftVersion = await _jsonManager.ParseToObjectAsync<MinecraftVersion>($"{versionPath}.json");
-        }
+    private void AddProgressAndSend(float value)
+    {
+        //1% - check directories
+        //1% - chechVersions
+        //80% - download total // 50% - libraries, 30% - assets
+        //8% - checking // 4% - libraries, 4% - assets
+        //10% - extract libraries
 
-        private void ResetProgress()
-        {
-            _progress = 0;
-            WeakReferenceMessenger.Default.Send(new InstallProgressMessage(0));
-        }
+        if (value <= 0)
+            return;
+        _progress += value;
+        WeakReferenceMessenger.Default.Send(new InstallProgressMessage(_progress));
+    }
 
-        private void AddProgressAndSend(float value)
-        {
-            //1% - check directories
-            //1% - chechVersions
-            //80% - download total // 50% - libraries, 30% - assets
-            //8% - checking // 4% - libraries, 4% - assets
-            //10% - extract libraries
+    private void SendProgressText(string? text)
+    {
+        WeakReferenceMessenger.Default.Send(new StatusMessage(text));
+    }
 
-            if (value <= 0)
-                return;
-            _progress += value;
-            WeakReferenceMessenger.Default.Send(new InstallProgressMessage(_progress));
-        }
+    private void FixProfileDirectoryString(Profile profile)
+    {
+        profile.GameDirectory = _fileManager.GetPathDirectory(profile.GameDirectory + '\\') ?? string.Empty;
+    }
 
-        private void SendProgressText(string text)
-        {
-            WeakReferenceMessenger.Default.Send(new StatusMessage(text));
-        }
-
-        private void FixProfileDirectoryString(Profile profile)
-        {
-            profile.GameDirectory = _fileManager.GetPathDirectory(profile.GameDirectory + '\\');
-        }
-
-        private async Task CheckAssets(string gameDirectory)
-        {
-            var assetIndex = await _jsonManager.DownloadJsonAsync(_minecraftVersion.AssetIndex.Url);
-
-            var objects = assetIndex["objects"];
-            if (objects == null)
-                return;
+    private async Task CheckAssets(string gameDirectory)
+    {
+        if (_minecraftVersion?.AssetIndex?.Url == null)
+            return;
             
-            var assets = objects.Values<JProperty>().ToArray();
+        var assetIndex = await _jsonManager.DownloadJsonAsync(_minecraftVersion.AssetIndex.Url);
 
-            var progressForEach = 4 / assets.Length;
+        var objects = assetIndex["objects"];
+        if (objects == null)
+            return;
+            
+        var assets = objects.Values<JProperty>().ToArray();
 
-            foreach (var asset in assets)
+        var progressForEach = 4 / assets.Length;
+
+        foreach (var asset in assets)
+        {
+            if (asset == null)
+                continue;
+                
+            if (_minecraftVersion.Assets == "legacy")
+                AddLegacyAsset(gameDirectory, asset);
+            else
+                AddAsset(gameDirectory, asset);
+
+            AddProgressAndSend(progressForEach);
+        }
+
+        SendProgressText(UIResource.DownloadAssetsStatus);
+        await DownloadFromQueue(50);
+    }
+
+    private void AddAsset(string gameDirectory, JToken asset)
+    {
+        var hash = asset.First?["hash"];
+        if (hash == null)
+            return;
+
+        var hashString = hash.ToString();
+        var subDirectory = $"{hashString[0]}{hashString[1]}";
+        var directory = $"{gameDirectory}\\assets\\objects\\{subDirectory}";
+
+        CheckDirectory(directory);
+
+        if (!_fileManager.FileExist($"{directory}\\{hashString}"))
+            AddToDownloadQueue($"{ModelResource.AssetsUrl}/{subDirectory}/{hashString}", $"{directory}\\{hashString}");
+    }
+
+    private void AddLegacyAsset(string gameDirectory, JProperty asset)
+    {
+        var hash = asset.First?["hash"];
+        if (hash == null)
+            return;
+
+        var hashString = hash.ToString();
+
+        var subDirectory = $"{hashString[0]}{hashString[1]}";
+        var legacyFilename = _fileManager.GetPathFilename(asset.Name);
+        var legacySubdirectory = _fileManager.GetPathDirectory(asset.Name);
+        var directory = $"{gameDirectory}\\assets\\virtual\\legacy\\{legacySubdirectory}";
+
+        CheckDirectory(directory);
+
+        if (!_fileManager.FileExist($"{directory}\\{legacyFilename}"))
+        {
+            AddToDownloadQueue($"{ModelResource.AssetsUrl}/{subDirectory}/{hashString}",
+                $"{directory}\\{legacyFilename}");
+        }
+    }
+
+    private async Task CheckLibraries(string gameDirectory)
+    {
+        if (_minecraftVersion?.Library == null)
+            return;
+            
+        var progressForEach = 4 / _minecraftVersion.Library.Length;
+        foreach (var library in _minecraftVersion.Library)
+        {
+            if (TryGetLibraryInfo(library, out var package, out var name, out var version))
+                continue;
+
+            if (!IsLibraryAllow(library))
+                continue;
+
+            var url = GetLibraryUrl(library, package, name, version);
+            var os = GetLibraryOs(library);
+
+            var savingDirectory = $"{gameDirectory}\\libraries\\{package.Replace('.', '\\')}\\{name}\\{version}";
+            var savingFile = $"{savingDirectory}\\{name}-{version}{os}.jar";
+
+            _launchArguments.AddLibrary(savingFile);
+
+            CheckDirectory(savingDirectory);
+
+            if (!_fileManager.FileExist(savingFile))
+                AddToDownloadQueue(url, savingFile);
+
+            if (library.Extract?.Exclude != null && library.Extract.Exclude.Length > 0)
             {
-                if (_minecraftVersion.Assets == "legacy")
-                    AddLegacyAsset(gameDirectory, asset);
-                else
-                    AddAsset(gameDirectory, asset);
-
-                AddProgressAndSend(progressForEach);
+                var extractItem = new Tuple<string, string[]>(savingFile, library.Extract.Exclude);
+                _extractQueue.Add(extractItem);
             }
 
-            SendProgressText(UIResource.DownloadAssetsStatus);
-            await DownloadFromQueue(50);
+            AddProgressAndSend(progressForEach);
         }
 
-        private void AddAsset(string gameDirectory, JToken asset)
+        SendProgressText(UIResource.DownloadLibrariesStatus);
+        await DownloadFromQueue(30);
+
+        SendProgressText(UIResource.ExtractLibrariesStatus);
+        ExtractFromQueue(gameDirectory);
+    }
+
+    private static bool IsLibraryAllow(Library library)
+    {
+        if (library.Rules == null) return true;
+
+        var allowToAll = false;
+
+        foreach (var rule in library.Rules)
         {
-            var hash = asset?.First?["hash"];
-            if (hash == null)
-                return;
+            if (rule.Action == null)
+                continue;
 
-            var hashString = hash.ToString();
-            var subDirectory = $"{hashString[0]}{hashString[1]}";
-            var directory = $"{gameDirectory}\\assets\\objects\\{subDirectory}";
+            if (rule.Os == null)
+                allowToAll = rule.Action == "allow";
 
-            CheckDirectory(directory);
-
-            if (!_fileManager.FileExist($"{directory}\\{hashString}"))
-                AddToDownloadQueue($"{ModelResource.AssetsUrl}/{subDirectory}/{hashString}", $"{directory}\\{hashString}");
+            if (rule.Action == "disallow" && rule.Os?.Name != null && rule.Os.Name == "windows")
+                return false;
         }
 
-        private void AddLegacyAsset(string gameDirectory, JProperty asset)
+        return allowToAll;
+    }
+
+    private static bool TryGetLibraryInfo(Library library, out string package, out string name, out string version)
+    {
+        if (library.Name == null)
         {
-            var hash = asset?.First?["hash"];
-            if (hash == null)
-                return;
+            package = string.Empty;
+            name = string.Empty;
+            version = string.Empty;
+            return false;
+        }
+            
+        var libraryNameParts = library.Name.Split(new[] {':'}, StringSplitOptions.RemoveEmptyEntries);
 
-            var hashString = hash.ToString();
+        if (libraryNameParts.Length < 3)
+        {
+            package = string.Empty;
+            name = string.Empty;
+            version = string.Empty;
+            return false;
+        }
+            
+        package = libraryNameParts[0];
+        name = libraryNameParts[1];
+        version = libraryNameParts[2];
+        return true;
+    }
 
-            var subDirectory = $"{hashString[0]}{hashString[1]}";
-            var legacyFilename = _fileManager.GetPathFilename(asset.Name);
-            var legacySubdirectory = _fileManager.GetPathDirectory(asset.Name);
-            var directory = $"{gameDirectory}\\assets\\virtual\\legacy\\{legacySubdirectory}";
-
-            CheckDirectory(directory);
-
-            if (!_fileManager.FileExist($"{directory}\\{legacyFilename}"))
+    private static string GetLibraryUrl(Library library, string package, string name, string version)
+    {
+        if (library.Downloads != null)
+        {
+            if (library.Downloads.Artifact?.Url != null)
             {
-                AddToDownloadQueue($"{ModelResource.AssetsUrl}/{subDirectory}/{hashString}",
-                    $"{directory}\\{legacyFilename}");
-            }
-        }
-
-        private async Task CheckLibraries(string gameDirectory)
-        {
-            var progressForEach = 4 / _minecraftVersion.Library.Length;
-            foreach (var library in _minecraftVersion.Library)
-            {
-                if (!IsLibraryAllow(library)) continue;
-
-                var libraryNameParts = library.Name.Split(new[] {':'}, StringSplitOptions.RemoveEmptyEntries);
-                var assembly = libraryNameParts[0];
-                var name = libraryNameParts[1];
-                var version = libraryNameParts[2];
-
-                var url = string.Empty;
-
-                if (library.Url != null)
-                {
-                    url = $"{library.Url}{assembly.Replace('.', '/')}/{name}/{version}/{name}-{version}.jar";
-                }
-                else if (library.Downloads?.Classifiers != null)
-                {
-                    if (library.Downloads?.Classifiers?.NativesWindows != null)
-                        url = library.Downloads.Classifiers.NativesWindows.Url;
-                    else if (Environment.Is64BitOperatingSystem &&
-                             library.Downloads?.Classifiers?.NativesWindows64 != null)
-                        url = library.Downloads.Classifiers.NativesWindows64.Url;
-                    else if (!Environment.Is64BitOperatingSystem &&
-                             library.Downloads?.Classifiers?.NativesWindows32 != null)
-                        url = library.Downloads.Classifiers.NativesWindows32.Url;
-                    else if (library.Downloads?.Artifact != null)
-                        url = library.Downloads.Artifact.Url;
-                }
-                else if (library.Downloads?.Artifact != null)
-                {
-                    url = library.Downloads.Artifact.Url;
-                }
-                else
-                {
-                    url =
-                        $"{ModelResource.LibrariesUrl}/{assembly.Replace('.', '/')}/{name}/{version}/{name}-{version}.jar";
-                }
-
-                var os = string.Empty;
-                if (library.Natives != null)
-                {
-                    if (library.Natives.Windows == "natives-windows-${arch}")
-                        os = Environment.Is64BitOperatingSystem ? "-natives-windows-64" : "-natives-windows-32";
-                    else
-                        os = $"-{library.Natives.Windows}";
-                }
-
-                var savingDirectory = $"{gameDirectory}\\libraries\\{assembly.Replace('.', '\\')}\\{name}\\{version}";
-                var savingFile = $"{savingDirectory}\\{name}-{version}{os}.jar";
-
-                _launchArguments.AddLibrary(savingFile);
-
-                CheckDirectory(savingDirectory);
-
-                if (!_fileManager.FileExist(savingFile))
-                    AddToDownloadQueue(url, savingFile);
-
-                if (IsLibraryNeedExtract(library))
-                {
-                    var extractItem = new Tuple<string, string[]>(savingFile, library.Extract.Exclude);
-                    _extractQueue.Add(extractItem);
-                }
-
-                AddProgressAndSend(progressForEach);
+                return library.Downloads.Artifact.Url;
             }
 
-            SendProgressText(UIResource.DownloadLibrariesStatus);
-            await DownloadFromQueue(30);
-
-            SendProgressText(UIResource.ExtractLibrariesStatus);
-            ExtractFromQueue(gameDirectory);
-        }
-
-        private bool IsLibraryNeedExtract(Library library)
-        {
-            return library.Extract != null && library.Extract.Exclude.Any();
-        }
-
-        private static bool IsLibraryAllow(Library library)
-        {
-            if (library.Rules == null) return true;
-
-            var allowToAll = false;
-
-            foreach (var rule in library.Rules)
+            if (library.Downloads.Classifiers?.NativesWindows?.Url != null)
             {
-                if (rule.Action == null)
-                    continue;
-
-                if (rule.Os == null)
-                    allowToAll = rule.Action == "allow";
-
-                if (rule.Action == "disallow" && rule.Os?.Name != null && rule.Os.Name == "windows")
-                    return false;
-            }
-
-            return allowToAll;
-        }
-
-        private void ExtractFromQueue(string gameDirectory)
-        {
-            var progressForEach = 10 / _extractQueue.Count;
-            var natives = $"{gameDirectory}\\versions\\{_minecraftVersion.Id}\\natives";
-            foreach (var extracTuple in _extractQueue)
-            {
-                AddProgressAndSend(progressForEach);
-
-                _fileManager.ExtractToDirectory(extracTuple.Item1, natives);
-
-                foreach (var fileOrDirectory in extracTuple.Item2)
-                    _fileManager.Delete($"{natives}\\{fileOrDirectory}");
+                return library.Downloads.Classifiers.NativesWindows.Url;
             }
         }
 
-        private async Task CheckMinecraftVersion(string gameDirectory, string currentVersion)
+        return $"{ModelResource.LibrariesUrl}/{package.Replace('.', '/')}/{name}/{version}/{name}-{version}.jar";
+    }
+
+    private static string GetLibraryOs(Library library)
+    {
+        if (library.Natives?.Windows == null)
+            return "-natives-windows";
+            
+        var result = $"-{library.Natives.Windows}";
+        if (result.Contains("${arch}"))
         {
-            SendProgressText(
-                $"{UIResource.CheckVersionFIlesStatus_part1} {currentVersion} {UIResource.CheckVersionFIlesStatus_part2}");
-            AddProgressAndSend(1);
-
-            CheckMinecraftVersionFile(gameDirectory, currentVersion, "jar");
-            CheckMinecraftVersionFile(gameDirectory, currentVersion, "json");
-
-            await DownloadFromQueue();
+            var bit = Environment.Is64BitOperatingSystem ? "64" : "32";
+            result = result.Replace("${arch}", bit);
         }
 
-        private void CheckMinecraftVersionFile(string gameDirectory, string currentVersion, string fileType)
-        {
-            var jarFile = $"{gameDirectory}\\versions\\{currentVersion}\\{currentVersion}.{fileType}";
+        return result;
+    }
 
-            if (!_fileManager.FileExist(jarFile))
-            {
-                AddToDownloadQueue($"{ModelResource.VersionsDirectoryUrl}/{currentVersion}/{currentVersion}.{fileType}",
-                    jarFile);
-            }
+    private void ExtractFromQueue(string gameDirectory)
+    {
+        if (_minecraftVersion == null)
+            return;
+            
+        var progressForEach = 10 / _extractQueue.Count;
+        var natives = $"{gameDirectory}\\versions\\{_minecraftVersion.Id}\\natives";
+        foreach (var extracTuple in _extractQueue)
+        {
+            AddProgressAndSend(progressForEach);
+
+            _fileManager.ExtractToDirectory(extracTuple.Item1, natives);
+
+            foreach (var fileOrDirectory in extracTuple.Item2)
+                _fileManager.Delete($"{natives}\\{fileOrDirectory}");
+        }
+    }
+
+    private async Task CheckMinecraftVersion(string gameDirectory, string currentVersion)
+    {
+        SendProgressText(
+            $"{UIResource.CheckVersionFilesStatus_part1} {currentVersion} {UIResource.CheckVersionFilesStatus_part2}");
+        AddProgressAndSend(1);
+
+        CheckMinecraftVersionFile(gameDirectory, currentVersion, "jar");
+        CheckMinecraftVersionFile(gameDirectory, currentVersion, "json");
+
+        await DownloadFromQueue();
+    }
+
+    private void CheckMinecraftVersionFile(string gameDirectory, string currentVersion, string fileType)
+    {
+        var jarFile = $"{gameDirectory}\\versions\\{currentVersion}\\{currentVersion}.{fileType}";
+
+        if (!_fileManager.FileExist(jarFile))
+        {
+            AddToDownloadQueue($"{ModelResource.VersionsDirectoryUrl}/{currentVersion}/{currentVersion}.{fileType}",
+                jarFile);
+        }
+    }
+
+    private void CheckDirectories(string gameDirectory, string currentVersion)
+    {
+        SendProgressText(UIResource.CheckDirectoriesStatus);
+        AddProgressAndSend(1);
+
+        CheckDirectory(gameDirectory);
+        CheckDirectory($"{gameDirectory}\\versions\\{currentVersion}\\natives\\");
+        CheckDirectory($"{gameDirectory}\\assets\\objects\\");
+        CheckDirectory($"{gameDirectory}\\assets\\virtual\\legacy\\");
+        CheckDirectory($"{gameDirectory}\\libraries\\");
+    }
+
+    private void CheckDirectory(string directory)
+    {
+        if (!_fileManager.DirectoryExist(directory))
+            _fileManager.CreateDirectory(directory);
+    }
+
+    private async Task DownloadFromQueue(float progressForQueue = 0)
+    {
+        if (!_downloadQueue.Any())
+        {
+            AddProgressAndSend(progressForQueue);
+            return;
         }
 
-        private void CheckDirectories(string gameDirectory, string currentVersion)
-        {
-            SendProgressText(UIResource.CheckDirectoriesStatus);
-            AddProgressAndSend(1);
+        var progressForEach = progressForQueue / _downloadQueue.Count;
 
-            CheckDirectory(gameDirectory);
-            CheckDirectory($"{gameDirectory}\\versions\\{currentVersion}\\natives\\");
-            CheckDirectory($"{gameDirectory}\\assets\\objects\\");
-            CheckDirectory($"{gameDirectory}\\assets\\virtual\\legacy\\");
-            CheckDirectory($"{gameDirectory}\\libraries\\");
-        }
+        await _fileManager.DownloadFiles(_downloadQueue, () => { AddProgressAndSend(progressForEach); });
 
-        private void CheckDirectory(string directory)
-        {
-            if (!_fileManager.DirectoryExist(directory))
-                _fileManager.CreateDirectory(directory);
-        }
+        _downloadQueue.Clear();
+    }
 
-        private async Task DownloadFromQueue(float progressForQueue = 0)
-        {
-            if (!_downloadQueue.Any())
-            {
-                AddProgressAndSend(progressForQueue);
-                return;
-            }
+    private void AddToDownloadQueue(string url, string path)
+    {
+        if (_fileManager.FileExist(path))
+            return;
 
-            var progressForEach = progressForQueue / _downloadQueue.Count;
-
-            await _fileManager.DownloadFiles(_downloadQueue, () => { AddProgressAndSend(progressForEach); });
-
-            _downloadQueue.Clear();
-        }
-
-        private void AddToDownloadQueue(string url, string path)
-        {
-            if (_fileManager.FileExist(path))
-                return;
-
-            _downloadQueue.Add(new Tuple<Uri, string>(new Uri(url), path));
-        }
+        _downloadQueue.Add(new Tuple<Uri, string>(new Uri(url), path));
     }
 }

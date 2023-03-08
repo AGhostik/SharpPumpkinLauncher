@@ -1,83 +1,85 @@
 ﻿using System.Collections.Generic;
 using MCLauncher.Properties;
 
-namespace MCLauncher.Model.Managers
+namespace MCLauncher.Model.Managers;
+
+public class ProfileManager : IProfileManager
 {
-    public class ProfileManager : IProfileManager
+    public void Save(Profile? profile)
     {
-        public void Save(Profile profile)
+        if (Settings.Default.ProfileContainer == null)
+            Settings.Default.ProfileContainer = new ProfileContainer();
+
+        foreach (var profileFromContainer in Settings.Default.ProfileContainer.Profiles)
         {
-            if (Settings.Default.ProfileContainer == null)
-                Settings.Default.ProfileContainer = new ProfileContainer();
-
-            foreach (var profileFromContainer in Settings.Default.ProfileContainer.Profiles)
-                if (profile.Name == profileFromContainer.Name)
-                    return;
-            Settings.Default.ProfileContainer.Profiles.Add(profile);
-
-            Settings.Default.Save();
-        }
-
-        public void Delete(string profileName)
-        {
-            if (Settings.Default.ProfileContainer == null)
+            if (profile.Name == profileFromContainer.Name)
                 return;
+        }
 
-            foreach (var profileFromContainer in Settings.Default.ProfileContainer.Profiles)
-            {
-                if (profileFromContainer.Name != profileName) continue;
+        Settings.Default.ProfileContainer.Profiles.Add(profile);
+        Settings.Default.Save();
+    }
 
-                Settings.Default.ProfileContainer.Profiles.Remove(profileFromContainer);
-                break;
-            }
+    public void Delete(string? profileName)
+    {
+        if (Settings.Default.ProfileContainer == null)
+            return;
 
+        foreach (var profileFromContainer in Settings.Default.ProfileContainer.Profiles)
+        {
+            if (profileFromContainer.Name != profileName) continue;
+
+            Settings.Default.ProfileContainer.Profiles.Remove(profileFromContainer);
+            break;
+        }
+
+        Settings.Default.Save();
+    }
+
+    public List<Profile?> GetProfiles()
+    {
+        return Settings.Default.ProfileContainer == null
+            ? new List<Profile?>()
+            : Settings.Default.ProfileContainer.Profiles;
+    }
+
+    public void Edit(string? profileName, Profile? newProfile)
+    {
+        for (var i = 0; i < Settings.Default.ProfileContainer.Profiles.Count; i++)
+        {
+            if (Settings.Default.ProfileContainer.Profiles[i].Name != profileName) continue;
+
+            Settings.Default.ProfileContainer.Profiles[i] = newProfile;
             Settings.Default.Save();
+            return;
         }
+    }
 
-        public List<Profile> GetProfiles()
-        {
-            return Settings.Default.ProfileContainer == null
-                ? new List<Profile>()
-                : Settings.Default.ProfileContainer.Profiles;
-        }
-
-        public void Edit(string profileName, Profile newProfile)
-        {
-            for (var i = 0; i < Settings.Default.ProfileContainer.Profiles.Count; i++)
-            {
-                if (Settings.Default.ProfileContainer.Profiles[i].Name != profileName) continue;
-
-                Settings.Default.ProfileContainer.Profiles[i] = newProfile;
-                Settings.Default.Save();
-                return;
-            }
-        }
-
-        public Profile GetLast()
-        {
-            if (Settings.Default.ProfileContainer == null || string.IsNullOrEmpty(Settings.Default.LastProfileName))
-                return null;
-
-            foreach (var profileFromContainer in Settings.Default.ProfileContainer.Profiles)
-                if (profileFromContainer.Name == Settings.Default.LastProfileName)
-                    return profileFromContainer;
-
+    public Profile? GetLast()
+    {
+        if (Settings.Default.ProfileContainer == null || string.IsNullOrEmpty(Settings.Default.LastProfileName))
             return null;
-        }
 
-        public void SaveLastProfileName(string name)
+        foreach (var profileFromContainer in Settings.Default.ProfileContainer.Profiles)
         {
-            Settings.Default.LastProfileName = name;
-
-            Settings.Default.Save();
+            if (profileFromContainer.Name == Settings.Default.LastProfileName)
+                return profileFromContainer;
         }
 
-        public string GetLastProfileName()
-        {
-            if (string.IsNullOrEmpty(Settings.Default.LastProfileName))
-                return string.Empty;
+        return null;
+    }
 
-            return Settings.Default.LastProfileName;
-        }
+    public void SaveLastProfileName(string? name)
+    {
+        Settings.Default.LastProfileName = name;
+        Settings.Default.Save();
+    }
+
+    public string? GetLastProfileName()
+    {
+        if (string.IsNullOrEmpty(Settings.Default.LastProfileName))
+            return string.Empty;
+
+        return Settings.Default.LastProfileName;
     }
 }

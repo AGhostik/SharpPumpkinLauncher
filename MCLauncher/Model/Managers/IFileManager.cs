@@ -2,21 +2,19 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace MCLauncher.Model.Managers
+namespace MCLauncher.Model.Managers;
+
+public interface IFileManager
 {
-    public interface IFileManager
-    {
-        void CreateDirectory(string directory);
-        void Delete(string path);
-        bool DirectoryExist(string path);
-        Task DownloadFile(string url, string fileName);
-        Task DownloadFiles(List<Tuple<Uri, string>> urlFileName, Action downloadedEvent = null);
-        void ExtractToDirectory(string sourceArchive, string destinationDirectory);
-        bool FileExist(string path);
-        string GetJavawPath();
-        string GetPathDirectory(string source);
-        string GetPathFilename(string source);
-        void StartProcess(string fileName);
-        void StartProcess(string fileName, string args, Action exitedAction);
-    }
+    void CreateDirectory(string directory);
+    void Delete(string path);
+    bool DirectoryExist(string path);
+    Task DownloadFiles(List<Tuple<Uri, string>> urlFileName, Action? downloadedEvent = null);
+    void ExtractToDirectory(string sourceArchive, string destinationDirectory);
+    bool FileExist(string path);
+    string GetJavawPath();
+    string? GetPathDirectory(string source);
+    string GetPathFilename(string source);
+    void StartProcess(string fileName);
+    void StartProcess(string fileName, string? args, Action? exitedAction);
 }

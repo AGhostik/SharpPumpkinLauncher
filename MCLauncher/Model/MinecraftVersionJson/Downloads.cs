@@ -1,12 +1,13 @@
 ﻿using Newtonsoft.Json;
 
-namespace MCLauncher.Model.MinecraftVersionJson
-{
-    [JsonObject(MemberSerialization.OptIn)]
-    public class Downloads
-    {
-        [JsonProperty("classifiers")] public Classifiers Classifiers { get; set; }
+namespace MCLauncher.Model.MinecraftVersionJson;
 
-        [JsonProperty("artifact")] public DownloadInfo Artifact { get; set; }
-    }
+[JsonObject(MemberSerialization.OptIn)]
+public class Downloads
+{
+    [JsonProperty("client")]
+    public DownloadInfo? Client { get; set; }
+        
+    [JsonProperty("server")]
+    public DownloadInfo? Server { get; set; }
 }

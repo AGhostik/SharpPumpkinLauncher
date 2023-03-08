@@ -8,186 +8,198 @@ using CommunityToolkit.Mvvm.Messaging;
 using MCLauncher.Model;
 using MCLauncher.UI.Messages;
 
-namespace MCLauncher.UI
+namespace MCLauncher.UI;
+
+public class SettingsViewModel : ObservableObject
 {
-    public class SettingsViewModel : ObservableObject
+    private readonly ISettingsModel _settingsModel;
+    private readonly bool _isNewProfile;
+    private string? _oldProfileName;
+    private string? _selectedVisibility;
+
+    private AllVersions? _versionsCache;
+    private Profile? _currentProfile;
+    private string? _title;
+    private RelayCommand? _save;
+
+    public SettingsViewModel(ISettingsModel model, bool isNewProfile)
     {
-        private readonly ISettingsModel _settingsModel;
-        private readonly bool _isNewProfile;
-        private string _oldProfileName;
-        private string _selectedVisibility;
+        _settingsModel = model;
+        _isNewProfile = isNewProfile;
+    }
 
-        private AllVersions _versionsCache;
-        private Profile _currentProfile;
-        private string _title;
+    public Profile? CurrentProfile
+    {
+        get => _currentProfile;
+        set => SetProperty(ref _currentProfile, value);
+    }
 
-        public SettingsViewModel(ISettingsModel model, bool isNewProfile)
+    public string? SelectedVisibility
+    {
+        get => _selectedVisibility;
+        set
         {
-            _settingsModel = model;
-            _isNewProfile = isNewProfile;
-        }
+            SetProperty(ref _selectedVisibility, value);
 
-        public Profile CurrentProfile
-        {
-            get => _currentProfile;
-            set => SetProperty(ref _currentProfile, value);
-        }
-
-        public string SelectedVisibility
-        {
-            get => _selectedVisibility;
-            set
+            if (CurrentProfile != null)
             {
-                SetProperty(ref _selectedVisibility, value);
-
-                if (CurrentProfile != null)
-                {
-                    if (_selectedVisibility == UIResource.KeepLauncherOpen)
-                        CurrentProfile.LauncherVisibility = LauncherVisibility.KeepOpen;
-                    else if (_selectedVisibility == UIResource.HideLauncher)
-                        CurrentProfile.LauncherVisibility = LauncherVisibility.Hide;
-                    else if (_selectedVisibility == UIResource.CloseLauncher)
-                        CurrentProfile.LauncherVisibility = LauncherVisibility.Close;
-                }
+                if (_selectedVisibility == UIResource.KeepLauncherOpen)
+                    CurrentProfile.LauncherVisibility = LauncherVisibility.KeepOpen;
+                else if (_selectedVisibility == UIResource.HideLauncher)
+                    CurrentProfile.LauncherVisibility = LauncherVisibility.Hide;
+                else if (_selectedVisibility == UIResource.CloseLauncher)
+                    CurrentProfile.LauncherVisibility = LauncherVisibility.Close;
             }
         }
+    }
 
-        public List<string> Visibilitys { get; } = new List<string>
+    public List<string> Visibilitys { get; } = new()
+    {
+        UIResource.KeepLauncherOpen,
+        UIResource.HideLauncher,
+        UIResource.CloseLauncher
+    };
+
+    public ObservableCollection<string> Versions { get; } = new();
+
+    public RelayCommand? Save
+    {
+        get => _save;
+        set => SetProperty(ref _save, value);
+    }
+
+    public RelayCommand? OpenDirectory { get; set; }
+
+    public string? Title
+    {
+        get => _title;
+        set => SetProperty(ref _title, value);
+    }
+
+    public async Task Init()
+    {
+        var isNewProfile = _isNewProfile;
+            
+        Title = isNewProfile ? UIResource.NewProfileTitle : UIResource.EditProfileTitle;
+            
+        if (isNewProfile)
+            CreateProfile();
+        else
+            LoadProfile();
+
+        SelectedVisibility = CurrentProfile?.LauncherVisibility switch
         {
-            UIResource.KeepLauncherOpen,
-            UIResource.HideLauncher,
-            UIResource.CloseLauncher
+            LauncherVisibility.KeepOpen => UIResource.KeepLauncherOpen,
+            LauncherVisibility.Close => UIResource.HideLauncher,
+            LauncherVisibility.Hide => UIResource.CloseLauncher,
+            _ => throw new ArgumentOutOfRangeException()
         };
 
-        public ObservableCollection<string> Versions { get; set; } = new ObservableCollection<string>();
+        await SaveVersionsToCache();
+        ShowSelectedVersions();
 
-        public RelayCommand Save { get; set; }
-        public RelayCommand OpenDirectory { get; set; }
+        CurrentProfile.CurrentVersion = _versionsCache?.Latest ?? string.Empty;
 
-        public string Title
+        CurrentProfile.SelectedVersionsChanged += ShowSelectedVersions;
+
+        Save = new RelayCommand(() =>
         {
-            get => _title;
-            set => SetProperty(ref _title, value);
-        }
-
-        public async Task Init()
-        {
-            var isNewProfile = _isNewProfile;
-            
-            Title = isNewProfile ? UIResource.NewProfileTitle : UIResource.EditProfileTitle;
-            
             if (isNewProfile)
-                CreateProfile();
+                SaveNewProfile();
             else
-                LoadProfile();
+                SaveEditedProfile();
 
-            SelectedVisibility = CurrentProfile.LauncherVisibility switch
-            {
-                LauncherVisibility.KeepOpen => UIResource.KeepLauncherOpen,
-                LauncherVisibility.Close => UIResource.HideLauncher,
-                LauncherVisibility.Hide => UIResource.CloseLauncher,
-                _ => throw new ArgumentOutOfRangeException()
-            };
+            WeakReferenceMessenger.Default.Send(new ProfilesChangedMessage());
+        });
+        
+        OpenDirectory = new RelayCommand(() =>
+        {
+            _settingsModel.OpenGameDirectory(CurrentProfile.GameDirectory);
+        });
+    }
 
-            await SaveVersionsToCache();
-            ShowSelectedVersions();
-
-            CurrentProfile.CurrentVersion = _versionsCache.Latest;
-
-            CurrentProfile.SelectedVersionsChanged += (sender, args) => { ShowSelectedVersions(); };
-
-            Save = new RelayCommand(() =>
-            {
-                if (isNewProfile)
-                    SaveNewProfile();
-                else
-                    SaveEditedProfile();
-
-                WeakReferenceMessenger.Default.Send(new ProfilesChangedMessage());
-            });
-            OpenDirectory = new RelayCommand(() =>
-            {
-                _settingsModel.OpenGameDirectory(CurrentProfile.GameDirectory);
-            });
+    private void ShowSelectedVersions()
+    {
+        if (CurrentProfile == null || _versionsCache == null)
+            return;
+        
+        Versions.Clear();
+        if (CurrentProfile.ShowAlpha)
+        {
+            foreach (var version in _versionsCache.Alpha)
+                Versions.Add(version);
         }
 
-        private void ShowSelectedVersions()
+        if (CurrentProfile.ShowBeta)
         {
-            Versions.Clear();
-            if (CurrentProfile.ShowAlpha)
-            {
-                foreach (var version in _versionsCache.Alpha)
-                    Versions.Add(version);
-            }
-
-            if (CurrentProfile.ShowBeta)
-            {
-                foreach (var version in _versionsCache.Beta)
-                    Versions.Add(version);
-            }
-
-            if (CurrentProfile.ShowRelease)
-            {
-                foreach (var version in _versionsCache.Release)
-                    Versions.Add(version);
-            }
-
-            if (CurrentProfile.ShowSnapshot)
-            {
-                foreach (var version in _versionsCache.Snapshot)
-                    Versions.Add(version);
-            }
-
-            if (CurrentProfile.ShowCustom)
-            {
-                foreach (var version in _versionsCache.Custom)
-                    Versions.Add(version);
-            }
+            foreach (var version in _versionsCache.Beta)
+                Versions.Add(version);
         }
 
-        private void SaveNewProfile()
+        if (CurrentProfile.ShowRelease)
         {
-            _settingsModel.SaveProfile(CurrentProfile);
-            WeakReferenceMessenger.Default.Send(new StatusMessage(UIResource.NewProfileStatus));
+            foreach (var version in _versionsCache.Release)
+                Versions.Add(version);
         }
 
-        private void SaveEditedProfile()
+        if (CurrentProfile.ShowSnapshot)
         {
-            _settingsModel.EditProfile(_oldProfileName, CurrentProfile);
-            WeakReferenceMessenger.Default.Send(new StatusMessage(UIResource.ProfileEditedStatus));
+            foreach (var version in _versionsCache.Snapshot)
+                Versions.Add(version);
         }
 
-        private async Task SaveVersionsToCache()
+        if (CurrentProfile.ShowCustom)
         {
-            _versionsCache = await _settingsModel.DownloadAllVersions();
+            foreach (var version in _versionsCache.Custom)
+                Versions.Add(version);
         }
+    }
 
-        private void CreateProfile()
+    private void SaveNewProfile()
+    {
+        _settingsModel.SaveProfile(CurrentProfile);
+        WeakReferenceMessenger.Default.Send(new StatusMessage(UIResource.NewProfileStatus));
+    }
+
+    private void SaveEditedProfile()
+    {
+        _settingsModel.EditProfile(_oldProfileName, CurrentProfile);
+        WeakReferenceMessenger.Default.Send(new StatusMessage(UIResource.ProfileEditedStatus));
+    }
+
+    private async Task SaveVersionsToCache()
+    {
+        _versionsCache = await _settingsModel.DownloadAllVersions();
+    }
+
+    private void CreateProfile()
+    {
+        CurrentProfile = new Profile
         {
-            CurrentProfile = new Profile
-            {
-                JavaFile = _settingsModel.FindJava()
-            };
-        }
+            JavaFile = _settingsModel.FindJava()
+        };
+    }
 
-        private void LoadProfile()
+    private void LoadProfile()
+    {
+        CurrentProfile = _settingsModel.LoadLastProfile();
+        
+        if (CurrentProfile == null)
+            return;
+
+        _oldProfileName = CurrentProfile.Name;
+
+        switch (CurrentProfile.LauncherVisibility)
         {
-            CurrentProfile = _settingsModel.LoadLastProfile();
-
-            _oldProfileName = CurrentProfile.Name;
-
-            switch (CurrentProfile.LauncherVisibility)
-            {
-                case LauncherVisibility.KeepOpen:
-                    _selectedVisibility = UIResource.KeepLauncherOpen;
-                    break;
-                case LauncherVisibility.Hide:
-                    _selectedVisibility = UIResource.HideLauncher;
-                    break;
-                case LauncherVisibility.Close:
-                    _selectedVisibility = UIResource.CloseLauncher;
-                    break;
-            }
+            case LauncherVisibility.KeepOpen:
+                _selectedVisibility = UIResource.KeepLauncherOpen;
+                break;
+            case LauncherVisibility.Hide:
+                _selectedVisibility = UIResource.HideLauncher;
+                break;
+            case LauncherVisibility.Close:
+                _selectedVisibility = UIResource.CloseLauncher;
+                break;
         }
     }
 }

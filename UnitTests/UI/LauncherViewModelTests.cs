@@ -15,7 +15,7 @@ namespace UnitTests.UI
         [SetUp]
         public void SetUp()
         {
-            _profileList = new List<string>()
+            _profileList = new List<string?>()
             {
                 "lastProfile",
                 "profile1"
@@ -26,7 +26,7 @@ namespace UnitTests.UI
             _launcherModel.GetProfiles().Returns(_profileList);
         }
 
-        private List<string> _profileList;
+        private List<string?> _profileList;
         private ILauncherModel _launcherModel;
 
         [Test]

@@ -30,7 +30,7 @@ namespace UnitTests.Model
                 JavaFile = "javafile",
                 JvmArgs = "jvmargs"
             });
-            _profileManager.GetProfiles().Returns(new List<Profile>()
+            _profileManager.GetProfiles().Returns(new List<Profile?>()
             {
                 new Profile()
                 {

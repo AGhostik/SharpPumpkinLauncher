@@ -1,12 +1,11 @@
-﻿namespace MCLauncher.UI.Messages
+﻿namespace MCLauncher.UI.Messages;
+
+public class InstallProgressMessage
 {
-    public class InstallProgressMessage
+    public InstallProgressMessage(float percentage)
     {
-        public InstallProgressMessage(float percentage)
-        {
-            Percentage = percentage;
-        }
-        
-        public float Percentage { get; set; }
+        Percentage = percentage;
     }
+        
+    public float Percentage { get; }
 }

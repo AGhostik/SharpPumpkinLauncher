@@ -3,20 +3,17 @@
 namespace MCLauncher.Model.MinecraftVersionJson;
 
 [JsonObject(MemberSerialization.OptIn)]
-public class AssetIndex
+public class Artifact
 {
-    [JsonProperty("id")]
-    public string? Id { get; set; }
-
+    [JsonProperty("path")]
+    public string? Path { get; set; }
+    
     [JsonProperty("sha1")]
     public string? Sha1 { get; set; }
 
     [JsonProperty("size")]
     public int Size { get; set; }
-
+        
     [JsonProperty("url")]
     public string? Url { get; set; }
-
-    [JsonProperty("totalSize")]
-    public int TotalSize { get; set; }
 }

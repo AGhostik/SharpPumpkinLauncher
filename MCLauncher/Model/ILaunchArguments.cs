@@ -1,11 +1,10 @@
 ﻿using MCLauncher.Model.MinecraftVersionJson;
 
-namespace MCLauncher.Model
+namespace MCLauncher.Model;
+
+public interface ILaunchArguments
 {
-    public interface ILaunchArguments
-    {
-        void AddLibrary(string fileName);
-        void Create(Profile profile, MinecraftVersion minecraftVersion);
-        string Get();
-    }
+    void AddLibrary(string fileName);
+    void Create(Profile profile, MinecraftVersion? minecraftVersion);
+    string Get();
 }

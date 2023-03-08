@@ -90,18 +90,18 @@ namespace MCLauncher.UI {
         /// <summary>
         ///   Looks up a localized string similar to check.
         /// </summary>
-        public static string CheckVersionFIlesStatus_part1 {
+        public static string CheckVersionFilesStatus_part1 {
             get {
-                return ResourceManager.GetString("CheckVersionFIlesStatus_part1", resourceCulture);
+                return ResourceManager.GetString("CheckVersionFilesStatus_part1", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to version main files....
         /// </summary>
-        public static string CheckVersionFIlesStatus_part2 {
+        public static string CheckVersionFilesStatus_part2 {
             get {
-                return ResourceManager.GetString("CheckVersionFIlesStatus_part2", resourceCulture);
+                return ResourceManager.GetString("CheckVersionFilesStatus_part2", resourceCulture);
             }
         }
         

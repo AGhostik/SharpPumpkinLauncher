@@ -1,9 +1,8 @@
-﻿namespace MCLauncher.Model
+﻿namespace MCLauncher.Model;
+
+public enum LauncherVisibility
 {
-    public enum LauncherVisibility
-    {
-        KeepOpen,
-        Close,
-        Hide
-    }
+    KeepOpen,
+    Close,
+    Hide
 }

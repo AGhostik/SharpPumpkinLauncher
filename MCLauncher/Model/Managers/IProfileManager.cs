@@ -1,15 +1,14 @@
 ﻿using System.Collections.Generic;
 
-namespace MCLauncher.Model.Managers
+namespace MCLauncher.Model.Managers;
+
+public interface IProfileManager
 {
-    public interface IProfileManager
-    {
-        void Delete(string profileName);
-        void Edit(string profileName, Profile newProfile);
-        Profile GetLast();
-        string GetLastProfileName();
-        List<Profile> GetProfiles();
-        void Save(Profile profile);
-        void SaveLastProfileName(string name);
-    }
+    void Delete(string? profileName);
+    void Edit(string? profileName, Profile? newProfile);
+    Profile? GetLast();
+    string? GetLastProfileName();
+    List<Profile?> GetProfiles();
+    void Save(Profile? profile);
+    void SaveLastProfileName(string? name);
 }

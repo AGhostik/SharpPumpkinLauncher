@@ -1,6 +1,5 @@
-﻿namespace MCLauncher.UI.Messages
+﻿namespace MCLauncher.UI.Messages;
+
+public class MinecraftExitedMessage
 {
-    public class MinecraftExitedMessage
-    {
-    }
 }
