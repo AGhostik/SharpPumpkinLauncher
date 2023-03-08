@@ -133,7 +133,7 @@ namespace MCLauncher.Model {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to https://launchermeta.mojang.com/mc/game/version_manifest.json.
+        ///   Looks up a localized string similar to https://piston-meta.mojang.com/mc/game/version_manifest_v2.json.
         /// </summary>
         internal static string VersionsUrl {
             get {

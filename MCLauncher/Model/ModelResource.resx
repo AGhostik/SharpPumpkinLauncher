@@ -130,7 +130,7 @@
     <value>snapshot</value>
   </data>
   <data name="VersionsUrl" xml:space="preserve">
-    <value>https://launchermeta.mojang.com/mc/game/version_manifest.json</value>
+    <value>https://piston-meta.mojang.com/mc/game/version_manifest_v2.json</value>
   </data>
   <data name="VersionsDirectoryUrl" xml:space="preserve">
     <value>https://s3.amazonaws.com/Minecraft.Download/versions</value>

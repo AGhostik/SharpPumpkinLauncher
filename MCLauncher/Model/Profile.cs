@@ -24,12 +24,12 @@ namespace MCLauncher.Model
             Name = string.Empty;
             Nickname = string.Empty;
             JavaFile = string.Empty;
-            GameDirectory = string.Empty;
+            GameDirectory = AppDomain.CurrentDomain.BaseDirectory + "Minecraft";
             JvmArgs = string.Empty;
             LauncherVisibility = LauncherVisibility.KeepOpen;
             CurrentVersion = string.Empty;
             ShowCustom = false;
-            ShowRelease = false;
+            ShowRelease = true;
             ShowSnapshot = false;
             ShowBeta = false;
             ShowAlpha = false;
