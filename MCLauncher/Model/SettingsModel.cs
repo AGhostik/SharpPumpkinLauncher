@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using MCLauncher.Model.Managers;
 using MCLauncher.Model.VersionsJson;
 using MCLauncher.UI;
@@ -22,18 +21,18 @@ public class SettingsModel : ISettingsModel
     public void SaveProfile(Profile? profile)
     {
         _profileManager.Save(profile);
-        _profileManager.SaveLastProfileName(profile.Name);
+        _profileManager.SaveLastProfileName(profile?.Name);
     }
 
     public Profile? LoadLastProfile()
     {
-        return _profileManager.GetLast() ?? new Profile();
+        return _profileManager.GetLast();
     }
 
     public void EditProfile(string? profileName, Profile? newProfile)
     {
         _profileManager.Edit(profileName, newProfile);
-        _profileManager.SaveLastProfileName(newProfile.Name);
+        _profileManager.SaveLastProfileName(newProfile?.Name);
     }
 
     public void OpenGameDirectory(string directory)
@@ -47,7 +46,7 @@ public class SettingsModel : ISettingsModel
         return _fileManager.GetJavawPath();
     }
 
-    public async Task<AllVersions?> DownloadAllVersions()
+    public async Task<AllVersions> DownloadAllVersions()
     {
         var result = new AllVersions();
 
@@ -56,11 +55,21 @@ public class SettingsModel : ISettingsModel
 
         if (versions != null)
         {
-            //todo: for
-            result.Release.AddRange(versions.Where(_ => _.Type == ModelResource.release).Select(_ => _.Id));
-            result.Snapshot.AddRange(versions.Where(_ => _.Type == ModelResource.snapshot).Select(_ => _.Id));
-            result.Beta.AddRange(versions.Where(_ => _.Type == ModelResource.beta).Select(_ => _.Id));
-            result.Alpha.AddRange(versions.Where(_ => _.Type == ModelResource.alpha).Select(_ => _.Id));
+            for (var i = 0; i < versions.Length; i++)
+            {
+                var version = versions[i];
+                if (version.Id == null)
+                    continue;
+
+                if (version.Type == ModelResource.release)
+                    result.Release.Add(version.Id);
+                else if (version.Type == ModelResource.snapshot)
+                    result.Snapshot.Add(version.Id);
+                else if (version.Type == ModelResource.beta)
+                    result.Beta.Add(version.Id);
+                else if (version.Type == ModelResource.alpha)
+                    result.Alpha.Add(version.Id);
+            }
         }
 
         var latest = json["latest"]?.ToObject<Latest>();
