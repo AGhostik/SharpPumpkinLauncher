@@ -40,12 +40,15 @@ namespace MCLauncher.UI
             {
                 SetProperty(ref _selectedVisibility, value);
 
-                if (_selectedVisibility == UIResource.KeepLauncherOpen)
-                    CurrentProfile.LauncherVisibility = LauncherVisibility.KeepOpen;
-                else if (_selectedVisibility == UIResource.HideLauncher)
-                    CurrentProfile.LauncherVisibility = LauncherVisibility.Hide;
-                else if (_selectedVisibility == UIResource.CloseLauncher)
-                    CurrentProfile.LauncherVisibility = LauncherVisibility.Close;
+                if (CurrentProfile != null)
+                {
+                    if (_selectedVisibility == UIResource.KeepLauncherOpen)
+                        CurrentProfile.LauncherVisibility = LauncherVisibility.KeepOpen;
+                    else if (_selectedVisibility == UIResource.HideLauncher)
+                        CurrentProfile.LauncherVisibility = LauncherVisibility.Hide;
+                    else if (_selectedVisibility == UIResource.CloseLauncher)
+                        CurrentProfile.LauncherVisibility = LauncherVisibility.Close;
+                }
             }
         }
 

@@ -7,7 +7,7 @@ using MCLauncher.UI.Messages;
 using NSubstitute;
 using NUnit.Framework;
 
-namespace Tests.UI
+namespace UnitTests.UI
 {
     [TestFixture]
     public class LauncherViewModelTests

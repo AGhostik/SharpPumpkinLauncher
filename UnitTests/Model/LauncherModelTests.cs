@@ -7,7 +7,7 @@ using MCLauncher.UI.Messages;
 using NSubstitute;
 using NUnit.Framework;
 
-namespace Tests.Model
+namespace UnitTests.Model
 {
     [TestFixture]
     public class LauncherModelTests
@@ -69,6 +69,7 @@ namespace Tests.Model
         {
             var model = new LauncherModel(_fileManager, _profileManager, _installer);
             var pass = false;
+            WeakReferenceMessenger.Default.Reset();
             WeakReferenceMessenger.Default.Register<ShowSettingsMessage>(this, (r, message) =>
             {
                 pass = !message.IsNewProfile;
@@ -86,6 +87,7 @@ namespace Tests.Model
         {
             var model = new LauncherModel(_fileManager, _profileManager, _installer);
             var pass = false;
+            WeakReferenceMessenger.Default.Reset();
             WeakReferenceMessenger.Default.Register<ShowSettingsMessage>(this, (r, message) =>
             {
                 pass = message.IsNewProfile;

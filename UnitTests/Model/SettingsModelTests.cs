@@ -3,7 +3,7 @@ using MCLauncher.Model.Managers;
 using NSubstitute;
 using NUnit.Framework;
 
-namespace Tests.Model
+namespace UnitTests.Model
 {
     [TestFixture]
     public class SettingsModelTests
