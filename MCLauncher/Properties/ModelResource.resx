@@ -117,23 +117,8 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="alpha" xml:space="preserve">
-    <value>old_alpha</value>
-  </data>
-  <data name="beta" xml:space="preserve">
-    <value>old_beta</value>
-  </data>
-  <data name="release" xml:space="preserve">
-    <value>release</value>
-  </data>
-  <data name="snapshot" xml:space="preserve">
-    <value>snapshot</value>
-  </data>
   <data name="VersionsUrl" xml:space="preserve">
     <value>https://piston-meta.mojang.com/mc/game/version_manifest_v2.json</value>
-  </data>
-  <data name="VersionsDirectoryUrl" xml:space="preserve">
-    <value>https://s3.amazonaws.com/Minecraft.Download/versions</value>
   </data>
   <data name="LibrariesUrl" xml:space="preserve">
     <value>https://libraries.minecraft.net</value>

@@ -61,29 +61,11 @@ namespace MCLauncher.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to old_alpha.
-        /// </summary>
-        internal static string alpha {
-            get {
-                return ResourceManager.GetString("alpha", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to http://resources.download.minecraft.net.
         /// </summary>
         internal static string AssetsUrl {
             get {
                 return ResourceManager.GetString("AssetsUrl", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to old_beta.
-        /// </summary>
-        internal static string beta {
-            get {
-                return ResourceManager.GetString("beta", resourceCulture);
             }
         }
         
@@ -102,33 +84,6 @@ namespace MCLauncher.Properties {
         internal static string LibrariesUrl {
             get {
                 return ResourceManager.GetString("LibrariesUrl", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to release.
-        /// </summary>
-        internal static string release {
-            get {
-                return ResourceManager.GetString("release", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to snapshot.
-        /// </summary>
-        internal static string snapshot {
-            get {
-                return ResourceManager.GetString("snapshot", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to https://s3.amazonaws.com/Minecraft.Download/versions.
-        /// </summary>
-        internal static string VersionsDirectoryUrl {
-            get {
-                return ResourceManager.GetString("VersionsDirectoryUrl", resourceCulture);
             }
         }
         

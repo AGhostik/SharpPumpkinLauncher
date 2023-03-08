@@ -334,7 +334,8 @@ public sealed class Installer : IInstaller
 
         if (!_fileManager.FileExist(jarFile))
         {
-            AddToDownloadQueue($"{ModelResource.VersionsDirectoryUrl}/{currentVersion}/{currentVersion}.{fileType}",
+            //todo:
+            AddToDownloadQueue($"todo/{currentVersion}/{currentVersion}.{fileType}",
                 jarFile);
         }
     }

@@ -63,13 +63,13 @@ public class SettingsModel : ISettingsModel
                 if (version.Id == null)
                     continue;
 
-                if (version.Type == ModelResource.release)
+                if (version.Type == WellKnownValues.Release)
                     result.Release.Add(version.Id);
-                else if (version.Type == ModelResource.snapshot)
+                else if (version.Type == WellKnownValues.Snapshot)
                     result.Snapshot.Add(version.Id);
-                else if (version.Type == ModelResource.beta)
+                else if (version.Type == WellKnownValues.Beta)
                     result.Beta.Add(version.Id);
-                else if (version.Type == ModelResource.alpha)
+                else if (version.Type == WellKnownValues.Alpha)
                     result.Alpha.Add(version.Id);
             }
         }
