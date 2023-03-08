@@ -1,5 +1,7 @@
-﻿using MCLauncher.Model;
-using MCLauncher.Model.Managers;
+﻿using MCLauncher.Json;
+using MCLauncher.SettingsWindow;
+using MCLauncher.Tools;
+using MCLauncher.Tools.Interfaces;
 using NSubstitute;
 using NUnit.Framework;
 
@@ -8,6 +10,11 @@ namespace UnitTests.Model
     [TestFixture]
     public class SettingsModelTests
     {
+        private Profile? _lastProfile;
+        private IJsonManager? _jsonManager;
+        private IFileManager? _fileManager;
+        private IProfileManager? _profileManager;
+        
         [SetUp]
         public void SetUp()
         {
@@ -27,14 +34,15 @@ namespace UnitTests.Model
             _fileManager.DirectoryExist("").ReturnsForAnyArgs(true);
         }
 
-        private Profile _lastProfile;
-        private IJsonManager _jsonManager;
-        private IFileManager _fileManager;
-        private IProfileManager _profileManager;
-
         [Test]
         public void EditProfile_ReceivedEdit()
         {
+            if (_fileManager == null || _profileManager == null || _jsonManager == null)
+            {
+                Assert.Fail("SetUp not executed");
+                return;
+            }
+            
             var model = new SettingsModel(_fileManager, _profileManager, _jsonManager);
             var profile = new Profile()
             {
@@ -48,6 +56,12 @@ namespace UnitTests.Model
         [Test]
         public void FindJava_ReceivedGetLast()
         {
+            if (_fileManager == null || _profileManager == null || _jsonManager == null)
+            {
+                Assert.Fail("SetUp not executed");
+                return;
+            }
+            
             var model = new SettingsModel(_fileManager, _profileManager, _jsonManager);
             model.FindJava();
 
@@ -57,6 +71,12 @@ namespace UnitTests.Model
         [Test]
         public void LoadLastProfile_ReceivedGetLast()
         {
+            if (_fileManager == null || _profileManager == null || _jsonManager == null)
+            {
+                Assert.Fail("SetUp not executed");
+                return;
+            }
+            
             var model = new SettingsModel(_fileManager, _profileManager, _jsonManager);
             model.LoadLastProfile();
 
@@ -66,6 +86,12 @@ namespace UnitTests.Model
         [Test]
         public void OpenGameDirectory_ReceivedStartProcess()
         {
+            if (_fileManager == null || _profileManager == null || _jsonManager == null)
+            {
+                Assert.Fail("SetUp not executed");
+                return;
+            }
+            
             var model = new SettingsModel(_fileManager, _profileManager, _jsonManager);
             model.OpenGameDirectory("path");
 
@@ -76,6 +102,12 @@ namespace UnitTests.Model
         [Test]
         public void SaveProfile_ReceivedSave()
         {
+            if (_fileManager == null || _profileManager == null || _jsonManager == null)
+            {
+                Assert.Fail("SetUp not executed");
+                return;
+            }
+            
             var model = new SettingsModel(_fileManager, _profileManager, _jsonManager);
             var profile = new Profile()
             {
@@ -89,6 +121,12 @@ namespace UnitTests.Model
         [Test]
         public void SaveProfile_ReceivedSaveLastProfileName()
         {
+            if (_fileManager == null || _profileManager == null || _jsonManager == null)
+            {
+                Assert.Fail("SetUp not executed");
+                return;
+            }
+            
             var model = new SettingsModel(_fileManager, _profileManager, _jsonManager);
             var profile = new Profile()
             {

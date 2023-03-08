@@ -1,9 +1,11 @@
 ﻿using System.Windows;
 using CommunityToolkit.Mvvm.Messaging;
-using MCLauncher.Model;
-using MCLauncher.Model.Managers;
-using MCLauncher.UI;
-using MCLauncher.UI.Messages;
+using MCLauncher.Json;
+using MCLauncher.LauncherWindow;
+using MCLauncher.Messages;
+using MCLauncher.SettingsWindow;
+using MCLauncher.Tools;
+using MCLauncher.Tools.Interfaces;
 using Unity;
 using Unity.Resolution;
 
@@ -21,7 +23,6 @@ public partial class App
         container.RegisterType<IFileManager, FileManager>();
         container.RegisterType<IProfileManager, ProfileManager>();
         container.RegisterType<IJsonManager, JsonManager>();
-        container.RegisterType<ILaunchArguments, LaunchArguments>();
         container.RegisterType<ISettingsModel, SettingsModel>();
 
         var launcherView = container.Resolve<LauncherView>();

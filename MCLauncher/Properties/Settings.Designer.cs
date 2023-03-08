@@ -37,9 +37,9 @@ namespace MCLauncher.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        public global::MCLauncher.Model.ProfileContainer ProfileContainer {
+        public global::MCLauncher.Tools.ProfileContainer ProfileContainer {
             get {
-                return ((global::MCLauncher.Model.ProfileContainer)(this["ProfileContainer"]));
+                return ((global::MCLauncher.Tools.ProfileContainer)(this["ProfileContainer"]));
             }
             set {
                 this["ProfileContainer"] = value;

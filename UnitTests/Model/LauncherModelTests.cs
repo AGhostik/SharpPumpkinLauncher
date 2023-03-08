@@ -1,9 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using CommunityToolkit.Mvvm.Messaging;
-using MCLauncher.Model;
-using MCLauncher.Model.Managers;
-using MCLauncher.UI.Messages;
+using MCLauncher.LauncherWindow;
+using MCLauncher.Messages;
+using MCLauncher.SettingsWindow;
+using MCLauncher.Tools;
+using MCLauncher.Tools.Interfaces;
 using NSubstitute;
 using NUnit.Framework;
 
@@ -12,6 +14,11 @@ namespace UnitTests.Model
     [TestFixture]
     public class LauncherModelTests
     {
+        private List<string>? _profiles;
+        private IInstaller? _installer;
+        private IFileManager? _fileManager;
+        private IProfileManager? _profileManager;
+        
         [SetUp]
         public void SetUp()
         {
@@ -32,21 +39,22 @@ namespace UnitTests.Model
             });
             _profileManager.GetProfiles().Returns(new List<Profile?>()
             {
-                new Profile()
+                new()
                 {
                     Name = _profiles.First()
                 }
             });
         }
 
-        private List<string> _profiles;
-        private IInstaller _installer;
-        private IFileManager _fileManager;
-        private IProfileManager _profileManager;
-
         [Test]
         public void DeleteProfile_ReceivedDeleteProfile()
         {
+            if (_fileManager == null || _profileManager == null || _installer == null)
+            {
+                Assert.Fail("SetUp not executed");
+                return;
+            }
+                
             var model = new LauncherModel(_fileManager, _profileManager, _installer);
             model.DeleteProfile("name");
 
@@ -56,6 +64,12 @@ namespace UnitTests.Model
         [Test]
         public void GetProfiles_ReturnNotEmptyList_RecievedGetProfiles()
         {
+            if (_fileManager == null || _profileManager == null || _installer == null)
+            {
+                Assert.Fail("SetUp not executed");
+                return;
+            }
+            
             var model = new LauncherModel(_fileManager, _profileManager, _installer);
             var profiles = model.GetProfiles();
 
@@ -67,10 +81,16 @@ namespace UnitTests.Model
         [Test]
         public void OpenEditProfileWindow_ShowSettingsMessage_IsNewProfileFalse()
         {
+            if (_fileManager == null || _profileManager == null || _installer == null)
+            {
+                Assert.Fail("SetUp not executed");
+                return;
+            }
+            
             var model = new LauncherModel(_fileManager, _profileManager, _installer);
             var pass = false;
             WeakReferenceMessenger.Default.Reset();
-            WeakReferenceMessenger.Default.Register<ShowSettingsMessage>(this, (r, message) =>
+            WeakReferenceMessenger.Default.Register<ShowSettingsMessage>(this, (_, message) =>
             {
                 pass = !message.IsNewProfile;
             });
@@ -85,10 +105,16 @@ namespace UnitTests.Model
         [Test]
         public void OpenNewProfileWindow_ShowSettingsMessage_IsNewProfileTrue()
         {
+            if (_fileManager == null || _profileManager == null || _installer == null)
+            {
+                Assert.Fail("SetUp not executed");
+                return;
+            }
+            
             var model = new LauncherModel(_fileManager, _profileManager, _installer);
             var pass = false;
             WeakReferenceMessenger.Default.Reset();
-            WeakReferenceMessenger.Default.Register<ShowSettingsMessage>(this, (r, message) =>
+            WeakReferenceMessenger.Default.Register<ShowSettingsMessage>(this, (_, message) =>
             {
                 pass = message.IsNewProfile;
             });
@@ -103,6 +129,12 @@ namespace UnitTests.Model
         [Test]
         public void SaveLastProfileName_ReceivedSaveLastProfileName()
         {
+            if (_fileManager == null || _profileManager == null || _installer == null)
+            {
+                Assert.Fail("SetUp not executed");
+                return;
+            }
+            
             var model = new LauncherModel(_fileManager, _profileManager, _installer);
             model.SaveLastProfileName("name");
 
@@ -112,6 +144,12 @@ namespace UnitTests.Model
         [Test]
         public void StartGame_ReceivedStartProcess()
         {
+            if (_fileManager == null || _profileManager == null || _installer == null)
+            {
+                Assert.Fail("SetUp not executed");
+                return;
+            }
+            
             var model = new LauncherModel(_fileManager, _profileManager, _installer);
             model.StartGame().Wait();
 

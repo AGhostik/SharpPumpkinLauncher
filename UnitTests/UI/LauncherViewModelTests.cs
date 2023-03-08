@@ -1,9 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Windows;
 using CommunityToolkit.Mvvm.Messaging;
-using MCLauncher.Model;
-using MCLauncher.UI;
-using MCLauncher.UI.Messages;
+using MCLauncher.LauncherWindow;
+using MCLauncher.Messages;
 using NSubstitute;
 using NUnit.Framework;
 
@@ -12,6 +11,9 @@ namespace UnitTests.UI
     [TestFixture]
     public class LauncherViewModelTests
     {
+        private List<string?>? _profileList;
+        private ILauncherModel? _launcherModel;
+        
         [SetUp]
         public void SetUp()
         {
@@ -26,14 +28,17 @@ namespace UnitTests.UI
             _launcherModel.GetProfiles().Returns(_profileList);
         }
 
-        private List<string?> _profileList;
-        private ILauncherModel _launcherModel;
-
         [Test]
         public void EditProfile_OpenProfileEditingWindow()
         {
+            if (_launcherModel == null)
+            {
+                Assert.Fail("SetUp not executed");
+                return;
+            }
+            
             var vm = new LauncherViewModel(_launcherModel);
-            vm.EditProfile.Execute(null);
+            vm.EditProfile?.Execute(null);
 
             _launcherModel.Received().OpenEditProfileWindow();
         }
@@ -41,8 +46,14 @@ namespace UnitTests.UI
         [Test]
         public void NewProfile_OpenProfileCreatingWindow()
         {
+            if (_launcherModel == null)
+            {
+                Assert.Fail("SetUp not executed");
+                return;
+            }
+            
             var vm = new LauncherViewModel(_launcherModel);
-            vm.NewProfile.Execute(null);
+            vm.NewProfile?.Execute(null);
 
             _launcherModel.Received().OpenNewProfileWindow();
         }
@@ -50,6 +61,12 @@ namespace UnitTests.UI
         [Test]
         public void Profiles_Loaded_Init()
         {
+            if (_launcherModel == null)
+            {
+                Assert.Fail("SetUp not executed");
+                return;
+            }
+            
             var vm = new LauncherViewModel(_launcherModel);
             Assert.AreEqual(vm.Profiles, _profileList);
         }
@@ -57,6 +74,12 @@ namespace UnitTests.UI
         [Test]
         public void Progress_EqualsMessageProgress_RecievedInstallProgressMessage()
         {
+            if (_launcherModel == null)
+            {
+                Assert.Fail("SetUp not executed");
+                return;
+            }
+            
             var vm = new LauncherViewModel(_launcherModel);
             WeakReferenceMessenger.Default.Send(new InstallProgressMessage(50));
 
@@ -66,6 +89,12 @@ namespace UnitTests.UI
         [Test]
         public void ProgressBarVisibility_Collapsed_ProgressEquals100()
         {
+            if (_launcherModel == null)
+            {
+                Assert.Fail("SetUp not executed");
+                return;
+            }
+            
             var vm = new LauncherViewModel(_launcherModel);
             WeakReferenceMessenger.Default.Send(new InstallProgressMessage(100));
 
@@ -75,6 +104,12 @@ namespace UnitTests.UI
         [Test]
         public void ProgressBarVisibility_Visible_ProgressLess100()
         {
+            if (_launcherModel == null)
+            {
+                Assert.Fail("SetUp not executed");
+                return;
+            }
+            
             var vm = new LauncherViewModel(_launcherModel);
             WeakReferenceMessenger.Default.Send(new InstallProgressMessage(50));
 
@@ -84,6 +119,12 @@ namespace UnitTests.UI
         [Test]
         public void RefreshProfiles_UpdateProfiles_RecievedProfilesChangedMessage()
         {
+            if (_launcherModel == null)
+            {
+                Assert.Fail("SetUp not executed");
+                return;
+            }
+            
             var vm = new LauncherViewModel(_launcherModel);
             vm.Profiles.Clear();
             WeakReferenceMessenger.Default.Send(new ProfilesChangedMessage());
@@ -94,8 +135,14 @@ namespace UnitTests.UI
         [Test]
         public void Start_ExecuteStartGame()
         {
+            if (_launcherModel == null)
+            {
+                Assert.Fail("SetUp not executed");
+                return;
+            }
+            
             var vm = new LauncherViewModel(_launcherModel);
-            vm.Start.Execute(null);
+            vm.Start?.Execute(null);
 
             _launcherModel.Received().StartGame();
         }
@@ -103,6 +150,12 @@ namespace UnitTests.UI
         [Test]
         public void Status_UpdateStatus_RecievedStatusMessage()
         {
+            if (_launcherModel == null)
+            {
+                Assert.Fail("SetUp not executed");
+                return;
+            }
+            
             var vm = new LauncherViewModel(_launcherModel);
             WeakReferenceMessenger.Default.Send(new StatusMessage("testStatus"));
 
