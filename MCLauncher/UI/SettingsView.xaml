@@ -11,6 +11,7 @@
     d:DataContext="{d:DesignInstance Type=local:SettingsViewModel}"
     ResizeMode="NoResize"
     ShowInTaskbar="False"
+    Loaded="SettingsView_OnLoaded"
     mc:Ignorable="d">
     <Grid>
         <Grid.ColumnDefinitions>

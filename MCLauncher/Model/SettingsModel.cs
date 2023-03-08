@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Threading.Tasks;
 using MCLauncher.Model.Managers;
 using MCLauncher.Model.VersionsJson;
 using MCLauncher.UI;
@@ -46,12 +47,15 @@ namespace MCLauncher.Model
             return _fileManager.GetJavawPath();
         }
 
-        public AllVersions DownloadAllVersions()
+        public async Task<AllVersions> DownloadAllVersions()
         {
             var versions = new AllVersions();
 
-            var json = _jsonManager.DownloadJson(ModelResource.VersionsUrl);
-            var jVersions = json["versions"].ToObject<Version[]>();
+            var json = await _jsonManager.DownloadJsonAsync(ModelResource.VersionsUrl);
+            var jVersions = json["versions"]?.ToObject<Version[]>();
+
+            if (jVersions == null)
+                return null;
 
             versions.Release.AddRange(jVersions.Where(_ => _.Type == ModelResource.release).Select(_ => _.Id));
             versions.Snapshot.AddRange(jVersions.Where(_ => _.Type == ModelResource.snapshot).Select(_ => _.Id));

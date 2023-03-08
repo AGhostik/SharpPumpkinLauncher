@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
 using GalaSoft.MvvmLight.Messaging;
@@ -11,18 +13,24 @@ namespace MCLauncher.UI
     public class SettingsViewModel : ViewModelBase
     {
         private readonly ISettingsModel _settingsModel;
+        private readonly bool _isNewProfile;
         private string _oldProfileName;
         private string _selectedVisibility;
 
         private AllVersions _versionsCache;
+        private Profile _currentProfile;
 
         public SettingsViewModel(ISettingsModel model, bool isNewProfile)
         {
             _settingsModel = model;
-            _init(isNewProfile);
+            _isNewProfile = isNewProfile;
         }
 
-        public Profile CurrentProfile { get; set; }
+        public Profile CurrentProfile
+        {
+            get => _currentProfile;
+            set => Set(ref _currentProfile, value);
+        }
 
         public string SelectedVisibility
         {
@@ -54,74 +62,96 @@ namespace MCLauncher.UI
 
         public string Title { get; set; }
 
-        private void _init(bool isNewProfile)
+        public async Task Init()
         {
+            var isNewProfile = _isNewProfile;
             if (isNewProfile)
-                _createProfile();
+                CreateProfile();
             else
-                _loadProfile();
+                LoadProfile();
 
-            _saveVersionsToCache();
-            _showSelectedVersions();
+            SelectedVisibility = CurrentProfile.LauncherVisibility switch
+            {
+                LauncherVisibility.KeepOpen => UIResource.KeepLauncherOpen,
+                LauncherVisibility.Close => UIResource.HideLauncher,
+                LauncherVisibility.Hide => UIResource.CloseLauncher,
+                _ => throw new ArgumentOutOfRangeException()
+            };
+
+            await SaveVersionsToCache();
+            ShowSelectedVersions();
 
             Title = isNewProfile ? UIResource.NewProfileTitle : UIResource.EditProfileTitle;
 
-            CurrentProfile.SelectedVersionsChanged += (sender, args) => { _showSelectedVersions(); };
+            CurrentProfile.SelectedVersionsChanged += (sender, args) => { ShowSelectedVersions(); };
 
             Save = new RelayCommand(() =>
             {
                 if (isNewProfile)
-                    _saveNewProfile();
+                    SaveNewProfile();
                 else
-                    _saveEditedProfile();
+                    SaveEditedProfile();
 
                 Messenger.Default.Send(new ProfilesChangedMessage());
             });
-            OpenDirectory = new RelayCommand(() => { _settingsModel.OpenGameDirectory(CurrentProfile.GameDirectory); });
+            OpenDirectory = new RelayCommand(() =>
+            {
+                _settingsModel.OpenGameDirectory(CurrentProfile.GameDirectory);
+            });
         }
 
-        public void _showSelectedVersions()
+        private void ShowSelectedVersions()
         {
             Versions.Clear();
             if (CurrentProfile.ShowAlpha)
+            {
                 foreach (var version in _versionsCache.Alpha)
                     Versions.Add(version);
+            }
 
             if (CurrentProfile.ShowBeta)
+            {
                 foreach (var version in _versionsCache.Beta)
                     Versions.Add(version);
+            }
 
             if (CurrentProfile.ShowRelease)
+            {
                 foreach (var version in _versionsCache.Release)
                     Versions.Add(version);
+            }
 
             if (CurrentProfile.ShowSnapshot)
+            {
                 foreach (var version in _versionsCache.Snapshot)
                     Versions.Add(version);
+            }
 
             if (CurrentProfile.ShowCustom)
+            {
                 foreach (var version in _versionsCache.Custom)
                     Versions.Add(version);
+            }
         }
 
-        private void _saveNewProfile()
+        private void SaveNewProfile()
         {
             _settingsModel.SaveProfile(CurrentProfile);
             Messenger.Default.Send(new StatusMessage(UIResource.NewProfileStatus));
         }
 
-        private void _saveEditedProfile()
+        private void SaveEditedProfile()
         {
             _settingsModel.EditProfile(_oldProfileName, CurrentProfile);
             Messenger.Default.Send(new StatusMessage(UIResource.ProfileEditedStatus));
         }
 
-        private void _saveVersionsToCache()
+        private async Task SaveVersionsToCache()
         {
-            _versionsCache = _settingsModel.DownloadAllVersions();
+            _versionsCache = await _settingsModel.DownloadAllVersions();
         }
 
-        private void _createProfile()
+        private void CreateProfile()
         {
             CurrentProfile = new Profile
             {
@@ -129,7 +159,7 @@ namespace MCLauncher.UI
             };
         }
 
-        private void _loadProfile()
+        private void LoadProfile()
         {
             CurrentProfile = _settingsModel.LoadLastProfile();
 
