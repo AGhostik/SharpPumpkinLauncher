@@ -2,15 +2,15 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
-using GalaSoft.MvvmLight;
-using GalaSoft.MvvmLight.Command;
-using GalaSoft.MvvmLight.Messaging;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using MCLauncher.Model;
 using MCLauncher.UI.Messages;
 
 namespace MCLauncher.UI
 {
-    public class SettingsViewModel : ViewModelBase
+    public class SettingsViewModel : ObservableObject
     {
         private readonly ISettingsModel _settingsModel;
         private readonly bool _isNewProfile;
@@ -19,6 +19,7 @@ namespace MCLauncher.UI
 
         private AllVersions _versionsCache;
         private Profile _currentProfile;
+        private string _title;
 
         public SettingsViewModel(ISettingsModel model, bool isNewProfile)
         {
@@ -29,7 +30,7 @@ namespace MCLauncher.UI
         public Profile CurrentProfile
         {
             get => _currentProfile;
-            set => Set(ref _currentProfile, value);
+            set => SetProperty(ref _currentProfile, value);
         }
 
         public string SelectedVisibility
@@ -37,7 +38,7 @@ namespace MCLauncher.UI
             get => _selectedVisibility;
             set
             {
-                Set(ref _selectedVisibility, value);
+                SetProperty(ref _selectedVisibility, value);
 
                 if (_selectedVisibility == UIResource.KeepLauncherOpen)
                     CurrentProfile.LauncherVisibility = LauncherVisibility.KeepOpen;
@@ -60,11 +61,18 @@ namespace MCLauncher.UI
         public RelayCommand Save { get; set; }
         public RelayCommand OpenDirectory { get; set; }
 
-        public string Title { get; set; }
+        public string Title
+        {
+            get => _title;
+            set => SetProperty(ref _title, value);
+        }
 
         public async Task Init()
         {
             var isNewProfile = _isNewProfile;
+            
+            Title = isNewProfile ? UIResource.NewProfileTitle : UIResource.EditProfileTitle;
+            
             if (isNewProfile)
                 CreateProfile();
             else
@@ -81,7 +89,7 @@ namespace MCLauncher.UI
             await SaveVersionsToCache();
             ShowSelectedVersions();
 
-            Title = isNewProfile ? UIResource.NewProfileTitle : UIResource.EditProfileTitle;
+            CurrentProfile.CurrentVersion = _versionsCache.Latest;
 
             CurrentProfile.SelectedVersionsChanged += (sender, args) => { ShowSelectedVersions(); };
 
@@ -92,7 +100,7 @@ namespace MCLauncher.UI
                 else
                     SaveEditedProfile();
 
-                Messenger.Default.Send(new ProfilesChangedMessage());
+                WeakReferenceMessenger.Default.Send(new ProfilesChangedMessage());
             });
             OpenDirectory = new RelayCommand(() =>
             {
@@ -137,13 +145,13 @@ namespace MCLauncher.UI
         private void SaveNewProfile()
         {
             _settingsModel.SaveProfile(CurrentProfile);
-            Messenger.Default.Send(new StatusMessage(UIResource.NewProfileStatus));
+            WeakReferenceMessenger.Default.Send(new StatusMessage(UIResource.NewProfileStatus));
         }
 
         private void SaveEditedProfile()
         {
             _settingsModel.EditProfile(_oldProfileName, CurrentProfile);
-            Messenger.Default.Send(new StatusMessage(UIResource.ProfileEditedStatus));
+            WeakReferenceMessenger.Default.Send(new StatusMessage(UIResource.ProfileEditedStatus));
         }
 
         private async Task SaveVersionsToCache()

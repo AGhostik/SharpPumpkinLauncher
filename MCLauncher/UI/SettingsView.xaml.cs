@@ -1,5 +1,5 @@
 ﻿using System.Windows;
-using GalaSoft.MvvmLight.Messaging;
+using CommunityToolkit.Mvvm.Messaging;
 using MCLauncher.UI.Messages;
 
 namespace MCLauncher.UI
@@ -15,9 +15,8 @@ namespace MCLauncher.UI
             Owner = Application.Current.MainWindow;
             InitializeComponent();
 
-            Messenger.Default.Register(this, (ProfilesChangedMessage message) => { Close(); });
+            WeakReferenceMessenger.Default.Register<ProfilesChangedMessage>(this, (r, message) => { Close(); });
         }
-
 
         private async void SettingsView_OnLoaded(object sender, RoutedEventArgs e)
         {

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using GalaSoft.MvvmLight.Messaging;
+using CommunityToolkit.Mvvm.Messaging;
 using MCLauncher.Model.Managers;
 using MCLauncher.Model.MinecraftVersionJson;
 using MCLauncher.UI;
@@ -11,7 +11,7 @@ using Newtonsoft.Json.Linq;
 
 namespace MCLauncher.Model
 {
-    public class Installer : IInstaller
+    public sealed class Installer : IInstaller
     {
         private readonly List<Tuple<Uri, string>> _downloadQueue;
         private readonly List<Tuple<string, string[]>> _extractQueue;
@@ -61,7 +61,7 @@ namespace MCLauncher.Model
         private void Finish()
         {
             SendProgressText(UIResource.InstallCompletedStatus);
-            Messenger.Default.Send(new InstallProgressMessage(100));
+            WeakReferenceMessenger.Default.Send(new InstallProgressMessage(100));
         }
 
         private async Task SetMinecraftVersion(Profile profile)
@@ -73,7 +73,7 @@ namespace MCLauncher.Model
         private void ResetProgress()
         {
             _progress = 0;
-            Messenger.Default.Send(new InstallProgressMessage(0));
+            WeakReferenceMessenger.Default.Send(new InstallProgressMessage(0));
         }
 
         private void AddProgressAndSend(float value)
@@ -87,12 +87,12 @@ namespace MCLauncher.Model
             if (value <= 0)
                 return;
             _progress += value;
-            Messenger.Default.Send(new InstallProgressMessage(_progress));
+            WeakReferenceMessenger.Default.Send(new InstallProgressMessage(_progress));
         }
 
         private void SendProgressText(string text)
         {
-            Messenger.Default.Send(new StatusMessage(text));
+            WeakReferenceMessenger.Default.Send(new StatusMessage(text));
         }
 
         private void FixProfileDirectoryString(Profile profile)

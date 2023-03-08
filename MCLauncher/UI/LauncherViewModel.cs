@@ -1,14 +1,15 @@
 ﻿using System.Collections.ObjectModel;
 using System.Windows;
-using GalaSoft.MvvmLight;
-using GalaSoft.MvvmLight.Command;
-using GalaSoft.MvvmLight.Messaging;
+using System.Windows.Input;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using MCLauncher.Model;
 using MCLauncher.UI.Messages;
 
 namespace MCLauncher.UI
 {
-    public class LauncherViewModel : ViewModelBase
+    public class LauncherViewModel : ObservableObject
     {
         private readonly ILauncherModel _launcherModel;
         private string _currentProfileName;
@@ -21,13 +22,13 @@ namespace MCLauncher.UI
         public LauncherViewModel(ILauncherModel launcherModel)
         {
             _launcherModel = launcherModel;
-            _init();
+            Init();
         }
 
         public bool IsEditActive
         {
             get => _isEditActive;
-            set => Set(ref _isEditActive, value);
+            set => SetProperty(ref _isEditActive, value);
         }
 
         public string CurrentProfileName
@@ -35,7 +36,7 @@ namespace MCLauncher.UI
             get => _currentProfileName;
             set
             {
-                Set(ref _currentProfileName, value);
+                SetProperty(ref _currentProfileName, value);
 
                 if (!string.IsNullOrEmpty(value))
                 {
@@ -53,64 +54,65 @@ namespace MCLauncher.UI
         
         public ObservableCollection<string> Profiles { get; set; } = new ObservableCollection<string>();
 
-        public RelayCommand Start { get; set; }
-        public RelayCommand NewProfile { get; set; }
-        public RelayCommand EditProfile { get; set; }
-        public RelayCommand DeleteProfile { get; set; }
+        public ICommand Start { get; set; }
+        public ICommand NewProfile { get; set; }
+        public ICommand EditProfile { get; set; }
+        public ICommand DeleteProfile { get; set; }
 
         public string Status
         {
             get => _status;
-            set => Set(ref _status, value);
+            set => SetProperty(ref _status, value);
         }
 
         public float Progress
         {
             get => _progress;
-            set => Set(ref _progress, value);
+            set => SetProperty(ref _progress, value);
         }
 
         public bool IsStartActive
         {
             get => _isStartActive;
-            set => Set(ref _isStartActive, value);
+            set => SetProperty(ref _isStartActive, value);
         }
 
         public Visibility ProgresBarVisibility
         {
             get => _progresBarVisibility;
-            set => Set(ref _progresBarVisibility, value);
+            set => SetProperty(ref _progresBarVisibility, value);
         }
 
-        private void _init()
+        private void Init()
         {
             IsStartActive = false;
             IsEditActive = false;
-            _refreshProfiles();
+            RefreshProfiles();
 
             Progress = 0;
             ProgresBarVisibility = Visibility.Collapsed;
 
             CurrentProfileName = _launcherModel.GetLastProfile();
 
-            Start = new RelayCommand(async () => { await _launcherModel.StartGame(); });
+            Start = new AsyncRelayCommand(async () => { await _launcherModel.StartGame(); });
             NewProfile = new RelayCommand(() => { _launcherModel.OpenNewProfileWindow(); });
             EditProfile = new RelayCommand(() => { _launcherModel.OpenEditProfileWindow(); });
             DeleteProfile = new RelayCommand(() => { _launcherModel.DeleteProfile(CurrentProfileName); });
 
-            Messenger.Default.Register(this, (ProfilesChangedMessage message) => { _refreshProfiles(); });
-            Messenger.Default.Register(this, (StatusMessage message) => { Status = message.Status; });
-            Messenger.Default.Register(this, (InstallProgressMessage message) =>
+            WeakReferenceMessenger.Default.Register<ProfilesChangedMessage>(this, (r, message) => { RefreshProfiles(); });
+            WeakReferenceMessenger.Default.Register<StatusMessage>(this, (r, message) => { Status = message.Status; });
+            WeakReferenceMessenger.Default.Register<InstallProgressMessage>(this, (r, message) =>
             {
                 ProgresBarVisibility = message.Percentage < 100 ? Visibility.Visible : Visibility.Collapsed;
                 Progress = message.Percentage;
             });
         }
 
-        private void _refreshProfiles()
+        private void RefreshProfiles()
         {
             Profiles.Clear();
-            foreach (var profile in _launcherModel.GetProfiles()) Profiles.Add(profile);
+            foreach (var profile in _launcherModel.GetProfiles())
+                Profiles.Add(profile);
             CurrentProfileName = _launcherModel.GetLastProfile();
         }
     }

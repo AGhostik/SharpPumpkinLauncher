@@ -1,5 +1,5 @@
 ﻿using System.Windows;
-using GalaSoft.MvvmLight.Messaging;
+using CommunityToolkit.Mvvm.Messaging;
 using MCLauncher.Model;
 using MCLauncher.Model.Managers;
 using MCLauncher.UI;
@@ -31,7 +31,7 @@ namespace MCLauncher
 
             launcherView.Show();
 
-            Messenger.Default.Register(this, (ShowSettingsMessage message) =>
+            WeakReferenceMessenger.Default.Register<ShowSettingsMessage>(this, (r, message) =>
             {
                 var viewModel =
                     container.Resolve<SettingsViewModel>(new DependencyOverride(typeof(bool), message.IsNewProfile));

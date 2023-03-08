@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows;
-using GalaSoft.MvvmLight.Messaging;
+using CommunityToolkit.Mvvm.Messaging;
 using MCLauncher.Model.Managers;
 using MCLauncher.UI;
 using MCLauncher.UI.Messages;
@@ -26,7 +26,7 @@ namespace MCLauncher.Model
         {
             var currentProfile = _profileManager.GetLast();
             await _installer.Install(currentProfile);
-            _launchMinecraft(currentProfile);
+            LaunchMinecraft(currentProfile);
         }
 
         public void SaveLastProfileName(string name)
@@ -36,18 +36,18 @@ namespace MCLauncher.Model
 
         public void OpenNewProfileWindow()
         {
-            Messenger.Default.Send(new ShowSettingsMessage(true));
+            WeakReferenceMessenger.Default.Send(new ShowSettingsMessage(true));
         }
 
         public void OpenEditProfileWindow()
         {
-            Messenger.Default.Send(new ShowSettingsMessage(false));
+            WeakReferenceMessenger.Default.Send(new ShowSettingsMessage(false));
         }
 
         public void DeleteProfile(string name)
         {
             _profileManager.Delete(name);
-            Messenger.Default.Send(new ProfilesChangedMessage());
+            WeakReferenceMessenger.Default.Send(new ProfilesChangedMessage());
         }
 
         public List<string> GetProfiles()
@@ -55,7 +55,8 @@ namespace MCLauncher.Model
             var names = new List<string>();
             var profiles = _profileManager.GetProfiles();
 
-            foreach (var profile in profiles) names.Add(profile.Name);
+            foreach (var profile in profiles)
+                names.Add(profile.Name);
 
             return names;
         }
@@ -66,11 +67,11 @@ namespace MCLauncher.Model
             return lastProfile;
         }
 
-        private void _launchMinecraft(Profile profile)
+        private void LaunchMinecraft(Profile profile)
         {
             Action exitedAction = MinecraftProcessExited;
 
-            Messenger.Default.Send(new StatusMessage(UIResource.LaunchGameStatus));
+            WeakReferenceMessenger.Default.Send(new StatusMessage(UIResource.LaunchGameStatus));
 
             switch (profile.LauncherVisibility)
             {
@@ -94,12 +95,12 @@ namespace MCLauncher.Model
 
         private static void MinecraftProcessExited()
         {
-            Messenger.Default.Send(new StatusMessage(UIResource.GameExitedStatus));
+            WeakReferenceMessenger.Default.Send(new StatusMessage(UIResource.GameExitedStatus));
         }
 
         private static void ShowMainWindow()
         {
-            Messenger.Default.Send(new MinecraftExitedMessage());
+            WeakReferenceMessenger.Default.Send(new MinecraftExitedMessage());
         }
     }
 }

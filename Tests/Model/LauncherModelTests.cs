@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using GalaSoft.MvvmLight.Messaging;
+using CommunityToolkit.Mvvm.Messaging;
 using MCLauncher.Model;
 using MCLauncher.Model.Managers;
 using MCLauncher.UI.Messages;
@@ -69,7 +69,10 @@ namespace Tests.Model
         {
             var model = new LauncherModel(_fileManager, _profileManager, _installer);
             var pass = false;
-            Messenger.Default.Register(this, (ShowSettingsMessage message) => { pass = !message.IsNewProfile; });
+            WeakReferenceMessenger.Default.Register<ShowSettingsMessage>(this, (r, message) =>
+            {
+                pass = !message.IsNewProfile;
+            });
             model.OpenEditProfileWindow();
 
             if (pass)
@@ -83,7 +86,10 @@ namespace Tests.Model
         {
             var model = new LauncherModel(_fileManager, _profileManager, _installer);
             var pass = false;
-            Messenger.Default.Register(this, (ShowSettingsMessage message) => { pass = message.IsNewProfile; });
+            WeakReferenceMessenger.Default.Register<ShowSettingsMessage>(this, (r, message) =>
+            {
+                pass = message.IsNewProfile;
+            });
             model.OpenNewProfileWindow();
 
             if (pass)

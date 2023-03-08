@@ -49,20 +49,27 @@ namespace MCLauncher.Model
 
         public async Task<AllVersions> DownloadAllVersions()
         {
-            var versions = new AllVersions();
+            var result = new AllVersions();
 
             var json = await _jsonManager.DownloadJsonAsync(ModelResource.VersionsUrl);
-            var jVersions = json["versions"]?.ToObject<Version[]>();
+            var versions = json["versions"]?.ToObject<Version[]>();
 
-            if (jVersions == null)
+            if (versions == null)
                 return null;
 
-            versions.Release.AddRange(jVersions.Where(_ => _.Type == ModelResource.release).Select(_ => _.Id));
-            versions.Snapshot.AddRange(jVersions.Where(_ => _.Type == ModelResource.snapshot).Select(_ => _.Id));
-            versions.Beta.AddRange(jVersions.Where(_ => _.Type == ModelResource.beta).Select(_ => _.Id));
-            versions.Alpha.AddRange(jVersions.Where(_ => _.Type == ModelResource.alpha).Select(_ => _.Id));
+            result.Release.AddRange(versions.Where(_ => _.Type == ModelResource.release).Select(_ => _.Id));
+            result.Snapshot.AddRange(versions.Where(_ => _.Type == ModelResource.snapshot).Select(_ => _.Id));
+            result.Beta.AddRange(versions.Where(_ => _.Type == ModelResource.beta).Select(_ => _.Id));
+            result.Alpha.AddRange(versions.Where(_ => _.Type == ModelResource.alpha).Select(_ => _.Id));
+            
+            var latest = json["latest"]?.ToObject<Latest>();
+            if (latest != null)
+            {
+                result.Latest = latest.Release;
+                result.LatestSnapshot = latest.Snapshoot;
+            }
 
-            return versions;
+            return result;
         }
     }
 }

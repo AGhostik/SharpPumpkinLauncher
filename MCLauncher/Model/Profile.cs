@@ -1,10 +1,10 @@
 ﻿using System;
-using GalaSoft.MvvmLight;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace MCLauncher.Model
 {
     [Serializable]
-    public class Profile : ViewModelBase
+    public class Profile : ObservableObject
     {
         private string _currentVersion;
         private string _gameDirectory;
@@ -38,43 +38,43 @@ namespace MCLauncher.Model
         public string Name
         {
             get => _name;
-            set => Set(ref _name, value);
+            set => SetProperty(ref _name, value);
         }
 
         public string Nickname
         {
             get => _nickname;
-            set => Set(ref _nickname, value);
+            set => SetProperty(ref _nickname, value);
         }
 
         public string JavaFile
         {
             get => _javaFile;
-            set => Set(ref _javaFile, value);
+            set => SetProperty(ref _javaFile, value);
         }
 
         public string GameDirectory
         {
             get => _gameDirectory;
-            set => Set(ref _gameDirectory, value);
+            set => SetProperty(ref _gameDirectory, value);
         }
 
         public string JvmArgs
         {
             get => _jvmArgs;
-            set => Set(ref _jvmArgs, value);
+            set => SetProperty(ref _jvmArgs, value);
         }
 
         public string CurrentVersion
         {
             get => _currentVersion;
-            set => Set(ref _currentVersion, value);
+            set => SetProperty(ref _currentVersion, value);
         }
 
         public LauncherVisibility LauncherVisibility
         {
             get => _launcherVisibility;
-            set => Set(ref _launcherVisibility, value);
+            set => SetProperty(ref _launcherVisibility, value);
         }
 
         public bool ShowCustom
@@ -82,7 +82,7 @@ namespace MCLauncher.Model
             get => _showCustom;
             set
             {
-                Set(ref _showCustom, value);
+                SetProperty(ref _showCustom, value);
                 SelectedVersionsChanged?.Invoke(this, null);
             }
         }
@@ -92,7 +92,7 @@ namespace MCLauncher.Model
             get => _showRelease;
             set
             {
-                Set(ref _showRelease, value);
+                SetProperty(ref _showRelease, value);
                 SelectedVersionsChanged?.Invoke(this, null);
             }
         }
@@ -102,7 +102,7 @@ namespace MCLauncher.Model
             get => _showSnapshot;
             set
             {
-                Set(ref _showSnapshot, value);
+                SetProperty(ref _showSnapshot, value);
                 SelectedVersionsChanged?.Invoke(this, null);
             }
         }
@@ -112,7 +112,7 @@ namespace MCLauncher.Model
             get => _showBeta;
             set
             {
-                Set(ref _showBeta, value);
+                SetProperty(ref _showBeta, value);
                 SelectedVersionsChanged?.Invoke(this, null);
             }
         }
@@ -122,7 +122,7 @@ namespace MCLauncher.Model
             get => _showAlpha;
             set
             {
-                Set(ref _showAlpha, value);
+                SetProperty(ref _showAlpha, value);
                 SelectedVersionsChanged?.Invoke(this, null);
             }
         }

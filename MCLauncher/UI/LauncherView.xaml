@@ -78,6 +78,7 @@
             Grid.Row="4"
             Margin="5"
             Command="{Binding Start}"
+            IsEnabled="{Binding IsStartActive}"
             Content="Start" />
     </Grid>
 </Window>

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Windows;
-using GalaSoft.MvvmLight.Messaging;
+using CommunityToolkit.Mvvm.Messaging;
 using MCLauncher.Model;
 using MCLauncher.UI;
 using MCLauncher.UI.Messages;
@@ -58,7 +58,7 @@ namespace Tests.UI
         public void Progress_EqualsMessageProgress_RecievedInstallProgressMessage()
         {
             var vm = new LauncherViewModel(_launcherModel);
-            Messenger.Default.Send(new InstallProgressMessage(50));
+            WeakReferenceMessenger.Default.Send(new InstallProgressMessage(50));
 
             Assert.AreEqual(vm.Progress, 50);
         }
@@ -67,7 +67,7 @@ namespace Tests.UI
         public void ProgressBarVisibility_Collapsed_ProgressEquals100()
         {
             var vm = new LauncherViewModel(_launcherModel);
-            Messenger.Default.Send(new InstallProgressMessage(100));
+            WeakReferenceMessenger.Default.Send(new InstallProgressMessage(100));
 
             Assert.AreEqual(vm.ProgresBarVisibility, Visibility.Collapsed);
         }
@@ -76,7 +76,7 @@ namespace Tests.UI
         public void ProgressBarVisibility_Visible_ProgressLess100()
         {
             var vm = new LauncherViewModel(_launcherModel);
-            Messenger.Default.Send(new InstallProgressMessage(50));
+            WeakReferenceMessenger.Default.Send(new InstallProgressMessage(50));
 
             Assert.AreEqual(vm.ProgresBarVisibility, Visibility.Visible);
         }
@@ -86,7 +86,7 @@ namespace Tests.UI
         {
             var vm = new LauncherViewModel(_launcherModel);
             vm.Profiles.Clear();
-            Messenger.Default.Send(new ProfilesChangedMessage());
+            WeakReferenceMessenger.Default.Send(new ProfilesChangedMessage());
 
             Assert.IsNotEmpty(vm.Profiles);
         }
@@ -104,7 +104,7 @@ namespace Tests.UI
         public void Status_UpdateStatus_RecievedStatusMessage()
         {
             var vm = new LauncherViewModel(_launcherModel);
-            Messenger.Default.Send(new StatusMessage("testStatus"));
+            WeakReferenceMessenger.Default.Send(new StatusMessage("testStatus"));
 
             Assert.AreEqual(vm.Status, "testStatus");
         }
