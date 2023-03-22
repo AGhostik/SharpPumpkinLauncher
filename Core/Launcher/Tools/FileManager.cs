@@ -31,12 +31,12 @@ internal sealed class FileManager
 
         process.Start();
         
-        var stdoutx = process.StandardOutput.ReadToEnd();         
-        var stderrx = process.StandardError.ReadToEnd();             
+        var output = process.StandardOutput.ReadToEnd();         
+        var errors = process.StandardError.ReadToEnd();             
         process.WaitForExit();
         
-        Debug.WriteLine(stdoutx);
-        Debug.WriteLine(stderrx);
+        Debug.WriteLine(output);
+        Debug.WriteLine(errors);
     }
 
     public string GetPathFilename(string source)
