@@ -10,7 +10,10 @@ internal sealed class OsRuleManager
     private const string OsName = "windows";
     private const string OsVersion = "^10\\.";
     private const string OsArchitecture = "x64";
-    
+
+    private const string IsDemoUser = "is_demo_user";
+    private const string HasCustomResolution = "has_custom_resolution"; 
+
     public static bool IsAllowed(IReadOnlyList<RulesData>? rules)
     {
         if (rules == null)
@@ -19,26 +22,32 @@ internal sealed class OsRuleManager
         for (var i = 0; i < rules.Count; i++)
         {
             var rule = rules[i];
-                        
-            if (rule.Os == null)
-                continue;
-                        
-            if ((rule.Os.Name == OsName || string.IsNullOrEmpty(rule.Os.Name)) && 
-                (rule.Os.Version == OsVersion || string.IsNullOrEmpty(rule.Os.Version)) &&
-                (rule.Os.Architecture == OsArchitecture || string.IsNullOrEmpty(rule.Os.Architecture)))
+
+            if (rule.Features != null)
             {
-                switch (rule.Action)
-                {
-                    case Allow:
-                        return true;
-                        
-                    case Disallow:
-                        return false;
-                }
+                if (rule.Features.TryGetValue(IsDemoUser, out var value) && value)
+                    return false;
             }
-            else
+
+            if (rule.Os != null)
             {
-                return false;
+                if ((rule.Os.Name == OsName || string.IsNullOrEmpty(rule.Os.Name)) &&
+                    (rule.Os.Version == OsVersion || string.IsNullOrEmpty(rule.Os.Version)) &&
+                    (rule.Os.Architecture == OsArchitecture || string.IsNullOrEmpty(rule.Os.Architecture)))
+                {
+                    switch (rule.Action)
+                    {
+                        case Allow:
+                            return true;
+
+                        case Disallow:
+                            return false;
+                    }
+                }
+                else
+                {
+                    return false;
+                }
             }
         }
 
