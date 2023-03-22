@@ -101,16 +101,8 @@ public class MinecraftLauncher
         
         LaunchMinecraftProgress?.Invoke("Prepare to launch", 0f);
 
-        var launchArgumentsData = new LaunchArgumentsData(
-            _fileManager,
-            minecraftVersion.Id,
-            minecraftVersion.OriginalType,
-            fileList.Client.FileName,
-            launchData.PlayerName,
-            minecraftVersionData.Logging?.Client?.Argument,
-            fileList.Logging?.FileName,
-            minecraftPaths,
-            fileList.LibraryFiles);
+        var launchArgumentsData = new LaunchArgumentsData(_fileManager, minecraftVersionData, fileList, minecraftPaths,
+            launchData.PlayerName);
 
         var launchArguments = LaunchArgumentsBuilder.GetLaunchArguments(minecraftVersionData, launchArgumentsData);
         

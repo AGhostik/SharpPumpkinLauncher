@@ -12,7 +12,6 @@ public sealed class MinecraftVersion
         Id = id;
         Url = url;
         Sha1 = sha1;
-        OriginalType = type;
 
         Type = type switch
         {
@@ -26,7 +25,6 @@ public sealed class MinecraftVersion
 
     public string Id { get; }
     public MinecraftType Type { get; }
-    public string OriginalType { get; }
     public string Url { get; }
     public string Sha1 { get; }
 }

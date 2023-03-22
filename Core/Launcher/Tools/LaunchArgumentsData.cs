@@ -1,40 +1,44 @@
-﻿using Launcher.Data;
+﻿using JsonReader.Game;
+using Launcher.Data;
 
 namespace Launcher.Tools;
 
 internal sealed class LaunchArgumentsData
 {
-    public LaunchArgumentsData(FileManager fileManager,
-        string versionId, string versionType, string clientJar, string playerName, string? loggingArgument,
-        string? loggingFile, MinecraftPaths minecraftPaths, IReadOnlyList<MinecraftLibraryFile> libraries)
+    public LaunchArgumentsData(FileManager fileManager, MinecraftVersionData minecraftVersionData,
+        MinecraftFileList fileList, MinecraftPaths minecraftPaths, string playerName)
     {
-        VersionId = versionId;
-        VersionType = versionType;
-        ClientJar = fileManager.GetFullPath(clientJar);
+        VersionId = minecraftVersionData.Id ?? "null";
+        VersionType = minecraftVersionData.Type ?? "null";
+        ClientJar = fileManager.GetFullPath(fileList.Client?.FileName);
         PlayerName = playerName;
 
-        GameDirectory = $"\"{fileManager.GetFullPath(minecraftPaths.GameDirectory)}\"";
-        AssetsDirectory = $"\"{fileManager.GetFullPath(minecraftPaths.AssetsDirectory)}\"";
-        LibrariesDirectory = $"\"{fileManager.GetFullPath(minecraftPaths.LibrariesDirectory)}\"";
-        NativesDirectory = $"\"{fileManager.GetFullPath(minecraftPaths.NativesDirectory)}\"";
+        AssetsVersion = minecraftVersionData.Assets ?? "null";
 
-        LoggingArgument = string.IsNullOrEmpty(loggingArgument) ? "null" : loggingArgument;
-        LoggingFile = string.IsNullOrEmpty(loggingFile) ? "null" : $"\"{fileManager.GetFullPath(loggingFile)}\"";
+        GameDirectory = fileManager.GetFullPath(minecraftPaths.GameDirectory);
+        AssetsDirectory = fileManager.GetFullPath(minecraftPaths.AssetsDirectory);
+        LibrariesDirectory = fileManager.GetFullPath(minecraftPaths.LibrariesDirectory);
+        NativesDirectory = fileManager.GetFullPath(minecraftPaths.NativesDirectory);
 
-        var lib = new string[libraries.Count];
-        for (var i = 0; i < libraries.Count; i++)
-        {
-            lib[i] = fileManager.GetFullPath(libraries[i].FileName);
-        }
+        LoggingArgument = minecraftVersionData.Logging?.Client?.Argument ?? "null";
+        LoggingFile = string.IsNullOrEmpty(fileList.Logging?.FileName) ? "null" : $"\"{fileManager.GetFullPath(fileList.Logging?.FileName)}\"";
+
+        var lib = new string[fileList.LibraryFiles.Count];
+        for (var i = 0; i < fileList.LibraryFiles.Count; i++)
+            lib[i] = fileManager.GetFullPath(fileList.LibraryFiles[i].FileName);
 
         Libraries = lib;
     }
+
+    public string LauncherName { get; } = "\"mclauncher\"";
 
     public string VersionId { get; }
     public string VersionType { get; }
     public string ClientJar { get; }
     
     public string PlayerName { get; }
+    
+    public string AssetsVersion { get; }
         
     public string GameDirectory { get; }
     public string AssetsDirectory { get; }

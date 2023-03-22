@@ -15,7 +15,10 @@ internal sealed class LaunchArgumentsBuilder
         }
 
         if (minecraftVersionData.MinecraftArguments != null)
-            return GetLegacyArguments(minecraftVersionData.MinecraftArguments);
+        {
+            return GetLegacyArguments(launchArgumentsData, minecraftVersionData.MinecraftArguments,
+                minecraftVersionData.MainClass);
+        }
 
         throw new Exception("No arguments");
     }
@@ -71,47 +74,55 @@ internal sealed class LaunchArgumentsBuilder
         
         const char separator = ';';
 
-        var classpathStringBuilder = new StringBuilder();
-        classpathStringBuilder.Append('\"');
-        for (var i = 0; i < launchArgumentsData.Libraries.Count; i++)
-        {
-            classpathStringBuilder.Append(launchArgumentsData.Libraries[i]);
-            classpathStringBuilder.Append(separator);
-        }
-        classpathStringBuilder.Append(launchArgumentsData.ClientJar);
-        classpathStringBuilder.Append('\"');
+        var classpathString =
+            BuildLibrariesString(launchArgumentsData.Libraries, launchArgumentsData.ClientJar, separator);
 
-        return jvmArguments
+        var result = jvmArguments
             .Replace("${natives_directory}", launchArgumentsData.NativesDirectory)
-            .Replace("${launcher_name}", "\"mclauncher\"")
+            .Replace("${launcher_name}", launchArgumentsData.LauncherName)
             .Replace("${launcher_version}", launcherVersion.ToString())
-            .Replace("${classpath}", classpathStringBuilder.ToString())
+            .Replace("${classpath}", classpathString)
             .Replace("${classpath_separator}", separator.ToString())
             .Replace("${primary_jar}", launchArgumentsData.ClientJar)
             .Replace("${library_directory}", launchArgumentsData.LibrariesDirectory)
             .Replace("${game_directory}", launchArgumentsData.GameDirectory)
-            .Replace("Windows 10", "\"Windows 10\"")
-               + ' ' + launchArgumentsData.LoggingArgument.Replace("${path}", launchArgumentsData.LoggingFile);
+            .Replace("Windows 10", "\"Windows 10\""); //todo:
+
+        if (!string.IsNullOrEmpty(launchArgumentsData.LoggingArgument) &&
+            !string.IsNullOrEmpty(launchArgumentsData.LoggingFile))
+        {
+            result += ' ' + launchArgumentsData.LoggingArgument.Replace("${path}", launchArgumentsData.LoggingFile);
+        }
+
+        return result;
+    }
+
+    private static string BuildLibrariesString(IReadOnlyList<string> libraries, string clientJar, char separator)
+    {
+        var classpathStringBuilder = new StringBuilder();
+        classpathStringBuilder.Append('\"');
+        for (var i = 0; i < libraries.Count; i++)
+        {
+            classpathStringBuilder.Append(libraries[i]);
+            classpathStringBuilder.Append(separator);
+        }
+        classpathStringBuilder.Append(clientJar);
+        classpathStringBuilder.Append('\"');
+
+        return classpathStringBuilder.ToString();
     }
 
     private static string? FillGameArguments(string? gameArguments, LaunchArgumentsData launchArgumentsData)
     {
         if (string.IsNullOrEmpty(gameArguments))
             return null;
-        
-        string assetsVersion;
-        var versionParts = launchArgumentsData.VersionId.Split('.');
-        if (versionParts.Length == 3)
-            assetsVersion = $"{versionParts[0]}.{versionParts[1]}";
-        else
-            assetsVersion = launchArgumentsData.VersionId;
-        
+
         return gameArguments
             .Replace("${auth_player_name}", launchArgumentsData.PlayerName)
             .Replace("${version_name}", launchArgumentsData.VersionId)
             .Replace("${game_directory}", launchArgumentsData.GameDirectory)
             .Replace("${assets_root}", launchArgumentsData.AssetsDirectory)
-            .Replace("${assets_index_name}", assetsVersion)
+            .Replace("${assets_index_name}", launchArgumentsData.AssetsVersion)
             .Replace("${auth_uuid}", GetUuid(launchArgumentsData.PlayerName))
             .Replace("${auth_access_token}", "null")
             .Replace("${clientid}", "null")
@@ -119,13 +130,28 @@ internal sealed class LaunchArgumentsBuilder
             .Replace("${user_type}", "mojang")
             .Replace("${version_type}", launchArgumentsData.VersionType)
             .Replace("${resolution_width}", "1200")
-            .Replace("${resolution_height}", "720")
-            .Replace(" --demo", string.Empty);
+            .Replace("${resolution_height}", "720");
     }
     
-    private static string GetLegacyArguments(string legacyMinecraftArguments)
+    private static string GetLegacyArguments(LaunchArgumentsData launchArgumentsData, string legacyMinecraftArguments,
+        string? mainClass)
     {
-        return "";
+        //todo:
+        //     var args = minecraftVersion.MinecraftArguments;
+        //     args = args.Replace("${auth_player_name}", profile.Nickname);
+        //     args = args.Replace("${version_name}", minecraftVersion.Id);
+        //     args = args.Replace("${game_directory}", profile.GameDirectory);
+        //     args = args.Replace("${assets_root}", profile.GameDirectory + "assets");
+        //     args = args.Replace("${assets_index_name}", minecraftVersion.Assets);
+        //     args = args.Replace("${auth_uuid}", GetUuid(profile.Nickname));
+        //     args = args.Replace("${auth_access_token}", "null");
+        //     args = args.Replace("${user_properties}", "{}");
+        //     args = args.Replace("${user_type}", "mojang");
+        //     args = args.Replace("${auth_session}", "null");
+        //     args = args.Replace("${game_assets}", profile.GameDirectory + "\\assets\\virtual\\legacy");
+        
+        var gameArguments = legacyMinecraftArguments;
+        return $"-Djava.library.path={launchArgumentsData.NativesDirectory} -cp {mainClass} {gameArguments}";
     }
     
     private static string GetUuid(string nickname)
