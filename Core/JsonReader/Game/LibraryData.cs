@@ -6,6 +6,9 @@ public class LibraryData
 {
     [JsonPropertyName("downloads")]
     public LibraryDownloadsData? Downloads { get; set; }
+    
+    [JsonPropertyName("extract")]
+    public ExtractData? Extract { get; set; }
 
     [JsonPropertyName("name")]
     public string? Name { get; set; }
