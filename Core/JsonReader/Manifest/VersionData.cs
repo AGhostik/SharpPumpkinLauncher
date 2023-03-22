@@ -2,7 +2,7 @@
 
 namespace JsonReader.Manifest;
 
-public class VersionData
+internal class VersionData
 {
     [JsonPropertyName("id")]
     public string? Id { get; set; }

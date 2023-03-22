@@ -2,7 +2,7 @@
 
 namespace JsonReader.Manifest;
 
-public class ManifestData
+internal class ManifestData
 {
     [JsonPropertyName("latest")]
     public LatestData? Latest { get; set; }

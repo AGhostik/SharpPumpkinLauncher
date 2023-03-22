@@ -2,7 +2,7 @@
 
 namespace JsonReader.Manifest;
 
-public class LatestData
+internal class LatestData
 {
     [JsonPropertyName("snapshot")]
     public string? Snapshoot { get; set; }
