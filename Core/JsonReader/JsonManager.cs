@@ -2,6 +2,7 @@
 using JsonReader.Game;
 using JsonReader.Manifest;
 using System.Text.Json;
+using JsonReader.PublicData;
 
 namespace JsonReader;
 

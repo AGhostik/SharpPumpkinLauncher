@@ -1,6 +1,7 @@
 ﻿using JsonReader;
 using JsonReader.Assets;
 using JsonReader.Game;
+using JsonReader.PublicData;
 using Launcher.Data;
 using Launcher.PublicData;
 using Launcher.Tools;

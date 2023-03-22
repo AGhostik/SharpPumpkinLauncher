@@ -1,4 +1,4 @@
-namespace JsonReader;
+namespace JsonReader.PublicData;
 
 public sealed class Versions
 {
