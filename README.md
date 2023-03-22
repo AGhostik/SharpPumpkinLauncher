@@ -28,5 +28,6 @@ Todo:
 Useful links:
 ------------
 
-- [Minecraft Modern documentation](http://wiki.vg/Category:Minecraft_Modern) 
 - [Minecraft game files](https://wiki.vg/Game_files)
+- [Inside a Minecraft launcher](https://ryanccn.dev/posts/inside-a-minecraft-launcher/)
+- [Launching the game](https://wiki.vg/Launching_the_game)

@@ -1,62 +1,117 @@
 ﻿using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.Mvvm.Messaging;
-using MCLauncher.Messages;
 
 namespace MCLauncher.LauncherWindow;
 
-public class LauncherViewModel : ObservableObject
+public sealed class LauncherViewModel : ObservableObject
 {
-    private readonly ILauncherModel _launcherModel;
-    private string? _currentProfileName;
-    private bool _isEditActive;
-    private bool _isStartActive;
+    private readonly LauncherModel _launcherModel;
+    private ProfileViewModel? _currentProfile;
+    
     private Visibility _progresBarVisibility;
     private float _progress;
     private string? _status;
+    
+    private bool _canAddProfile;
+    private bool _canEditProfile;
+    private bool _canRemoveProfile;
+    private bool _canStartGame;
 
-    public LauncherViewModel(ILauncherModel launcherModel)
+    public LauncherViewModel(LauncherModel launcherModel)
     {
         _launcherModel = launcherModel;
-        Init();
+        
+        _canRemoveProfile = false;
+        _canEditProfile = false;
+
+        _progress = 0;
+        _progresBarVisibility = Visibility.Collapsed;
+
+        Start = new AsyncRelayCommand(StartGame);
+        NewProfile = new RelayCommand(_launcherModel.CreateProfile);
+        EditProfile = new RelayCommand<ProfileViewModel?>(_launcherModel.EditProfile);
+        DeleteProfile = new RelayCommand<ProfileViewModel?>(_launcherModel.DeleteProfile);
+
+        Status = "Loading data";
+        
+        launcherModel.ProfileAdded += LauncherModelOnProfileAdded;
+        launcherModel.LaunchProgress += LauncherModelOnLaunchProgress;
+        launcherModel.MinecraftDataLoaded += LauncherModelOnMinecraftDataLoaded;
+
+        RefreshProfiles();
     }
 
-    public bool IsEditActive
+    private async Task StartGame()
     {
-        get => _isEditActive;
-        set => SetProperty(ref _isEditActive, value);
+        if (CurrentProfile == null)
+            return;
+
+        CanStartGame = false;
+        
+        await _launcherModel.StartGame(CurrentProfile, () =>
+        {
+            Status = "Game exited";
+            Progress = 0;
+            CanStartGame = true;
+        });
     }
 
-    public string? CurrentProfileName
+    private void LauncherModelOnProfileAdded(ProfileViewModel profile)
     {
-        get => _currentProfileName;
+        Profiles.Add(profile);
+
+        if (CurrentProfile == null)
+            CurrentProfile = profile;
+    }
+
+    private void LauncherModelOnMinecraftDataLoaded()
+    {
+        CanAddProfile = true;
+        Status = "Ready";
+    }
+
+    private void LauncherModelOnLaunchProgress(string status, float progress01)
+    {
+        Status = status;
+
+        if (progress01 <= 0f)
+        {
+            ProgresBarVisibility = Visibility.Collapsed;
+            Progress = 0f;
+        }
+        else
+        {
+            ProgresBarVisibility = Visibility.Visible;
+            Progress = progress01 * 100f;
+        }
+    }
+
+    public ProfileViewModel? CurrentProfile
+    {
+        get => _currentProfile;
         set
         {
-            SetProperty(ref _currentProfileName, value);
-
-            if (!string.IsNullOrEmpty(value))
-            {
-                IsEditActive = true;
-                IsStartActive = true;
-                _launcherModel.SaveLastProfileName(value);
-            }
-            else
-            {
-                IsEditActive = false;
-                IsStartActive = false;
-            }
+            SetProperty(ref _currentProfile, value);
+            
+            if (value != null)
+                _launcherModel.SaveLastProfile(value);
+            
+            CanEditProfile = _currentProfile != null;
+            CanRemoveProfile = _currentProfile != null;
+            CanStartGame = _currentProfile != null;
         }
     }
         
-    public ObservableCollection<string?> Profiles { get; } = new();
+    public ObservableCollection<ProfileViewModel> Profiles { get; } = new();
 
-    public ICommand? Start { get; set; }
-    public ICommand? NewProfile { get; set; }
-    public ICommand? EditProfile { get; set; }
-    public ICommand? DeleteProfile { get; set; }
+    public ICommand? Start { get; }
+    public ICommand? NewProfile { get; }
+    public ICommand? EditProfile { get; }
+    public ICommand? DeleteProfile { get; }
 
     public string? Status
     {
@@ -70,10 +125,28 @@ public class LauncherViewModel : ObservableObject
         set => SetProperty(ref _progress, value);
     }
 
-    public bool IsStartActive
+    public bool CanAddProfile
     {
-        get => _isStartActive;
-        set => SetProperty(ref _isStartActive, value);
+        get => _canAddProfile;
+        set => SetProperty(ref _canAddProfile, value);
+    }
+
+    public bool CanEditProfile
+    {
+        get => _canEditProfile;
+        set => SetProperty(ref _canEditProfile, value);
+    }
+
+    public bool CanRemoveProfile
+    {
+        get => _canRemoveProfile;
+        set => SetProperty(ref _canRemoveProfile, value);
+    }
+
+    public bool CanStartGame
+    {
+        get => _canStartGame;
+        set => SetProperty(ref _canStartGame, value);
     }
 
     public Visibility ProgresBarVisibility
@@ -82,36 +155,16 @@ public class LauncherViewModel : ObservableObject
         set => SetProperty(ref _progresBarVisibility, value);
     }
 
-    private void Init()
-    {
-        IsStartActive = false;
-        IsEditActive = false;
-        RefreshProfiles();
-
-        Progress = 0;
-        ProgresBarVisibility = Visibility.Collapsed;
-
-        CurrentProfileName = _launcherModel.GetLastProfile();
-
-        Start = new AsyncRelayCommand(async () => { await _launcherModel.StartGame(); });
-        NewProfile = new RelayCommand(() => { _launcherModel.OpenNewProfileWindow(); });
-        EditProfile = new RelayCommand(() => { _launcherModel.OpenEditProfileWindow(); });
-        DeleteProfile = new RelayCommand(() => { _launcherModel.DeleteProfile(CurrentProfileName); });
-
-        WeakReferenceMessenger.Default.Register<ProfilesChangedMessage>(this, (_, _) => { RefreshProfiles(); });
-        WeakReferenceMessenger.Default.Register<StatusMessage>(this, (_, message) => { Status = message.Status; });
-        WeakReferenceMessenger.Default.Register<InstallProgressMessage>(this, (_, message) =>
-        {
-            ProgresBarVisibility = message.Percentage < 100 ? Visibility.Visible : Visibility.Collapsed;
-            Progress = message.Percentage;
-        });
-    }
-
     private void RefreshProfiles()
     {
         Profiles.Clear();
-        foreach (var profile in _launcherModel.GetProfiles())
-            Profiles.Add(profile);
-        CurrentProfileName = _launcherModel.GetLastProfile();
+        var profiles = _launcherModel.GetProfiles();
+
+        for (var i = 0; i < profiles.Count; i++)
+            Profiles.Add(profiles[i]);
+
+        CurrentProfile = _launcherModel.GetLastProfile();
+        if (CurrentProfile == null && profiles.Count > 0)
+            CurrentProfile = profiles[0];
     }
 }

@@ -1,206 +1,230 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Threading.Tasks;
+using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
+using MCLauncher.LauncherWindow;
 using MCLauncher.Messages;
-using MCLauncher.Properties;
-using MCLauncher.Tools;
+using UserSettings;
+using Version = Launcher.PublicData.Version;
 
 namespace MCLauncher.SettingsWindow;
 
 public class SettingsViewModel : ObservableObject
 {
-    private readonly ISettingsModel _settingsModel;
-    private readonly bool _isNewProfile;
-    private string? _oldProfileName;
-    private string? _selectedVisibility;
+    private readonly SettingsModel _model;
+    private string? _profileName;
+    private string? _playerName;
+    private string? _gameDirectory;
+    private string? _javaFile;
+    private string? _jvmArgs;
+    private LauncherVisibility? _selectedLauncherVisibility;
+    private Version? _selectedVersion;
+    private bool _showCustom;
+    private bool _showRelease;
+    private bool _showSnapshot;
+    private bool _showBeta;
+    private bool _showAlpha;
+    private bool _canSave;
 
-    private AllVersions? _versionsCache;
-    private Profile? _currentProfile;
-    private string? _title;
-    private RelayCommand? _save;
-
-    public SettingsViewModel(ISettingsModel model, bool isNewProfile)
+    public SettingsViewModel(SettingsModel model, ProfileViewModel? profileViewModel)
     {
-        _settingsModel = model;
-        _isNewProfile = isNewProfile;
+        _model = model;
+
+        _canSave = true;
+        _showRelease = true;
+        _javaFile = model.GetJavaPath();
+        _selectedLauncherVisibility = LauncherVisibility.KeepOpen;
+        
+        OpenDirectoryCommand = new RelayCommand(OpenDirectory);
+        SaveCommand = new RelayCommand(Save);
+        
+        SetUpProperties(profileViewModel);
+        UpdateVersions();
     }
 
-    public Profile? CurrentProfile
+    public string? ProfileName
     {
-        get => _currentProfile;
-        set => SetProperty(ref _currentProfile, value);
+        get => _profileName;
+        set => SetProperty(ref _profileName, value);
     }
 
-    public string? SelectedVisibility
+    public string? PlayerName
     {
-        get => _selectedVisibility;
+        get => _playerName;
+        set => SetProperty(ref _playerName, value);
+    }
+
+    public string? GameDirectory
+    {
+        get => _gameDirectory;
+        set => SetProperty(ref _gameDirectory, value);
+    }
+
+    public string? JavaFile
+    {
+        get => _javaFile;
+        set => SetProperty(ref _javaFile, value);
+    }
+
+    public string? JvmArgs
+    {
+        get => _jvmArgs;
+        set => SetProperty(ref _jvmArgs, value);
+    }
+
+    public LauncherVisibility? SelectedLauncherVisibility
+    {
+        get => _selectedLauncherVisibility;
+        set => SetProperty(ref _selectedLauncherVisibility, value);
+    }
+
+    public ICollection<Version> Versions { get; } = new ObservableCollection<Version>();
+
+    public Version? SelectedVersion
+    {
+        get => _selectedVersion;
+        set => SetProperty(ref _selectedVersion, value);
+    }
+
+    public bool ShowCustom
+    {
+        get => _showCustom;
         set
         {
-            SetProperty(ref _selectedVisibility, value);
-
-            if (CurrentProfile != null)
-            {
-                if (_selectedVisibility == UIResource.KeepLauncherOpen)
-                    CurrentProfile.LauncherVisibility = LauncherVisibility.KeepOpen;
-                else if (_selectedVisibility == UIResource.HideLauncher)
-                    CurrentProfile.LauncherVisibility = LauncherVisibility.Hide;
-                else if (_selectedVisibility == UIResource.CloseLauncher)
-                    CurrentProfile.LauncherVisibility = LauncherVisibility.Close;
-            }
+            SetProperty(ref _showCustom, value);
+            UpdateVersions();
         }
     }
 
-    public List<string> Visibilitys { get; } = new()
+    public bool ShowRelease
     {
-        UIResource.KeepLauncherOpen,
-        UIResource.HideLauncher,
-        UIResource.CloseLauncher
-    };
-
-    public ObservableCollection<string> Versions { get; } = new();
-
-    public RelayCommand? Save
-    {
-        get => _save;
-        set => SetProperty(ref _save, value);
-    }
-
-    public RelayCommand? OpenDirectory { get; set; }
-
-    public string? Title
-    {
-        get => _title;
-        set => SetProperty(ref _title, value);
-    }
-
-    public async Task Init()
-    {
-        var isNewProfile = _isNewProfile;
-            
-        Title = isNewProfile ? UIResource.NewProfileTitle : UIResource.EditProfileTitle;
-            
-        if (isNewProfile)
-            CreateProfile();
-        else
-            LoadProfile();
-
-        SelectedVisibility = CurrentProfile?.LauncherVisibility switch
+        get => _showRelease;
+        set
         {
-            LauncherVisibility.KeepOpen => UIResource.KeepLauncherOpen,
-            LauncherVisibility.Close => UIResource.HideLauncher,
-            LauncherVisibility.Hide => UIResource.CloseLauncher,
-            _ => throw new ArgumentOutOfRangeException()
+            SetProperty(ref _showRelease, value);
+            UpdateVersions();
+        }
+    }
+
+    public bool ShowSnapshot
+    {
+        get => _showSnapshot;
+        set
+        {
+            SetProperty(ref _showSnapshot, value);
+            UpdateVersions();
+        }
+    }
+
+    public bool ShowBeta
+    {
+        get => _showBeta;
+        set
+        {
+            SetProperty(ref _showBeta, value);
+            UpdateVersions();
+        }
+    }
+
+    public bool ShowAlpha
+    {
+        get => _showAlpha;
+        set
+        {
+            SetProperty(ref _showAlpha, value);
+            UpdateVersions();
+        }
+    }
+
+    public ICommand OpenDirectoryCommand { get; }
+
+    private void OpenDirectory()
+    {
+        //
+    }
+
+    public bool CanSave
+    {
+        get => _canSave;
+        set => SetProperty(ref _canSave, value);
+    }
+
+    public ICommand SaveCommand { get; }
+
+    private void Save()
+    {
+        var profileData = new ProfileData()
+        {
+            Name = _profileName,
+            GameDirectory = _gameDirectory,
+            JavaFile = _javaFile,
+            JvmArgs = _jvmArgs,
+            MinecraftVersion = _selectedVersion?.Id,
+            PlayerNickname = _playerName
         };
 
-        await SaveVersionsToCache();
-        ShowSelectedVersions();
-
-        CurrentProfile.CurrentVersion = _versionsCache?.Latest ?? string.Empty;
-
-        CurrentProfile.SelectedVersionsChanged += ShowSelectedVersions;
-
-        Save = new RelayCommand(() =>
-        {
-            if (isNewProfile)
-                SaveNewProfile();
-            else
-                SaveEditedProfile();
-
-            WeakReferenceMessenger.Default.Send(new ProfilesChangedMessage());
-        });
-        
-        OpenDirectory = new RelayCommand(() =>
-        {
-            _settingsModel.OpenGameDirectory(CurrentProfile.GameDirectory);
-        });
+        WeakReferenceMessenger.Default.Send(new ProfileSaved(profileData));
     }
 
-    private void ShowSelectedVersions()
+    private void SetUpProperties(ProfileViewModel? profileViewModel)
     {
-        if (CurrentProfile == null || _versionsCache == null)
+        if (profileViewModel == null)
             return;
         
+        _profileName = profileViewModel.Name;
+        _playerName = profileViewModel.PlayerNickname;
+        _gameDirectory = profileViewModel.GameDirectory;
+        _javaFile = profileViewModel.JavaFile;
+        _jvmArgs = profileViewModel.JvmArgs;
+            
+        if (_model.Versions == null)
+            return;
+
+        if (_model.TryGetVersion(profileViewModel.MinecraftVersion, out var version))
+            _selectedVersion = version;
+    }
+
+    private void UpdateVersions()
+    {
         Versions.Clear();
-        if (CurrentProfile.ShowAlpha)
-        {
-            foreach (var version in _versionsCache.Alpha)
-                Versions.Add(version);
-        }
-
-        if (CurrentProfile.ShowBeta)
-        {
-            foreach (var version in _versionsCache.Beta)
-                Versions.Add(version);
-        }
-
-        if (CurrentProfile.ShowRelease)
-        {
-            foreach (var version in _versionsCache.Release)
-                Versions.Add(version);
-        }
-
-        if (CurrentProfile.ShowSnapshot)
-        {
-            foreach (var version in _versionsCache.Snapshot)
-                Versions.Add(version);
-        }
-
-        if (CurrentProfile.ShowCustom)
-        {
-            foreach (var version in _versionsCache.Custom)
-                Versions.Add(version);
-        }
-    }
-
-    private void SaveNewProfile()
-    {
-        _settingsModel.SaveProfile(CurrentProfile);
-        WeakReferenceMessenger.Default.Send(new StatusMessage(UIResource.NewProfileStatus));
-    }
-
-    private void SaveEditedProfile()
-    {
-        _settingsModel.EditProfile(_oldProfileName, CurrentProfile);
-        WeakReferenceMessenger.Default.Send(new StatusMessage(UIResource.ProfileEditedStatus));
-    }
-
-    private async Task SaveVersionsToCache()
-    {
-        _versionsCache = await _settingsModel.DownloadAllVersions();
-    }
-
-    private void CreateProfile()
-    {
-        CurrentProfile = new Profile
-        {
-            JavaFile = _settingsModel.FindJava()
-        };
-    }
-
-    private void LoadProfile()
-    {
-        CurrentProfile = _settingsModel.LoadLastProfile();
         
-        if (CurrentProfile == null)
+        if (_model.Versions == null)
             return;
 
-        _oldProfileName = CurrentProfile.Name;
-
-        switch (CurrentProfile.LauncherVisibility)
+        if (_showAlpha)
         {
-            case LauncherVisibility.KeepOpen:
-                _selectedVisibility = UIResource.KeepLauncherOpen;
-                break;
-            case LauncherVisibility.Hide:
-                _selectedVisibility = UIResource.HideLauncher;
-                break;
-            case LauncherVisibility.Close:
-                _selectedVisibility = UIResource.CloseLauncher;
-                break;
+            for (var i = 0; i < _model.Versions.Alpha.Count; i++)
+                Versions.Add(_model.Versions.Alpha[i]);
         }
+        
+        if (_showBeta)
+        {
+            for (var i = 0; i < _model.Versions.Beta.Count; i++)
+                Versions.Add(_model.Versions.Beta[i]);
+        }
+        
+        if (_showSnapshot)
+        {
+            for (var i = 0; i < _model.Versions.Snapshot.Count; i++)
+                Versions.Add(_model.Versions.Snapshot[i]);
+        }
+        
+        if (_showRelease)
+        {
+            for (var i = 0; i < _model.Versions.Release.Count; i++)
+                Versions.Add(_model.Versions.Release[i]);
+        }
+
+        //todo:
+        // if (_showCustom)
+        // {
+        //     for (var i = 0; i < _model.Versions.Release.Count; i++)
+        //         Versions.Add(_model.Versions.Release[i]);
+        // }
+        
+        if (_selectedVersion != null && !Versions.Contains(_selectedVersion))
+            Versions.Add(_selectedVersion);
     }
 }

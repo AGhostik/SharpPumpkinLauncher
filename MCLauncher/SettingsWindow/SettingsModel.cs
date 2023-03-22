@@ -1,86 +1,66 @@
-﻿using System.Threading.Tasks;
-using MCLauncher.Json;
-using MCLauncher.Json.VersionsJson;
-using MCLauncher.Properties;
-using MCLauncher.Tools;
-using MCLauncher.Tools.Interfaces;
+﻿using System.Collections.Generic;
+using Launcher.PublicData;
+using Microsoft.Win32;
+using Version = Launcher.PublicData.Version;
 
 namespace MCLauncher.SettingsWindow;
 
-public class SettingsModel : ISettingsModel
+public sealed class SettingsModel
 {
-    private readonly IFileManager _fileManager;
-    private readonly IJsonManager _jsonManager;
-    private readonly IProfileManager _profileManager;
+    private readonly MinecraftData _minecraftData;
+    private readonly Dictionary<string, Version> _versions = new();
 
-    public SettingsModel(IFileManager fileManager, IProfileManager profileManager, IJsonManager jsonManager)
+    public SettingsModel(MinecraftData minecraftData)
     {
-        _fileManager = fileManager;
-        _profileManager = profileManager;
-        _jsonManager = jsonManager;
-    }
+        _minecraftData = minecraftData;
 
-    public void SaveProfile(Profile? profile)
-    {
-        _profileManager.Save(profile);
-        _profileManager.SaveLastProfileName(profile?.Name);
-    }
-
-    public Profile? LoadLastProfile()
-    {
-        return _profileManager.GetLast();
-    }
-
-    public void EditProfile(string? profileName, Profile? newProfile)
-    {
-        _profileManager.Edit(profileName, newProfile);
-        _profileManager.SaveLastProfileName(newProfile?.Name);
-    }
-
-    public void OpenGameDirectory(string directory)
-    {
-        if (_fileManager.DirectoryExist(directory))
-            _fileManager.StartProcess(directory);
-    }
-
-    public string FindJava()
-    {
-        return _fileManager.GetJavawPath();
-    }
-
-    public async Task<AllVersions> DownloadAllVersions()
-    {
-        var result = new AllVersions();
-
-        var json = await _jsonManager.DownloadJsonAsync(ModelResource.VersionsUrl);
-        var versions = json["versions"]?.ToObject<Version[]>();
-
-        if (versions != null)
+        if (_minecraftData.Versions != null)
         {
-            for (var i = 0; i < versions.Length; i++)
+            AddVersionsToDictionary(_minecraftData.Versions.Alpha);
+            AddVersionsToDictionary(_minecraftData.Versions.Beta);
+            AddVersionsToDictionary(_minecraftData.Versions.Snapshot);
+            AddVersionsToDictionary(_minecraftData.Versions.Release);
+        }
+
+        void AddVersionsToDictionary(IReadOnlyList<Version> versions)
+        {
+            for (var i = 0; i < versions.Count; i++)
             {
                 var version = versions[i];
-                if (version.Id == null)
-                    continue;
-
-                if (version.Type == WellKnownValues.Release)
-                    result.Release.Add(version.Id);
-                else if (version.Type == WellKnownValues.Snapshot)
-                    result.Snapshot.Add(version.Id);
-                else if (version.Type == WellKnownValues.Beta)
-                    result.Beta.Add(version.Id);
-                else if (version.Type == WellKnownValues.Alpha)
-                    result.Alpha.Add(version.Id);
+                _versions.Add(version.Id, version);
             }
         }
+    }
 
-        var latest = json["latest"]?.ToObject<Latest>();
-        if (latest != null)
+    public Versions? Versions => _minecraftData.Versions;
+
+    public bool TryGetVersion(string? id, out Version? version)
+    {
+        if (string.IsNullOrEmpty(id))
         {
-            result.Latest = latest.Release;
-            result.LatestSnapshot = latest.Snapshoot;
+            version = null;
+            return false;
         }
+        
+        return _versions.TryGetValue(id, out version);
+    }
+    
+    public string? GetJavaPath()
+    {
+        const string regJavaPath = "SOFTWARE\\JavaSoft\\Java Runtime Environment";
+        
+        using var javaKey = Registry.LocalMachine.OpenSubKey(regJavaPath);
+        var currentVersionKey = javaKey?.GetValue("CurrentVersion");
+        
+        if (currentVersionKey == null)
+            return null;
 
-        return result;
+        using var homeKey = Registry.LocalMachine.OpenSubKey($"{regJavaPath}\\{currentVersionKey}");
+        var javaHome = homeKey?.GetValue("JavaHome");
+
+        if (javaHome == null)
+            return null;
+
+        return $"{javaHome}\\bin\\javaw.exe";
     }
 }

@@ -1,11 +1,10 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 using CommunityToolkit.Mvvm.Messaging;
-using MCLauncher.Json;
+using Launcher;
 using MCLauncher.LauncherWindow;
 using MCLauncher.Messages;
 using MCLauncher.SettingsWindow;
-using MCLauncher.Tools;
-using MCLauncher.Tools.Interfaces;
 using Unity;
 using Unity.Resolution;
 
@@ -13,17 +12,20 @@ namespace MCLauncher;
 
 public partial class App
 {
+    private readonly UnityContainer _container;
+
     public App()
     {
         var container = new UnityContainer();
+        _container = container;
 
-        container.RegisterType<ILauncherModel, LauncherModel>();
+        // container.RegisterType<IFileManager, FileManager>();
+        // container.RegisterType<IProfileManager, ProfileManager>();
+        // container.RegisterType<IJsonManager, JsonManager>();
+        // container.RegisterType<ISettingsModel, SettingsModel>();
 
-        container.RegisterType<IInstaller, Installer>();
-        container.RegisterType<IFileManager, FileManager>();
-        container.RegisterType<IProfileManager, ProfileManager>();
-        container.RegisterType<IJsonManager, JsonManager>();
-        container.RegisterType<ISettingsModel, SettingsModel>();
+        container.RegisterSingleton<MinecraftLauncher>();
+        container.RegisterSingleton<MinecraftData>();
 
         var launcherView = container.Resolve<LauncherView>();
 
@@ -32,13 +34,21 @@ public partial class App
 
         launcherView.Show();
 
-        WeakReferenceMessenger.Default.Register<ShowSettingsMessage>(this, (_, message) =>
-        {
-            var viewModel =
-                container.Resolve<SettingsViewModel>(new DependencyOverride(typeof(bool), message.IsNewProfile));
-            var settingsWindow =
-                container.Resolve<SettingsView>(new DependencyOverride(typeof(SettingsViewModel), viewModel));
-            settingsWindow.Show();
-        });
+        WeakReferenceMessenger.Default.Register<ShowSettingsMessage>(this, Handler);
+        
+        Startup += OnStartup;
+    }
+
+    private async void OnStartup(object sender, StartupEventArgs e)
+    {
+        var minecraftData = _container.Resolve<MinecraftData>();
+        await minecraftData.LoadAvailableVersions();
+    }
+
+    private void Handler(object _, ShowSettingsMessage message)
+    {
+        _container.RegisterInstance(message.Profile);
+        var settingsWindow = _container.Resolve<SettingsView>();
+        settingsWindow.Show();
     }
 }

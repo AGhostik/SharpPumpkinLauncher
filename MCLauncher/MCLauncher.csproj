@@ -12,7 +12,6 @@
         <PackageReference Include="CommunityToolkit.Mvvm" Version="8.1.0" />
         <PackageReference Include="DotNetZip" Version="1.16.0" />
         <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="7.0.0" />
-        <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
         <PackageReference Include="System.Buffers" Version="4.5.1" />
         <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
         <PackageReference Include="System.Memory" Version="4.5.5" />
@@ -33,6 +32,11 @@
         <XamlRuntime>Wpf</XamlRuntime>
         <SubType>Designer</SubType>
       </Page>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Core\Launcher\Launcher.csproj" />
+      <ProjectReference Include="..\Core\UserSettings\UserSettings.csproj" />
     </ItemGroup>
 
 </Project>

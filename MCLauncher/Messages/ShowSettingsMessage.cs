@@ -1,11 +1,13 @@
-﻿namespace MCLauncher.Messages;
+﻿using MCLauncher.LauncherWindow;
+
+namespace MCLauncher.Messages;
 
 public class ShowSettingsMessage
 {
-    public ShowSettingsMessage(bool isNewProfile)
+    public ShowSettingsMessage(ProfileViewModel? profile)
     {
-        IsNewProfile = isNewProfile;
+        Profile = profile;
     }
-    
-    public bool IsNewProfile { get; }
+
+    public ProfileViewModel? Profile { get; }
 }

@@ -6,13 +6,14 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:settingsWindow="clr-namespace:MCLauncher.SettingsWindow"
     xmlns:properties="clr-namespace:MCLauncher.Properties"
-    Title="{Binding Title}"
+    xmlns:publicData="clr-namespace:Launcher.PublicData;assembly=Launcher"
+    xmlns:validation="clr-namespace:MCLauncher.SettingsWindow.Validation"
+    Title="title"
     Width="500"
     Height="300"
     d:DataContext="{d:DesignInstance Type=settingsWindow:SettingsViewModel}"
     ResizeMode="NoResize"
     ShowInTaskbar="False"
-    Loaded="SettingsView_OnLoaded"
     mc:Ignorable="d">
     <Grid>
         <Grid.ColumnDefinitions>
@@ -39,8 +40,15 @@
         <TextBox
             Grid.Row="0"
             Grid.Column="1"
-            Margin="5"
-            Text="{Binding CurrentProfile.Name}" />
+            Margin="5">
+            <TextBox.Text>
+                <Binding Path="ProfileName" UpdateSourceTrigger="LostFocus">
+                    <Binding.ValidationRules>
+                        <validation:ProfileNameValidationRule />
+                    </Binding.ValidationRules>
+                </Binding>
+            </TextBox.Text>
+        </TextBox>
 
         <Label
             Grid.Row="1"
@@ -50,8 +58,15 @@
         <TextBox
             Grid.Row="1"
             Grid.Column="1"
-            Margin="5"
-            Text="{Binding CurrentProfile.Nickname}" />
+            Margin="5">
+            <TextBox.Text>
+                <Binding Path="PlayerName">
+                    <Binding.ValidationRules>
+                        <validation:PlayerNameValidationRule />
+                    </Binding.ValidationRules>
+                </Binding>
+            </TextBox.Text>
+        </TextBox>
 
         <Label
             Grid.Row="2"
@@ -61,8 +76,15 @@
         <TextBox
             Grid.Row="2"
             Grid.Column="1"
-            Margin="5"
-            Text="{Binding CurrentProfile.GameDirectory}" />
+            Margin="5">
+            <TextBox.Text>
+                <Binding Path="GameDirectory">
+                    <Binding.ValidationRules>
+                        <validation:GameDirectoryValidationRule />
+                    </Binding.ValidationRules>
+                </Binding>
+            </TextBox.Text>
+        </TextBox>
 
         <Label
             Grid.Row="3"
@@ -73,7 +95,7 @@
             Grid.Row="3"
             Grid.Column="1"
             Margin="5"
-            Text="{Binding CurrentProfile.JavaFile}" />
+            Text="{Binding JavaFile}" />
 
         <Label
             Grid.Row="4"
@@ -84,7 +106,8 @@
             Grid.Row="4"
             Grid.Column="1"
             Margin="5"
-            Text="{Binding CurrentProfile.JvmArgs}" />
+            IsEnabled="false"
+            Text="{Binding JvmArgs}" />
 
         <Label
             Grid.Row="5"
@@ -95,8 +118,8 @@
             Grid.Row="5"
             Grid.Column="1"
             Margin="5"
-            ItemsSource="{Binding Visibilitys}"
-            SelectedItem="{Binding SelectedVisibility}" />
+            ItemsSource="{settingsWindow:Enumerate {x:Type settingsWindow:LauncherVisibility}}"
+            SelectedItem="{Binding SelectedLauncherVisibility}" />
 
         <Label
             Grid.Row="6"
@@ -108,7 +131,13 @@
             Grid.Column="1"
             Margin="5"
             ItemsSource="{Binding Versions}"
-            SelectedItem="{Binding CurrentProfile.CurrentVersion}" />
+            SelectedItem="{Binding SelectedVersion}">
+            <ComboBox.ItemTemplate>
+                <DataTemplate DataType="{x:Type publicData:Version}">
+                    <TextBox Text="{Binding Path=Id, Mode=OneWay}" />
+                </DataTemplate>
+            </ComboBox.ItemTemplate>
+        </ComboBox>
 
         <StackPanel
             Grid.Row="7"
@@ -119,23 +148,23 @@
             <CheckBox
                 Margin="5"
                 Content="{x:Static properties:UIResource.Custom}"
-                IsChecked="{Binding CurrentProfile.ShowCustom}" />
+                IsChecked="{Binding ShowCustom}" />
             <CheckBox
                 Margin="5"
                 Content="{x:Static properties:UIResource.Release}"
-                IsChecked="{Binding CurrentProfile.ShowRelease}" />
+                IsChecked="{Binding ShowRelease}" />
             <CheckBox
                 Margin="5"
                 Content="{x:Static properties:UIResource.Snapshot}"
-                IsChecked="{Binding CurrentProfile.ShowSnapshot}" />
+                IsChecked="{Binding ShowSnapshot}" />
             <CheckBox
                 Margin="5"
                 Content="{x:Static properties:UIResource.OldBeta}"
-                IsChecked="{Binding CurrentProfile.ShowBeta}" />
+                IsChecked="{Binding ShowBeta}" />
             <CheckBox
                 Margin="5"
                 Content="{x:Static properties:UIResource.Alpha}"
-                IsChecked="{Binding CurrentProfile.ShowAlpha}" />
+                IsChecked="{Binding ShowAlpha}" />
         </StackPanel>
 
         <Grid
@@ -150,12 +179,13 @@
             <Button
                 Grid.Column="0"
                 Margin="5"
-                Command="{Binding OpenDirectory}"
+                Command="{Binding OpenDirectoryCommand}"
                 Content="{x:Static properties:UIResource.OpenDirectory}" />
             <Button
                 Grid.Column="1"
                 Margin="5"
-                Command="{Binding Save}"
+                IsEnabled="{Binding CanSave}"
+                Command="{Binding SaveCommand}"
                 Content="{x:Static properties:UIResource.Save}" />
         </Grid>
     </Grid>

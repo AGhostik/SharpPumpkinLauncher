@@ -136,7 +136,7 @@ namespace UnitTests.Model
             }
             
             var model = new LauncherModel(_fileManager, _profileManager, _installer);
-            model.SaveLastProfileName("name");
+            model.SaveLastProfile("name");
 
             _profileManager.Received().SaveLastProfileName("name");
         }

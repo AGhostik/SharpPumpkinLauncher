@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using MCLauncher.Properties;
 using MCLauncher.SettingsWindow;
 using MCLauncher.Tools;
@@ -16,16 +15,16 @@ namespace UnitTests.UI
         [SetUp]
         public void SetUp()
         {
+            var versions = new Versions();
+            versions.AddMinecraftVersion("alpha1", "empty", "empty", WellKnownValues.Alpha);
+            versions.AddMinecraftVersion("beta1", "empty", "empty", WellKnownValues.Beta);
+            versions.AddMinecraftVersion("snapshot1", "empty", "empty", WellKnownValues.Snapshot);
+            versions.AddMinecraftVersion("release1", "empty", "empty", WellKnownValues.Release);
+            versions.AddCustomMinecraftVersion("custom1", "empty", "empty");
+            
             _model = Substitute.For<ISettingsModel>();
             _model.LoadLastProfile().Returns(new Profile());
-            _model.DownloadAllVersions().Returns(new AllVersions()
-            {
-                Alpha = new List<string>() {"alpha1"},
-                Beta = new List<string>() {"beta1"},
-                Release = new List<string>() {"release1"},
-                Custom = new List<string>() {"custom1"},
-                Snapshot = new List<string>() {"snapshot1"}
-            });
+            _model.DownloadAllVersions().Returns(versions);
         }
 
         [Test]
@@ -55,7 +54,7 @@ namespace UnitTests.UI
             
             var vm = new SettingsViewModel(_model, true);
             await vm.Init();
-            vm.SelectedVisibility = UIResource.CloseLauncher;
+            vm.SelectedLauncherVisibility = UIResource.CloseLauncher;
 
             Assert.AreEqual(vm.CurrentProfile?.LauncherVisibility, LauncherVisibility.Close);
         }
@@ -71,7 +70,7 @@ namespace UnitTests.UI
             
             var vm = new SettingsViewModel(_model, true);
             await vm.Init();
-            vm.SelectedVisibility = UIResource.HideLauncher;
+            vm.SelectedLauncherVisibility = UIResource.HideLauncher;
 
             Assert.AreEqual(vm.CurrentProfile?.LauncherVisibility, LauncherVisibility.Hide);
         }
@@ -87,7 +86,7 @@ namespace UnitTests.UI
             
             var vm = new SettingsViewModel(_model, true);
             await vm.Init();
-            vm.SelectedVisibility = UIResource.KeepLauncherOpen;
+            vm.SelectedLauncherVisibility = UIResource.KeepLauncherOpen;
 
             Assert.AreEqual(vm.CurrentProfile?.LauncherVisibility, LauncherVisibility.KeepOpen);
         }

@@ -29,7 +29,13 @@
             Grid.Row="1"
             Margin="5"
             ItemsSource="{Binding Profiles}"
-            SelectedItem="{Binding CurrentProfileName, UpdateSourceTrigger=PropertyChanged}" />
+            SelectedItem="{Binding CurrentProfile, UpdateSourceTrigger=PropertyChanged}">
+            <ComboBox.ItemTemplate>
+                <DataTemplate DataType="{x:Type launcherWindow:ProfileViewModel}">
+                    <TextBox Text="{Binding Path=Name}" />
+                </DataTemplate>
+            </ComboBox.ItemTemplate>
+        </ComboBox>
         <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
@@ -40,19 +46,22 @@
                 Grid.Column="0"
                 Margin="5"
                 Command="{Binding NewProfile}"
-                Content="{x:Static properties:UIResource.Add}" />
+                Content="{x:Static properties:UIResource.Add}"
+                IsEnabled="{Binding CanAddProfile}"/>
             <Button
                 Grid.Column="1"
                 Margin="5"
                 Command="{Binding EditProfile}"
+                CommandParameter="{Binding CurrentProfile}"
                 Content="{x:Static properties:UIResource.Edit}"
-                IsEnabled="{Binding IsEditActive}" />
+                IsEnabled="{Binding CanEditProfile}" />
             <Button
                 Grid.Column="2"
                 Margin="5"
                 Command="{Binding DeleteProfile}"
+                CommandParameter="{Binding CurrentProfile}"
                 Content="{x:Static properties:UIResource.Remove}"
-                IsEnabled="{Binding IsStartActive}" />
+                IsEnabled="{Binding CanRemoveProfile}" />
         </Grid>
 
         <Border
@@ -79,7 +88,7 @@
             Grid.Row="4"
             Margin="5"
             Command="{Binding Start}"
-            IsEnabled="{Binding IsStartActive}"
+            IsEnabled="{Binding CanStartGame}"
             Content="Start" />
     </Grid>
 </Window>
