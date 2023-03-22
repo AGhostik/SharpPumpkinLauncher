@@ -47,7 +47,7 @@ public sealed class SettingsModel
     
     public string? GetJavaPath()
     {
-        const string regJavaPath = "SOFTWARE\\JavaSoft\\Java Runtime Environment";
+        const string regJavaPath = "SOFTWARE\\JavaSoft\\JDK";
         
         using var javaKey = Registry.LocalMachine.OpenSubKey(regJavaPath);
         var currentVersionKey = javaKey?.GetValue("CurrentVersion");
