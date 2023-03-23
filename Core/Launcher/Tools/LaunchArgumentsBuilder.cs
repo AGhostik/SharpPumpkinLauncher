@@ -1,30 +1,27 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
-using JsonReader.Game;
+using JsonReader.PublicData.Game;
 
 namespace Launcher.Tools;
 
 internal sealed class LaunchArgumentsBuilder
 {
-    public static string GetLaunchArguments(MinecraftVersionData minecraftVersionData, LaunchArgumentsData launchArgumentsData)
+    public static string GetLaunchArguments(MinecraftData minecraftVersionData, LaunchArgumentsData launchArgumentsData)
     {
-        if (minecraftVersionData.Arguments != null)
+        if (minecraftVersionData.Arguments.LegacyArguments == null)
         {
             return GetArguments(launchArgumentsData, minecraftVersionData.Arguments, minecraftVersionData.MainClass,
                 minecraftVersionData.MinimumLauncherVersion);
         }
-
-        if (minecraftVersionData.MinecraftArguments != null)
+        else
         {
-            return GetLegacyArguments(launchArgumentsData, minecraftVersionData.MinecraftArguments,
+            return GetLegacyArguments(launchArgumentsData, minecraftVersionData.Arguments.LegacyArguments,
                 minecraftVersionData.MainClass);
         }
-
-        throw new Exception("No arguments");
     }
 
-    private static string GetArguments(LaunchArgumentsData launchArgumentsData, ArgumentsData arguments,
-        string? mainClass, int launcherVersion)
+    private static string GetArguments(LaunchArgumentsData launchArgumentsData, Arguments arguments,
+        string mainClass, int launcherVersion)
     {
         var jvmArguments = BuildArguments(arguments.Jvm);
         var gameArguments = BuildArguments(arguments.Game);
@@ -35,7 +32,7 @@ internal sealed class LaunchArgumentsBuilder
         return $"{jvmFilledArguments} {mainClass} {gameFilledArguments}";
     }
 
-    private static string? BuildArguments(IReadOnlyList<ArgumentItemData>? arguments)
+    private static string? BuildArguments(IReadOnlyList<ArgumentItem>? arguments)
     {
         if (arguments == null)
             return null;
@@ -44,18 +41,15 @@ internal sealed class LaunchArgumentsBuilder
         for (var i = 0; i < arguments.Count; i++)
         {
             var argument = arguments[i];
-            
-            if (argument.Value == null)
-                continue;
-                
+
             if (!OsRuleManager.IsAllowed(argument.Rules))
                 continue;
             
-            for (var j = 0; j < argument.Value.Length; j++)
+            for (var j = 0; j < argument.Values.Length; j++)
             {
-                stringBuilder.Append(argument.Value[j]);
+                stringBuilder.Append(argument.Values[j]);
                 
-                if (j != argument.Value.Length - 1)
+                if (j != argument.Values.Length - 1)
                     stringBuilder.Append(' ');
             }
             
@@ -133,8 +127,8 @@ internal sealed class LaunchArgumentsBuilder
             .Replace("${resolution_height}", "720");
     }
     
-    private static string GetLegacyArguments(LaunchArgumentsData launchArgumentsData, string legacyMinecraftArguments,
-        string? mainClass)
+    private static string GetLegacyArguments(LaunchArgumentsData launchArgumentsData, LegacyArguments legacyArguments,
+        string mainClass)
     {
         //todo:
         //     var args = minecraftVersion.MinecraftArguments;
@@ -150,8 +144,7 @@ internal sealed class LaunchArgumentsBuilder
         //     args = args.Replace("${auth_session}", "null");
         //     args = args.Replace("${game_assets}", profile.GameDirectory + "\\assets\\virtual\\legacy");
         
-        var gameArguments = legacyMinecraftArguments;
-        return $"-Djava.library.path={launchArgumentsData.NativesDirectory} -cp {mainClass} {gameArguments}";
+        return $"{legacyArguments.Jvm} -cp {mainClass} {legacyArguments.Game}";
     }
     
     private static string GetUuid(string nickname)

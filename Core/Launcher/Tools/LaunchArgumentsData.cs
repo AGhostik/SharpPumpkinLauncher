@@ -1,27 +1,27 @@
-﻿using JsonReader.Game;
+﻿using JsonReader.PublicData.Game;
 using Launcher.Data;
 
 namespace Launcher.Tools;
 
 internal sealed class LaunchArgumentsData
 {
-    public LaunchArgumentsData(FileManager fileManager, MinecraftVersionData minecraftVersionData,
+    public LaunchArgumentsData(FileManager fileManager, MinecraftData minecraftData,
         MinecraftFileList fileList, MinecraftPaths minecraftPaths, string playerName)
     {
-        VersionId = minecraftVersionData.Id ?? "null";
-        VersionType = minecraftVersionData.Type ?? "null";
-        ClientJar = fileManager.GetFullPath(fileList.Client?.FileName);
+        VersionId = minecraftData.Id;
+        VersionType = minecraftData.Type;
+        ClientJar = fileManager.GetFullPath(fileList.Client.FileName);
         PlayerName = playerName;
 
-        AssetsVersion = minecraftVersionData.Assets ?? "null";
+        AssetsVersion = minecraftData.AssetsVersion;
 
         GameDirectory = fileManager.GetFullPath(minecraftPaths.GameDirectory);
         AssetsDirectory = fileManager.GetFullPath(minecraftPaths.AssetsDirectory);
         LibrariesDirectory = fileManager.GetFullPath(minecraftPaths.LibrariesDirectory);
         NativesDirectory = fileManager.GetFullPath(minecraftPaths.NativesDirectory);
 
-        LoggingArgument = minecraftVersionData.Logging?.Client?.Argument ?? "null";
-        LoggingFile = string.IsNullOrEmpty(fileList.Logging?.FileName) ? "null" : $"\"{fileManager.GetFullPath(fileList.Logging?.FileName)}\"";
+        LoggingArgument = minecraftData.LoggingData?.Argument ?? "null";
+        LoggingFile = fileList.Logging == null ? "null" : $"\"{fileManager.GetFullPath(fileList.Logging.FileName)}\"";
 
         var lib = new string[fileList.LibraryFiles.Count];
         for (var i = 0; i < fileList.LibraryFiles.Count; i++)
@@ -30,7 +30,7 @@ internal sealed class LaunchArgumentsData
         Libraries = lib;
     }
 
-    public string LauncherName { get; } = "\"mclauncher\"";
+    public string LauncherName => "\"mclauncher\"";
 
     public string VersionId { get; }
     public string VersionType { get; }

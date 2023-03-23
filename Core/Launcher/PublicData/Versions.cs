@@ -7,6 +7,18 @@ public sealed class Versions
     private readonly List<Version> _beta;
     private readonly List<Version> _alpha;
 
+    public static Versions Empty => new();
+
+    private Versions()
+    {
+        Latest = null;
+        LatestSnapshot = null;
+        _release = new List<Version>();
+        _snapshot = new List<Version>();
+        _beta = new List<Version>();
+        _alpha = new List<Version>();
+    }
+
     public Versions(string? latestId, string? latestSnapshotId, 
         List<Version> release, List<Version> snapshot, List<Version> beta, List<Version> alpha)
     {

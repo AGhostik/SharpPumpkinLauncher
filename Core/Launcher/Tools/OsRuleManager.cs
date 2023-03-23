@@ -1,4 +1,4 @@
-﻿using JsonReader.Game;
+﻿using JsonReader.PublicData.Game;
 
 namespace Launcher.Tools;
 
@@ -14,7 +14,7 @@ internal sealed class OsRuleManager
     private const string IsDemoUser = "is_demo_user";
     private const string HasCustomResolution = "has_custom_resolution"; 
 
-    public static bool IsAllowed(IReadOnlyList<RulesData>? rules)
+    public static bool IsAllowed(IReadOnlyList<Rule>? rules)
     {
         if (rules == null)
             return true;

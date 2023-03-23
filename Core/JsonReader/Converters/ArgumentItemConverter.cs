@@ -1,12 +1,12 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
-using JsonReader.Game;
+using JsonReader.InternalData.Game;
 
 namespace JsonReader.Converters;
 
-public class ArgumentItemConverter : JsonConverter<ArgumentItemData>
+internal class ArgumentItemConverter : JsonConverter<ArgumentItemData>
 {
-    public override ArgumentItemData? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    public override ArgumentItemData Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         var result = new ArgumentItemData();
         
