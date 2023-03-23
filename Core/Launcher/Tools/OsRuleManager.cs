@@ -7,12 +7,37 @@ internal sealed class OsRuleManager
     private const string Allow = "allow";
     private const string Disallow = "disallow";
     
-    private const string OsName = "windows";
-    private const string OsVersion = "^10\\.";
-    private const string OsArchitecture = "x64";
+    private const string OsWindows = "windows";
+    private const string OsLinux = "linux";
+    private const string OsOsx = "osx";
+    private const string OsArchitecture64 = "x64";
+    private const string OsArchitecture86 = "x84";
 
     private const string IsDemoUser = "is_demo_user";
-    private const string HasCustomResolution = "has_custom_resolution"; 
+    private const string HasCustomResolution = "has_custom_resolution";
+
+    private static readonly string _currentOsName;
+    private static readonly string _currentOsVersion;
+    private static readonly string _currentOsArchitecture;
+
+    static OsRuleManager()
+    {
+        if (OperatingSystem.IsWindows())
+            _currentOsName = OsWindows;
+        else if (OperatingSystem.IsLinux())
+            _currentOsName = OsLinux;
+        else if (OperatingSystem.IsMacOS())
+            _currentOsName = OsOsx;
+        else
+            _currentOsName = string.Empty;
+
+        if (Environment.Is64BitOperatingSystem)
+            _currentOsArchitecture = OsArchitecture64;
+        else
+            _currentOsArchitecture = OsArchitecture86;
+
+        _currentOsVersion = $"^{Environment.OSVersion.Version.Major}\\.";
+    }
 
     public static bool IsAllowed(IReadOnlyList<Rule>? rules)
     {
@@ -29,25 +54,25 @@ internal sealed class OsRuleManager
                     return false;
             }
 
-            if (rule.Os != null)
+            if (rule.Os == null)
+                continue;
+            
+            if ((rule.Os.Name == _currentOsName || string.IsNullOrEmpty(rule.Os.Name)) &&
+                (rule.Os.Version == _currentOsVersion || string.IsNullOrEmpty(rule.Os.Version)) &&
+                (rule.Os.Architecture == _currentOsArchitecture || string.IsNullOrEmpty(rule.Os.Architecture)))
             {
-                if ((rule.Os.Name == OsName || string.IsNullOrEmpty(rule.Os.Name)) &&
-                    (rule.Os.Version == OsVersion || string.IsNullOrEmpty(rule.Os.Version)) &&
-                    (rule.Os.Architecture == OsArchitecture || string.IsNullOrEmpty(rule.Os.Architecture)))
+                switch (rule.Action)
                 {
-                    switch (rule.Action)
-                    {
-                        case Allow:
-                            return true;
+                    case Allow:
+                        return true;
 
-                        case Disallow:
-                            return false;
-                    }
+                    case Disallow:
+                        return false;
                 }
-                else
-                {
-                    return false;
-                }
+            }
+            else
+            {
+                return false;
             }
         }
 
