@@ -36,6 +36,7 @@ internal sealed class OsRuleManager
         else
             _currentOsArchitecture = OsArchitecture86;
 
+        //osx version: "^10\\.5\\.\\d$"
         _currentOsVersion = $"^{Environment.OSVersion.Version.Major}\\.";
     }
 

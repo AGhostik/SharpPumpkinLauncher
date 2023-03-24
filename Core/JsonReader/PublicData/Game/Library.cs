@@ -2,7 +2,7 @@
 
 public sealed class Library
 {
-    public Library(LibraryFile file, LibraryFile? nativesWindowsFile, LibraryFile? nativesLinuxFile,
+    public Library(LibraryFile? file, LibraryFile? nativesWindowsFile, LibraryFile? nativesLinuxFile,
         LibraryFile? nativesOsxFile, string? nativesWindows, string? nativesLinux, string? nativesOsx, Rule[] rules)
     {
         File = file;
@@ -15,7 +15,7 @@ public sealed class Library
         Rules = rules;
     }
 
-    public LibraryFile File { get; }
+    public LibraryFile? File { get; }
     public LibraryFile? NativesWindowsFile { get; }
     public LibraryFile? NativesLinuxFile { get; }
     public LibraryFile? NativesOsxFile { get; }

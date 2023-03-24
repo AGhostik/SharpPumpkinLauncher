@@ -224,28 +224,48 @@ public class MinecraftLauncher
             
             if (!OsRuleManager.IsAllowed(libraryData.Rules))
                 continue;
-            
-            //todo:
-            // if (isNatives)
-            // {
-            //     var fileName = $"{minecraftPaths.TemporaryDirectory}\\{path}";
-            //     var minecraftLibraryFile = new MinecraftLibraryFile(url, fileName)
-            //     {
-            //         NeedUnpack = true
-            //     };
-            //
-            //     minecraftLibraryFile.Delete.Add(fileName);
-            //     minecraftFileList.LibraryFiles.Add(minecraftLibraryFile);
-            // }
-            // else
-            // {
+
+            if (OperatingSystem.IsWindows())
+            {
+                if (!string.IsNullOrEmpty(libraryData.NativesWindows) && libraryData.NativesWindowsFile != null)
+                {
+                    result.Add(GetNativeLibraryFile(libraryData.NativesWindowsFile, minecraftPaths.TemporaryDirectory));
+                }
+            }
+            else if (OperatingSystem.IsLinux())
+            {
+                if (!string.IsNullOrEmpty(libraryData.NativesLinux) && libraryData.NativesLinuxFile != null)
+                {
+                    result.Add(GetNativeLibraryFile(libraryData.NativesLinuxFile, minecraftPaths.TemporaryDirectory));
+                }
+            }
+            else if (OperatingSystem.IsMacOS())
+            {
+                if (!string.IsNullOrEmpty(libraryData.NativesOsx) && libraryData.NativesOsxFile != null)
+                {
+                    result.Add(GetNativeLibraryFile(libraryData.NativesOsxFile, minecraftPaths.TemporaryDirectory));
+                }
+            }
+
+            if (libraryData.File != null)
+            {
                 var fileName = $"{minecraftPaths.LibrariesDirectory}\\{libraryData.File.Path}";
                 var minecraftLibraryFile = new MinecraftLibraryFile(libraryData.File.Url, fileName);
                 result.Add(minecraftLibraryFile);
-            // }
+            }
         }
 
         return result;
+    }
+
+    private static MinecraftLibraryFile GetNativeLibraryFile(LibraryFile file, string temporaryDirectory)
+    {
+        var nativeFileName = $"{temporaryDirectory}\\{file.Path}";
+        var minecraftNativeLibraryFile = new MinecraftLibraryFile(file.Url, nativeFileName)
+        {
+            NeedUnpack = true
+        };
+        return minecraftNativeLibraryFile;
     }
     
     private static IReadOnlyList<MinecraftFile> GetAssetsFiles(IReadOnlyList<Asset> assets, MinecraftPaths minecraftPaths)

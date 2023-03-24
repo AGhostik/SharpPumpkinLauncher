@@ -125,19 +125,25 @@ public sealed class JsonManager
             if (downloads == null)
                 continue;
 
-            var libraryFile = GetLibraryFile(downloads.Artifact);
-            if (libraryFile == null)
-                continue;
-
+            LibraryFile? file = null;
             LibraryFile? nativesWindowsFile = null;
             LibraryFile? nativesLinuxFile = null;
             LibraryFile? nativesOsxFile = null;
+            
+            if (downloads.Artifact != null)
+            {
+                file = GetLibraryFile(downloads.Artifact);
+            }
+            
             if (downloads.Classifiers != null)
             {
                 nativesWindowsFile = GetLibraryFile(downloads.Classifiers.NativesWindows);
                 nativesLinuxFile = GetLibraryFile(downloads.Classifiers.NativesLinux);
                 nativesOsxFile = GetLibraryFile(downloads.Classifiers.NativesOsx);
             }
+            
+            if (file == null && nativesWindowsFile == null && nativesLinuxFile == null && nativesOsxFile == null)
+                continue;
 
             var rules = new List<Rule>(0);
             if (lib.Rules != null)
@@ -151,8 +157,7 @@ public sealed class JsonManager
                 }
             }
             
-            var library = new Library(libraryFile,
-                nativesWindowsFile, nativesLinuxFile, nativesOsxFile,
+            var library = new Library(file, nativesWindowsFile, nativesLinuxFile, nativesOsxFile,
                 lib.Natives?.Windows, lib.Natives?.Linux, lib.Natives?.Osx,
                 rules.ToArray());
             
