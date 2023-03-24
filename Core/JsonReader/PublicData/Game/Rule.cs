@@ -8,6 +8,6 @@ public sealed class Rule
     }
 
     public string Action { get; }
-    public Dictionary<string, bool>? Features { get; set; }
-    public Os? Os { get; set; }
+    public IReadOnlyDictionary<string, bool>? Features { get; init; }
+    public Os? Os { get; init; }
 }

@@ -10,6 +10,6 @@ internal sealed class MinecraftLibraryFile : IMinecraftFile
 
     public string Url { get; }
     public string FileName { get; }
-    public bool NeedUnpack { get; set; }
+    public bool NeedUnpack { get; init; }
     public List<string> Delete { get; } = new();
 }

@@ -112,7 +112,7 @@ public sealed class JsonManager
             libraries);
     }
 
-    private static Library[] GetLibraries(MinecraftVersionData minecraftVersionData)
+    private static IReadOnlyList<Library> GetLibraries(MinecraftVersionData minecraftVersionData)
     {
         if (minecraftVersionData.Library == null)
             return Array.Empty<Library>();
@@ -156,15 +156,25 @@ public sealed class JsonManager
                         rules.Add(rule);
                 }
             }
+
+            var delete = new List<string>();
+            if (lib.Extract?.Exclude != null)
+            {
+                for (var j = 0; j < lib.Extract.Exclude.Length; j++)
+                {
+                    var value = lib.Extract.Exclude[j];
+                    if (!string.IsNullOrEmpty(value))
+                        delete.Add(value);
+                }
+            }
             
             var library = new Library(file, nativesWindowsFile, nativesLinuxFile, nativesOsxFile,
-                lib.Natives?.Windows, lib.Natives?.Linux, lib.Natives?.Osx,
-                rules.ToArray());
+                lib.Natives?.Windows, lib.Natives?.Linux, lib.Natives?.Osx, rules, delete);
             
             libraries.Add(library);
         }
 
-        return libraries.ToArray();
+        return libraries;
     }
 
     private static LibraryFile? GetLibraryFile(ArtifactData? artifact)
@@ -215,7 +225,7 @@ public sealed class JsonManager
             var gameArguments = GetArgumentItems(minecraftVersionData.Arguments.Game);
             var jvmArguments = GetArgumentItems(minecraftVersionData.Arguments.Jvm);
 
-            arguments = new Arguments(gameArguments.ToArray(), jvmArguments.ToArray());
+            arguments = new Arguments(gameArguments, jvmArguments);
             return true;
         }
 
@@ -268,7 +278,7 @@ public sealed class JsonManager
                     }
                 }
 
-                var argumentItem = new ArgumentItem(values.ToArray(), rules.ToArray());
+                var argumentItem = new ArgumentItem(values, rules);
                 gameArguments.Add(argumentItem);
             }
         }
@@ -289,19 +299,22 @@ public sealed class JsonManager
             return false;
         }
 
-        rule = new Rule(action)
-        {
-            Features = ruledData.Features
-        };
+        Os? os = null;
         if (ruledData.Os != null)
         {
-            rule.Os = new Os()
+            os = new Os()
             {
                 Architecture = ruledData.Os.Architecture,
                 Name = ruledData.Os.Name,
                 Version = ruledData.Os.Version
             };
         }
+        
+        rule = new Rule(action)
+        {
+            Features = ruledData.Features,
+            Os = os
+        };
 
         return true;
     }

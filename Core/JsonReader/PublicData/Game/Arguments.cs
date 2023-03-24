@@ -2,7 +2,7 @@
 
 public sealed class Arguments
 {
-    public Arguments(ArgumentItem[] game, ArgumentItem[] jvm)
+    public Arguments(IReadOnlyList<ArgumentItem> game, IReadOnlyList<ArgumentItem> jvm)
     {
         Game = game;
         Jvm = jvm;
@@ -16,7 +16,7 @@ public sealed class Arguments
         LegacyArguments = legacyArguments;
     }
 
-    public ArgumentItem[] Game { get; }
-    public ArgumentItem[] Jvm { get; }
+    public IReadOnlyList<ArgumentItem> Game { get; }
+    public IReadOnlyList<ArgumentItem> Jvm { get; }
     public LegacyArguments? LegacyArguments { get; }
 }

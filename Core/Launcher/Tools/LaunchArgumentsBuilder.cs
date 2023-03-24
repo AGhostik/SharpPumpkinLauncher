@@ -45,11 +45,11 @@ internal sealed class LaunchArgumentsBuilder
             if (!OsRuleManager.IsAllowed(argument.Rules))
                 continue;
             
-            for (var j = 0; j < argument.Values.Length; j++)
+            for (var j = 0; j < argument.Values.Count; j++)
             {
                 stringBuilder.Append(argument.Values[j]);
                 
-                if (j != argument.Values.Length - 1)
+                if (j != argument.Values.Count - 1)
                     stringBuilder.Append(' ');
             }
             

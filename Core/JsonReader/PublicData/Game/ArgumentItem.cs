@@ -2,12 +2,12 @@
 
 public sealed class ArgumentItem
 {
-    public ArgumentItem(string[] values, Rule[]? rules)
+    public ArgumentItem(IReadOnlyList<string> values, IReadOnlyList<Rule>? rules)
     {
         Values = values;
         Rules = rules;
     }
 
-    public string[] Values { get; }
-    public Rule[]? Rules { get; }
+    public IReadOnlyList<string> Values { get; }
+    public IReadOnlyList<Rule>? Rules { get; }
 }
