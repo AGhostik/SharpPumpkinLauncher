@@ -1,0 +1,69 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:main="clr-namespace:MinecraftLauncher.Main"
+        xmlns:profile="clr-namespace:MinecraftLauncher.Main.Profile"
+        mc:Ignorable="d" Width="600" Height="350"
+        x:Class="MinecraftLauncher.Main.MainWindow"
+        x:DataType="main:MainWindowViewModel"
+        x:CompileBindings="True"
+        Title="MinecraftLauncher">
+    <Grid ColumnDefinitions="Auto, *">
+        <Grid Grid.Column="0" RowDefinitions="Auto, Auto, Auto, *, Auto" Background="lightgray">
+            <Button
+                Grid.Row="0"
+                HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Center"
+                Content="New profile"
+                Command="{Binding NewProfileCommand}"/>
+            <Button 
+                Grid.Row="1"
+                HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Center"
+                Content="Edit profile"
+                Command="{Binding EditProfileCommand}"/>
+            <Button 
+                Grid.Row="2"
+                HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Center"
+                Content="Delete profile"
+                Command="{Binding DeleteProfileCommand}"/>
+            <Button 
+                Grid.Row="4"
+                HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Center"
+                Content="Settings"
+                Command="{Binding OpenSettingsCommand}"/>
+        </Grid>
+        <Grid Grid.Column="1" RowDefinitions="Auto, *, Auto">
+            <ComboBox
+                Grid.Row="0"
+                HorizontalAlignment="Center"
+                MinWidth="250"
+                SelectedItem="{Binding SelectedProfile}"
+                Items="{Binding Profiles}">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate DataType="profile:ProfileViewModel">
+                        <TextBlock Text="{Binding ProfileName}" />
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+            <ContentControl
+                Grid.Row="1"
+                VerticalAlignment="Stretch"
+                HorizontalAlignment="Stretch"
+                Content="{Binding MainContent}" />
+            <Button
+                Grid.Row="2"
+                Content="Play" 
+                MinWidth="150"
+                MinHeight="50"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Bottom"
+                HorizontalContentAlignment="Center"
+                VerticalContentAlignment="Center"
+                Command="{Binding StartGameCommand}"/>
+        </Grid>
+    </Grid>
+</Window>

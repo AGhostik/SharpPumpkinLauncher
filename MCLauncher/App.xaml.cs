@@ -19,11 +19,6 @@ public partial class App
         var container = new UnityContainer();
         _container = container;
 
-        // container.RegisterType<IFileManager, FileManager>();
-        // container.RegisterType<IProfileManager, ProfileManager>();
-        // container.RegisterType<IJsonManager, JsonManager>();
-        // container.RegisterType<ISettingsModel, SettingsModel>();
-
         container.RegisterSingleton<MinecraftLauncher>();
         container.RegisterSingleton<MinecraftData>();
 
