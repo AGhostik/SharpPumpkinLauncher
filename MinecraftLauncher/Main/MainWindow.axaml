@@ -4,7 +4,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:main="clr-namespace:MinecraftLauncher.Main"
         xmlns:profile="clr-namespace:MinecraftLauncher.Main.Profile"
-        mc:Ignorable="d" Width="600" Height="350"
+        mc:Ignorable="d" Width="650" Height="350"
         x:Class="MinecraftLauncher.Main.MainWindow"
         x:DataType="main:MainWindowViewModel"
         x:CompileBindings="True"
@@ -40,12 +40,32 @@
             <ComboBox
                 Grid.Row="0"
                 HorizontalAlignment="Center"
-                MinWidth="250"
+                MinWidth="350"
+                IsEnabled="{Binding IsVersionsComboboxEnabled}"
                 SelectedItem="{Binding SelectedProfile}"
                 Items="{Binding Profiles}">
                 <ComboBox.ItemTemplate>
                     <DataTemplate DataType="profile:ProfileViewModel">
-                        <TextBlock Text="{Binding ProfileName}" />
+                        <Grid ColumnDefinitions="*, Auto, Auto">
+                            <TextBlock
+                                Grid.Column="0"
+                                VerticalAlignment="Center"
+                                Text="{Binding ProfileName}" />
+                            <Border 
+                                Grid.Column="1"
+                                BorderThickness="1"
+                                BorderBrush="Black"
+                                Margin="0, 0, 5, 0">
+                                <TextBlock
+                                    Margin="5, 0, 5, 0"
+                                    VerticalAlignment="Center"
+                                    Text="{Binding SelectedVersion.Type, FallbackValue=''}"/>
+                            </Border>
+                            <TextBlock
+                                Grid.Column="2"
+                                VerticalAlignment="Center"
+                                Text="{Binding SelectedVersion.Id, FallbackValue=''}"/>
+                        </Grid>
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
             </ComboBox>

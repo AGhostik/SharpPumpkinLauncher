@@ -6,6 +6,7 @@ public sealed class Versions
     private readonly List<Version> _snapshot;
     private readonly List<Version> _beta;
     private readonly List<Version> _alpha;
+    private readonly Dictionary<string, Version> _versions;
 
     public static Versions Empty => new();
 
@@ -17,6 +18,7 @@ public sealed class Versions
         _snapshot = new List<Version>();
         _beta = new List<Version>();
         _alpha = new List<Version>();
+        _versions = new Dictionary<string, Version>();
     }
 
     public Versions(string? latestId, string? latestSnapshotId, 
@@ -27,8 +29,20 @@ public sealed class Versions
         _beta = beta;
         _alpha = alpha;
 
+        _versions = new Dictionary<string, Version>();
+        AddVersionToDictionary(_alpha);
+        AddVersionToDictionary(_beta);
+        AddVersionToDictionary(_snapshot);
+        AddVersionToDictionary(_release);
+
         Latest = _release.Find(version => version.Id == latestId);
         LatestSnapshot = _snapshot.Find(version => version.Id == latestSnapshotId);
+
+        void AddVersionToDictionary(IReadOnlyList<Version> versions)
+        {
+            for (var i = 0; i < versions.Count; i++)
+                _versions.Add(versions[i].Id, versions[i]);
+        }
     }
     
     public Version? Latest { get; }
@@ -42,4 +56,6 @@ public sealed class Versions
     public IReadOnlyList<Version> Beta => _beta;
 
     public IReadOnlyList<Version> Alpha => _alpha;
+
+    public IReadOnlyDictionary<string, Version> AllVersions => _versions;
 }

@@ -132,8 +132,7 @@ public class LauncherModel
             return;
         }
         
-        if (string.IsNullOrEmpty(profile.JavaFile) ||
-            string.IsNullOrEmpty(profile.PlayerNickname) ||
+        if (string.IsNullOrEmpty(profile.PlayerNickname) ||
             string.IsNullOrEmpty(profile.MinecraftVersion) ||
             string.IsNullOrEmpty(profile.GameDirectory))
         {
@@ -141,8 +140,7 @@ public class LauncherModel
             return;
         }
 
-        var launchData = new LaunchData(profile.PlayerNickname, profile.MinecraftVersion, profile.GameDirectory,
-            profile.JavaFile);
+        var launchData = new LaunchData(profile.PlayerNickname, profile.MinecraftVersion, profile.GameDirectory);
 
         Action? exitedAction = null;
 

@@ -15,7 +15,9 @@ internal sealed class FileManager
             Arguments = args,
             UseShellExecute = false,
             RedirectStandardError = true,
-            RedirectStandardOutput = true
+            RedirectStandardOutput = true,
+            CreateNoWindow = true,
+            Verb = "runas"
         };
 
         var process = new Process
@@ -27,16 +29,15 @@ internal sealed class FileManager
         {
             exitedAction?.Invoke();
             Debug.WriteLine(process.ExitCode);
+            
+            // var output = process.StandardOutput.ReadToEnd();
+            // var errors = process.StandardError.ReadToEnd();
+            //
+            // Debug.WriteLine(output);
+            // Debug.WriteLine(errors);
         };
 
         process.Start();
-        
-        var output = process.StandardOutput.ReadToEnd();         
-        var errors = process.StandardError.ReadToEnd();             
-        process.WaitForExit();
-        
-        Debug.WriteLine(output);
-        Debug.WriteLine(errors);
     }
 
     public string GetPathFilename(string source)
@@ -95,45 +96,24 @@ internal sealed class FileManager
         return json;
     }
 
-    public async Task DownloadFile(string url, string fileName)
+    public async Task DownloadFilesParallel(IEnumerable<(Uri source, string filename)> download, Action<int>? eachDownloadedEvent = null)
     {
-        using var client = new HttpClient();
-        var response = await client.GetAsync(new Uri(url));
-
-        await using var fileStream = new FileStream(fileName, FileMode.CreateNew);
-        await response.Content.CopyToAsync(fileStream);
-    }
-
-    public async Task DownloadFiles(List<Tuple<Uri, string>> urlFileName, Action? downloadedEvent = null)
-    {
-        using var client = new HttpClient();
-
-        foreach (var (uri, fileName) in urlFileName)
+        var index = 0;
+        
+        await Parallel.ForEachAsync(
+            download, 
+            new ParallelOptions{MaxDegreeOfParallelism = 10},
+            DownloadFile);
+        
+        async ValueTask DownloadFile((Uri source, string filename) data, CancellationToken cancellationToken)
         {
-            var response = await client.GetAsync(uri);
-            await using var fileStream = new FileStream(fileName, FileMode.CreateNew);
-            await response.Content.CopyToAsync(fileStream);
+            using var client = new HttpClient();
+            var stream = await client.GetStreamAsync(data.source, cancellationToken);
+            await using var fileStream = new FileStream(data.filename, FileMode.CreateNew);
+            await stream.CopyToAsync(fileStream, cancellationToken);
             
-            downloadedEvent?.Invoke();
-        }
-    }
-    
-    public async Task DownloadFiles(IReadOnlyList<(Uri source, string filename)> download, Action<int>? eachDownloadedEvent = null)
-    {
-        using var client = new HttpClient();
-
-        for (var i = 0; i < download.Count; i++)
-        {
-            var (uri, fileName) = download[i];
-            
-            if (FileExist(fileName))
-                continue;
-
-            var stream = await client.GetStreamAsync(uri);
-            await using var fileStream = new FileStream(fileName, FileMode.CreateNew);
-            await stream.CopyToAsync(fileStream);
-
-            eachDownloadedEvent?.Invoke(i);
+            eachDownloadedEvent?.Invoke(index);
+            index++;
         }
     }
 

@@ -40,6 +40,7 @@
       <ProjectReference Include="..\Core\UserSettings\UserSettings.csproj" />
     </ItemGroup>
     <ItemGroup>
+      <Folder Include="Main\Settings" />
       <Folder Include="Styles" />
     </ItemGroup>
 </Project>

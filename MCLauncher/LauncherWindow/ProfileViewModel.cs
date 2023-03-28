@@ -15,7 +15,6 @@ public sealed class ProfileViewModel : ObservableObject
         Name = profileData.Name;
         PlayerNickname = profileData.PlayerNickname;
         GameDirectory = profileData.GameDirectory;
-        JavaFile = profileData.JavaFile;
         JvmArgs = profileData.JvmArgs;
         MinecraftVersion = profileData.MinecraftVersion;
     }
@@ -23,7 +22,6 @@ public sealed class ProfileViewModel : ObservableObject
     public string? Name { get; set; }
     public string? PlayerNickname { get; set; }
     public string? GameDirectory { get; set; }
-    public string? JavaFile { get; set; }
     public string? JvmArgs { get; set; }
     public string? MinecraftVersion { get; set; }
 }

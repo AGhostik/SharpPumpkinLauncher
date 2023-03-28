@@ -1,0 +1,27 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:progress="clr-namespace:MinecraftLauncher.Main.Progress"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:DataType="progress:ProgressViewModel"
+             x:CompileBindings="True"
+             x:Class="MinecraftLauncher.Main.Progress.ProgressControl">
+    <Grid RowDefinitions="*, Auto">
+        <TextBlock
+            Grid.Row="0"
+            Margin="5,5,5,0"
+            VerticalAlignment="Bottom"
+            TextWrapping="Wrap"
+            TextAlignment="Center"
+            Text="{Binding Text}"/>
+        <ProgressBar
+            Grid.Row="1"
+            Margin="5"
+            Height="25"
+            Minimum="0"
+            Maximum="100"
+            ShowProgressText="True"
+            Value="{Binding ProgressValue}" />
+    </Grid>
+</UserControl>

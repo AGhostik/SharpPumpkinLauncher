@@ -159,7 +159,6 @@ public class SettingsViewModel : ObservableObject
         {
             Name = _profileName,
             GameDirectory = _gameDirectory,
-            JavaFile = _javaFile,
             JvmArgs = _jvmArgs,
             MinecraftVersion = _selectedVersion?.Id,
             PlayerNickname = _playerName
@@ -176,7 +175,6 @@ public class SettingsViewModel : ObservableObject
         _profileName = profileViewModel.Name;
         _playerName = profileViewModel.PlayerNickname;
         _gameDirectory = profileViewModel.GameDirectory;
-        _javaFile = profileViewModel.JavaFile;
         _jvmArgs = profileViewModel.JvmArgs;
             
         if (_model.Versions == null)

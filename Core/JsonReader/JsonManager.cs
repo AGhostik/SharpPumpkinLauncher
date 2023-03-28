@@ -20,11 +20,18 @@ public sealed class JsonManager
         if (assetsData?.AssetList == null)
             return null;
 
+        var hashs = new HashSet<string>();
         var result = new List<Asset>(assetsData.AssetList.Count);
         foreach (var assetData in assetsData.AssetList)
         {
-            if (!string.IsNullOrEmpty(assetData.Value.Hash))
-                result.Add(new Asset(assetData.Key, assetData.Value.Hash, assetData.Value.Size));
+            if (string.IsNullOrEmpty(assetData.Value.Hash))
+                continue;
+            
+            if (hashs.Contains(assetData.Value.Hash))
+                continue;
+            
+            result.Add(new Asset(assetData.Key, assetData.Value.Hash, assetData.Value.Size));
+            hashs.Add(assetData.Value.Hash);
         }
 
         return result;

@@ -3,6 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:profile="clr-namespace:MinecraftLauncher.Main.Profile"
+             xmlns:publicData="clr-namespace:Launcher.PublicData;assembly=Launcher"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:DataType="profile:ProfileViewModel"
              x:CompileBindings="True"
@@ -10,7 +11,7 @@
     <StackPanel>
         <TextBox 
             Margin="5" 
-            Watermark="Profile name" 
+            Watermark="Profile name"
             Text="{Binding ProfileName}" />
         <TextBox 
             Margin="5" 
@@ -25,8 +26,30 @@
             PlaceholderText="Minecraft version"
             PlaceholderForeground="gray"
             HorizontalAlignment="Stretch"
+            VirtualizationMode="Simple"
             Items="{Binding Versions}"
-            SelectedItem="{Binding SelectedVersion}"/>
+            SelectedItem="{Binding SelectedVersion}">
+            <ComboBox.ItemTemplate>
+                <DataTemplate DataType="publicData:Version">
+                    <Grid ColumnDefinitions="Auto, Auto">
+                        <Border 
+                            Grid.Column="0" 
+                            BorderThickness="1"
+                            BorderBrush="Black"
+                            Margin="0, 0, 5, 0">
+                            <TextBlock
+                                Margin="5, 0, 5, 0"
+                                VerticalAlignment="Center"
+                                Text="{Binding Type}"/>
+                        </Border>
+                        <TextBlock 
+                            Grid.Column="1"
+                            VerticalAlignment="Center"
+                            Text="{Binding Id}"/>
+                    </Grid>
+                </DataTemplate>
+            </ComboBox.ItemTemplate>
+        </ComboBox>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
             <Grid ColumnDefinitions="Auto, Auto">
                 <TextBlock 
@@ -35,6 +58,14 @@
                     Margin="5"
                     Text="Custom" />
                 <CheckBox Grid.Column="1" IsChecked="{Binding Custom}" />
+            </Grid>
+            <Grid ColumnDefinitions="Auto, Auto">
+                <TextBlock 
+                    Grid.Column="0" 
+                    VerticalAlignment="Center"
+                    Margin="5"
+                    Text="Latest" />
+                <CheckBox Grid.Column="1" IsChecked="{Binding Latest}" />
             </Grid>
             <Grid ColumnDefinitions="Auto, Auto">
                 <TextBlock 

@@ -2,17 +2,15 @@
 
 public sealed class LaunchData
 {
-    public LaunchData(string playerName, string versionId, string gameDirectory, string javaFile)
+    public LaunchData(string playerName, string versionId, string gameDirectory)
     {
         PlayerName = playerName;
         VersionId = versionId;
         GameDirectory = gameDirectory;
-        JavaFile = javaFile;
     }
 
     public string PlayerName { get; }
     
     public string VersionId { get; }
     public string GameDirectory { get; }
-    public string JavaFile { get; }
 }

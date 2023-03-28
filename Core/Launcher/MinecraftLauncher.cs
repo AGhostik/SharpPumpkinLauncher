@@ -1,4 +1,5 @@
-﻿using JsonReader;
+﻿using System.Diagnostics;
+using JsonReader;
 using JsonReader.PublicData.Assets;
 using JsonReader.PublicData.Game;
 using JsonReader.PublicData.Manifest;
@@ -87,7 +88,7 @@ public class MinecraftLauncher
             await RestoreMissedItems(minecraftMissedInfo);
 
         LaunchMinecraftProgress?.Invoke("Start game", 0f);
-        _fileManager.StartProcess(launchData.JavaFile, launchArguments, exitedAction);
+        _fileManager.StartProcess("java", launchArguments, exitedAction);
     }
 
     private async Task RestoreMissedItems(MinecraftMissedInfo missedInfo)
@@ -100,7 +101,7 @@ public class MinecraftLauncher
         var downloadingCount = missedInfo.DownloadQueue.Count;
         LaunchMinecraftProgress?.Invoke($"Download files (0/{downloadingCount})", 0f);
         
-        await _fileManager.DownloadFiles(missedInfo.DownloadQueue, 
+        await _fileManager.DownloadFilesParallel(missedInfo.DownloadQueue, 
             index =>
             {
                 var number = index + 1;
