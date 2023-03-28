@@ -104,6 +104,9 @@ public class MinecraftLauncher
             var (fileName, destination) = missedInfo.UnpackItems[i];
             _fileManager.ExtractToDirectory(fileName, destination);
         }
+
+        for (var i = 0; i < missedInfo.PathsToDelete.Count; i++)
+            _fileManager.Delete(missedInfo.PathsToDelete[i]);
     }
 
     private async Task DownloadMissingFiles(IReadOnlyCollection<(Uri source, string fileName)> downloadQueue)
@@ -129,6 +132,7 @@ public class MinecraftLauncher
         if (minecraftFileList.Logging != null)
             CheckFileAndDirectoryMissed(ref minecraftMissedInfo, minecraftFileList.Logging);
 
+        var anyLibraryNeedUnpack = false;
         for (var i = 0; i < minecraftFileList.LibraryFiles.Count; i++)
         {
             var libraryFile = minecraftFileList.LibraryFiles[i];
@@ -141,8 +145,25 @@ public class MinecraftLauncher
                     minecraftMissedInfo.DirectoriesToCreate.Add(unpackDirectory);
 
                 minecraftMissedInfo.UnpackItems.Add((libraryFile.FileName, unpackDirectory));
-                //todo: add file removing
+                minecraftMissedInfo.PathsToDelete.Add(libraryFile.FileName);
+                anyLibraryNeedUnpack = true;
             }
+
+            if (libraryFile.Delete != null)
+            {
+                var unpackDirectory = minecraftPaths.NativesDirectory;
+                for (var j = 0; j < libraryFile.Delete.Count; j++)
+                {
+                    var path = $"{unpackDirectory}\\{libraryFile.Delete[j]}";
+                    minecraftMissedInfo.PathsToDelete.Add(path);
+                }
+            }
+        }
+
+        if (anyLibraryNeedUnpack)
+        {
+            if (!minecraftMissedInfo.PathsToDelete.Contains(minecraftPaths.TemporaryDirectory))
+                minecraftMissedInfo.PathsToDelete.Add(minecraftPaths.TemporaryDirectory);
         }
         
         for (var i = 0; i < minecraftFileList.AssetFiles.Count; i++)
@@ -150,7 +171,8 @@ public class MinecraftLauncher
 
         return minecraftMissedInfo.DownloadQueue.Count > 0 ||
                minecraftMissedInfo.DirectoriesToCreate.Count > 0 ||
-               minecraftMissedInfo.UnpackItems.Count > 0;
+               minecraftMissedInfo.UnpackItems.Count > 0 ||
+               minecraftMissedInfo.PathsToDelete.Count > 0;
     }
 
     private void CheckFileAndDirectoryMissed(ref MinecraftMissedInfo missedInfo, IMinecraftFile minecraftFile)
@@ -232,21 +254,24 @@ public class MinecraftLauncher
             {
                 if (!string.IsNullOrEmpty(libraryData.NativesWindows) && libraryData.NativesWindowsFile != null)
                 {
-                    result.Add(GetNativeLibraryFile(libraryData.NativesWindowsFile, minecraftPaths.TemporaryDirectory));
+                    result.Add(GetNativeLibraryFile(libraryData.NativesWindowsFile, minecraftPaths.TemporaryDirectory,
+                        libraryData.Delete));
                 }
             }
             else if (OperatingSystem.IsLinux())
             {
                 if (!string.IsNullOrEmpty(libraryData.NativesLinux) && libraryData.NativesLinuxFile != null)
                 {
-                    result.Add(GetNativeLibraryFile(libraryData.NativesLinuxFile, minecraftPaths.TemporaryDirectory));
+                    result.Add(GetNativeLibraryFile(libraryData.NativesLinuxFile, minecraftPaths.TemporaryDirectory,
+                        libraryData.Delete));
                 }
             }
             else if (OperatingSystem.IsMacOS())
             {
                 if (!string.IsNullOrEmpty(libraryData.NativesOsx) && libraryData.NativesOsxFile != null)
                 {
-                    result.Add(GetNativeLibraryFile(libraryData.NativesOsxFile, minecraftPaths.TemporaryDirectory));
+                    result.Add(GetNativeLibraryFile(libraryData.NativesOsxFile, minecraftPaths.TemporaryDirectory,
+                        libraryData.Delete));
                 }
             }
 
@@ -261,12 +286,14 @@ public class MinecraftLauncher
         return result;
     }
 
-    private static MinecraftLibraryFile GetNativeLibraryFile(LibraryFile file, string temporaryDirectory)
+    private static MinecraftLibraryFile GetNativeLibraryFile(LibraryFile file, string temporaryDirectory,
+        IReadOnlyList<string> deleteFiles)
     {
         var nativeFileName = $"{temporaryDirectory}\\{file.Path}";
         var minecraftNativeLibraryFile = new MinecraftLibraryFile(file.Url, nativeFileName)
         {
-            NeedUnpack = true
+            NeedUnpack = true,
+            Delete = deleteFiles
         };
         return minecraftNativeLibraryFile;
     }
