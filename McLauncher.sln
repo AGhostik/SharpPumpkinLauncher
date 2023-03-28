@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27703.2018
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MCLauncher", "MCLauncher\MCLauncher.csproj", "{D04EF572-7976-4339-A988-D1810BE34B78}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "UnitTests\UnitTests.csproj", "{A60429EB-9BB7-4FFC-A36A-94423E4A24BF}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{4F9CE04B-9399-4AB8-8736-977822E4B266}"
@@ -23,10 +21,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{D04EF572-7976-4339-A988-D1810BE34B78}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D04EF572-7976-4339-A988-D1810BE34B78}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D04EF572-7976-4339-A988-D1810BE34B78}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D04EF572-7976-4339-A988-D1810BE34B78}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A60429EB-9BB7-4FFC-A36A-94423E4A24BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A60429EB-9BB7-4FFC-A36A-94423E4A24BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A60429EB-9BB7-4FFC-A36A-94423E4A24BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
