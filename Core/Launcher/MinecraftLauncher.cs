@@ -15,7 +15,6 @@ public class MinecraftLauncher
     private const string VersionsUrl = "https://piston-meta.mojang.com/mc/game/version_manifest_v2.json";
     
     private readonly JsonManager _jsonManager;
-    private readonly FileManager _fileManager;
 
     private readonly Dictionary<string, MinecraftVersion> _minecraftVersions = new();
 
@@ -24,12 +23,11 @@ public class MinecraftLauncher
     public MinecraftLauncher()
     {
         _jsonManager = new JsonManager();
-        _fileManager = new FileManager();
     }
     
     public async Task<Versions> GetAvailableVersions()
     {
-        var versionsJson = await _fileManager.DownloadJsonAsync(VersionsUrl);
+        var versionsJson = await FileManager.DownloadJsonAsync(VersionsUrl);
         var versions = _jsonManager.GetVersions(versionsJson);
 
         _minecraftVersions.Clear();
@@ -61,7 +59,7 @@ public class MinecraftLauncher
         
         LaunchMinecraftProgress?.Invoke(LaunchProgress.GetVersionData, 0f);
 
-        var minecraftVersionJson = await _fileManager.DownloadJsonAsync(minecraftVersion.Url);
+        var minecraftVersionJson = await FileManager.DownloadJsonAsync(minecraftVersion.Url);
         var minecraftData = _jsonManager.GetMinecraftData(minecraftVersionJson);
 
         if (minecraftData == null)
@@ -77,9 +75,8 @@ public class MinecraftLauncher
         
         LaunchMinecraftProgress?.Invoke(LaunchProgress.GetLaunchArguments, 0f);
 
-        var launchArgumentsData = new LaunchArgumentsData(_fileManager, minecraftData, fileList, minecraftPaths,
-            launchData.PlayerName);
-
+        var launchArgumentsData =
+            new LaunchArgumentsData(minecraftData, fileList, minecraftPaths, launchData.PlayerName);
         var launchArguments = LaunchArgumentsBuilder.GetLaunchArguments(minecraftData, launchArgumentsData);
         
         if (TryGetMissingInfo(fileList, minecraftPaths, out var minecraftMissedInfo))
@@ -88,13 +85,13 @@ public class MinecraftLauncher
         LaunchMinecraftProgress?.Invoke(LaunchProgress.StartGame, 0f);
         await Task.Delay(10);
         
-        _fileManager.StartProcess("java", launchArguments, exitedAction);
+        FileManager.StartProcess("java", launchArguments, exitedAction);
     }
 
     private async Task RestoreMissedItems(MinecraftMissedInfo missedInfo)
     {
         for (var i = 0; i < missedInfo.DirectoriesToCreate.Count; i++)
-            _fileManager.CreateDirectory(missedInfo.DirectoriesToCreate[i]);
+            FileManager.CreateDirectory(missedInfo.DirectoriesToCreate[i]);
 
         if (missedInfo.DownloadQueue.Count > 0)
             await DownloadMissingFiles(missedInfo.DownloadQueue);
@@ -102,17 +99,17 @@ public class MinecraftLauncher
         for (var i = 0; i < missedInfo.UnpackItems.Count; i++)
         {
             var (fileName, destination) = missedInfo.UnpackItems[i];
-            _fileManager.ExtractToDirectory(fileName, destination);
+            FileManager.ExtractToDirectory(fileName, destination);
         }
 
         for (var i = 0; i < missedInfo.PathsToDelete.Count; i++)
-            _fileManager.Delete(missedInfo.PathsToDelete[i]);
+            FileManager.Delete(missedInfo.PathsToDelete[i]);
     }
 
     private async Task DownloadMissingFiles(IReadOnlyCollection<(Uri source, string fileName)> downloadQueue)
     {
         LaunchMinecraftProgress?.Invoke(LaunchProgress.DownloadFiles, 0f);
-        await _fileManager.DownloadFilesParallel(downloadQueue, Callback);
+        await FileManager.DownloadFilesParallel(downloadQueue, Callback);
         
         void Callback(int index)
         {
@@ -141,7 +138,7 @@ public class MinecraftLauncher
             if (libraryFile.NeedUnpack)
             {
                 var unpackDirectory = minecraftPaths.NativesDirectory;
-                if (!_fileManager.DirectoryExist(unpackDirectory) && !minecraftMissedInfo.DirectoriesToCreate.Contains(unpackDirectory))
+                if (!FileManager.DirectoryExist(unpackDirectory) && !minecraftMissedInfo.DirectoriesToCreate.Contains(unpackDirectory))
                     minecraftMissedInfo.DirectoriesToCreate.Add(unpackDirectory);
 
                 minecraftMissedInfo.UnpackItems.Add((libraryFile.FileName, unpackDirectory));
@@ -189,7 +186,7 @@ public class MinecraftLauncher
         var fileName = minecraftFile.FileName;
         var url = minecraftFile.Url;
 
-        if (_fileManager.FileExist(fileName))
+        if (FileManager.FileExist(fileName))
         {
             downloadInfo = default;
             return false;
@@ -203,9 +200,9 @@ public class MinecraftLauncher
     {
         var fileName = minecraftFile.FileName;
 
-        if (!_fileManager.DirectoryExist(fileName))
+        if (!FileManager.DirectoryExist(fileName))
         {
-            directory = _fileManager.GetPathDirectory(fileName) ?? string.Empty;
+            directory = FileManager.GetPathDirectory(fileName) ?? string.Empty;
             return true;
         }
 
@@ -216,7 +213,7 @@ public class MinecraftLauncher
     private async Task<MinecraftFileList?> GetFileList(MinecraftData data, MinecraftPaths minecraftPaths,
         string minecraftVersionId)
     {
-        var assetsJson = await _fileManager.DownloadJsonAsync(data.AssetsUrl);
+        var assetsJson = await FileManager.DownloadJsonAsync(data.AssetsUrl);
         var assets = _jsonManager.GetAssets(assetsJson);
         if (assets == null)
             return null;

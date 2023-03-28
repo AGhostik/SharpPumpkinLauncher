@@ -5,9 +5,9 @@ using System.IO.Compression;
 
 namespace Launcher.Tools;
 
-internal sealed class FileManager
+internal static class FileManager
 {
-    public void StartProcess(string fileName, string? args, Action? exitedAction = null)
+    public static void StartProcess(string fileName, string? args, Action? exitedAction = null)
     {
         var startInfo = new ProcessStartInfo()
         {
@@ -40,12 +40,7 @@ internal sealed class FileManager
         process.Start();
     }
 
-    public string GetPathFilename(string source)
-    {
-        return Path.GetFileName(source);
-    }
-    
-    public string GetFullPath(string? source)
+    public static string GetFullPath(string? source)
     {
         if (string.IsNullOrEmpty(source))
             return string.Empty;
@@ -53,22 +48,27 @@ internal sealed class FileManager
         return Path.GetFullPath(source);
     }
 
-    public string? GetPathDirectory(string source)
+    public static string? GetPathDirectory(string source)
     {
         return Path.GetDirectoryName(source);
     }
 
-    public void ExtractToDirectory(string sourceArchive, string destinationDirectory)
+    public static void ExtractToDirectory(string sourceArchive, string destinationDirectory)
     {
         ZipFile.ExtractToDirectory(sourceArchive, destinationDirectory, overwriteFiles: true);
     }
 
-    public bool FileExist(string path)
+    public static bool FileExist(string path)
     {
         return File.Exists(path);
     }
+    
+    public static bool DirectoryExist(string path)
+    {
+        return Directory.Exists(path);
+    }
 
-    public void Delete(string path)
+    public static void Delete(string path)
     {
         if (FileExist(path)) 
             File.Delete(path);
@@ -77,18 +77,13 @@ internal sealed class FileManager
             Directory.Delete(path, true);
     }
 
-    public bool DirectoryExist(string path)
-    {
-        return Directory.Exists(path);
-    }
-
-    public void CreateDirectory(string directory)
+    public static void CreateDirectory(string directory)
     {
         //todo: catch exceptions
         Directory.CreateDirectory(directory);
     }
     
-    public async Task<string> DownloadJsonAsync(string url)
+    public static async Task<string> DownloadJsonAsync(string url)
     {
         using var client = new HttpClient();
         var response = await client.GetAsync(new Uri(url));
@@ -96,7 +91,7 @@ internal sealed class FileManager
         return json;
     }
 
-    public async Task DownloadFilesParallel(IEnumerable<(Uri source, string filename)> download, Action<int>? eachDownloadedEvent = null)
+    public static async Task DownloadFilesParallel(IEnumerable<(Uri source, string filename)> download, Action<int>? eachDownloadedEvent = null)
     {
         var index = 0;
         
@@ -117,7 +112,7 @@ internal sealed class FileManager
         }
     }
 
-    public string? ComputeSha1(string fileName)
+    public static string? ComputeSha1(string fileName)
     {
         if (string.IsNullOrEmpty(fileName))
             return null;

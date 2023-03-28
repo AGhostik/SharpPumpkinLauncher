@@ -5,27 +5,27 @@ namespace Launcher.Tools;
 
 internal sealed class LaunchArgumentsData
 {
-    public LaunchArgumentsData(FileManager fileManager, MinecraftData minecraftData,
-        MinecraftFileList fileList, MinecraftPaths minecraftPaths, string playerName)
+    public LaunchArgumentsData(MinecraftData minecraftData, MinecraftFileList fileList, MinecraftPaths minecraftPaths,
+        string playerName)
     {
         VersionId = minecraftData.Id;
         VersionType = minecraftData.Type;
-        ClientJar = fileManager.GetFullPath(fileList.Client.FileName);
+        ClientJar = FileManager.GetFullPath(fileList.Client.FileName);
         PlayerName = playerName;
 
         AssetsVersion = minecraftData.AssetsVersion;
 
-        GameDirectory = fileManager.GetFullPath(minecraftPaths.GameDirectory);
-        AssetsDirectory = fileManager.GetFullPath(minecraftPaths.AssetsDirectory);
-        LibrariesDirectory = fileManager.GetFullPath(minecraftPaths.LibrariesDirectory);
-        NativesDirectory = fileManager.GetFullPath(minecraftPaths.NativesDirectory);
+        GameDirectory = FileManager.GetFullPath(minecraftPaths.GameDirectory);
+        AssetsDirectory = FileManager.GetFullPath(minecraftPaths.AssetsDirectory);
+        LibrariesDirectory = FileManager.GetFullPath(minecraftPaths.LibrariesDirectory);
+        NativesDirectory = FileManager.GetFullPath(minecraftPaths.NativesDirectory);
 
         LoggingArgument = minecraftData.LoggingData?.Argument ?? "null";
-        LoggingFile = fileList.Logging == null ? "null" : $"\"{fileManager.GetFullPath(fileList.Logging.FileName)}\"";
+        LoggingFile = fileList.Logging == null ? "null" : $"\"{FileManager.GetFullPath(fileList.Logging.FileName)}\"";
 
         var lib = new string[fileList.LibraryFiles.Count];
         for (var i = 0; i < fileList.LibraryFiles.Count; i++)
-            lib[i] = fileManager.GetFullPath(fileList.LibraryFiles[i].FileName);
+            lib[i] = FileManager.GetFullPath(fileList.LibraryFiles[i].FileName);
 
         Libraries = lib;
     }
