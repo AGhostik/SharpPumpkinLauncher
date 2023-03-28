@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using JsonReader;
+﻿using JsonReader;
 using JsonReader.PublicData.Assets;
 using JsonReader.PublicData.Game;
 using JsonReader.PublicData.Manifest;
@@ -20,8 +19,7 @@ public class MinecraftLauncher
 
     private readonly Dictionary<string, MinecraftVersion> _minecraftVersions = new();
 
-    public delegate void ProgressDelegate(string status, float progress01);
-    public event ProgressDelegate? LaunchMinecraftProgress;
+    public event Action<LaunchProgress, float>? LaunchMinecraftProgress;
 
     public MinecraftLauncher()
     {
@@ -61,7 +59,7 @@ public class MinecraftLauncher
         if (!_minecraftVersions.TryGetValue(launchData.VersionId, out var minecraftVersion))
             return;
         
-        LaunchMinecraftProgress?.Invoke("Get version data", 0f);
+        LaunchMinecraftProgress?.Invoke(LaunchProgress.GetVersionData, 0f);
 
         var minecraftVersionJson = await _fileManager.DownloadJsonAsync(minecraftVersion.Url);
         var minecraftData = _jsonManager.GetMinecraftData(minecraftVersionJson);
@@ -71,13 +69,13 @@ public class MinecraftLauncher
 
         var minecraftPaths = new MinecraftPaths(launchData.GameDirectory, minecraftVersion.Id);
 
-        LaunchMinecraftProgress?.Invoke("Get file data", 0f);
+        LaunchMinecraftProgress?.Invoke(LaunchProgress.GetFileList, 0f);
         
         var fileList = await GetFileList(minecraftData, minecraftPaths, minecraftVersion.Id);
         if (fileList == null)
             return;
         
-        LaunchMinecraftProgress?.Invoke("Prepare to launch", 0f);
+        LaunchMinecraftProgress?.Invoke(LaunchProgress.GetLaunchArguments, 0f);
 
         var launchArgumentsData = new LaunchArgumentsData(_fileManager, minecraftData, fileList, minecraftPaths,
             launchData.PlayerName);
@@ -87,32 +85,36 @@ public class MinecraftLauncher
         if (TryGetMissingInfo(fileList, minecraftPaths, out var minecraftMissedInfo))
             await RestoreMissedItems(minecraftMissedInfo);
 
-        LaunchMinecraftProgress?.Invoke("Start game", 0f);
+        LaunchMinecraftProgress?.Invoke(LaunchProgress.StartGame, 0f);
+        await Task.Delay(10);
+        
         _fileManager.StartProcess("java", launchArguments, exitedAction);
     }
 
     private async Task RestoreMissedItems(MinecraftMissedInfo missedInfo)
     {
         for (var i = 0; i < missedInfo.DirectoriesToCreate.Count; i++)
-        {
             _fileManager.CreateDirectory(missedInfo.DirectoriesToCreate[i]);
-        }
 
-        var downloadingCount = missedInfo.DownloadQueue.Count;
-        LaunchMinecraftProgress?.Invoke($"Download files (0/{downloadingCount})", 0f);
-        
-        await _fileManager.DownloadFilesParallel(missedInfo.DownloadQueue, 
-            index =>
-            {
-                var number = index + 1;
-                LaunchMinecraftProgress?.Invoke($"Download files ({number}/{downloadingCount})",
-                    number / (float)downloadingCount);
-            });
+        if (missedInfo.DownloadQueue.Count > 0)
+            await DownloadMissingFiles(missedInfo.DownloadQueue);
 
         for (var i = 0; i < missedInfo.UnpackItems.Count; i++)
         {
             var (fileName, destination) = missedInfo.UnpackItems[i];
             _fileManager.ExtractToDirectory(fileName, destination);
+        }
+    }
+
+    private async Task DownloadMissingFiles(IReadOnlyCollection<(Uri source, string fileName)> downloadQueue)
+    {
+        LaunchMinecraftProgress?.Invoke(LaunchProgress.DownloadFiles, 0f);
+        await _fileManager.DownloadFilesParallel(downloadQueue, Callback);
+        
+        void Callback(int index)
+        {
+            var number = index + 1;
+            LaunchMinecraftProgress?.Invoke(LaunchProgress.DownloadFiles, number / (float)downloadQueue.Count);
         }
     }
 

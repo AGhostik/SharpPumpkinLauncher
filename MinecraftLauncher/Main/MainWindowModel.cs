@@ -25,7 +25,7 @@ public sealed class MainWindowModel
         remove => _versionsLoaded -= value;
     }
 
-    public event MinecraftLauncher.ProgressDelegate? StartGameProgress;
+    public event Action<LaunchProgress, float>? StartGameProgress;
 
     public MainWindowModel()
     {

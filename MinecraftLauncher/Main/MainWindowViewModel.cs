@@ -1,8 +1,10 @@
+using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Subjects;
 using DynamicData;
+using Launcher.PublicData;
 using MinecraftLauncher.Main.Profile;
 using MinecraftLauncher.Main.Progress;
 using ReactiveUI;
@@ -89,15 +91,31 @@ public sealed class MainWindowViewModel : ReactiveObject
             return;
         
         var viewModel = new ProgressViewModel();
-        _mainWindowModel.StartGameProgress += (status, progress01) =>
-        {
-            viewModel.Text = status;
-            viewModel.ProgressValue = 100f * progress01;
-        };
         MainContent = new ProgressControl() { DataContext = viewModel };
+        
+        _mainWindowModel.StartGameProgress += OnStartGameProgress;
+        
         await _mainWindowModel.StartGame(SelectedProfile);
+        
+        _mainWindowModel.StartGameProgress -= OnStartGameProgress;
+        
+        void OnStartGameProgress(LaunchProgress status, float progress01)
+        {
+            //todo: 
+            viewModel.Text = status switch
+            {
+                LaunchProgress.GetVersionData => "",
+                LaunchProgress.GetFileList => "",
+                LaunchProgress.GetLaunchArguments => "",
+                LaunchProgress.DownloadFiles => "",
+                LaunchProgress.StartGame => "",
+                _ => throw new ArgumentOutOfRangeException(nameof(status), status, null)
+            };
+            
+            viewModel.ProgressValue = 100f * progress01;
+        }
     }
-    
+
     private void OpenSettings()
     {
         //
