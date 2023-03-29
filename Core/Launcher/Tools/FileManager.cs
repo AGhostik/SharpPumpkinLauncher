@@ -30,11 +30,11 @@ internal static class FileManager
             exitedAction?.Invoke();
             Debug.WriteLine(process.ExitCode);
             
-            // var output = process.StandardOutput.ReadToEnd();
-            // var errors = process.StandardError.ReadToEnd();
-            //
-            // Debug.WriteLine(output);
-            // Debug.WriteLine(errors);
+            var output = process.StandardOutput.ReadToEnd();
+            var errors = process.StandardError.ReadToEnd();
+            
+            Debug.WriteLine(output);
+            Debug.WriteLine(errors);
         };
 
         process.Start();
@@ -91,7 +91,8 @@ internal static class FileManager
         return json;
     }
 
-    public static async Task DownloadFilesParallel(IEnumerable<(Uri source, string filename)> download, Action<int>? eachDownloadedEvent = null)
+    public static async Task DownloadFilesParallel(IEnumerable<(Uri source, string filename)> download,
+        Action<int>? eachDownloadedEvent = null)
     {
         var index = 0;
         
