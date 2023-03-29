@@ -7,7 +7,7 @@ namespace Launcher.Tools;
 
 internal static class FileManager
 {
-    public static void StartProcess(string fileName, string? args, Action? exitedAction = null)
+    public static async Task StartProcess(string fileName, string? args, Action? exitedAction = null)
     {
         var startInfo = new ProcessStartInfo()
         {
@@ -29,15 +29,16 @@ internal static class FileManager
         {
             exitedAction?.Invoke();
             Debug.WriteLine(process.ExitCode);
-            
-            var output = process.StandardOutput.ReadToEnd();
-            var errors = process.StandardError.ReadToEnd();
-            
-            Debug.WriteLine(output);
-            Debug.WriteLine(errors);
         };
 
         process.Start();
+        
+        var output = await process.StandardOutput.ReadToEndAsync();         
+        var errors = await process.StandardError.ReadToEndAsync();             
+        await process.WaitForExitAsync(); // need to avoid game stuck at loading screen
+        
+        Debug.WriteLine(output);
+        Debug.WriteLine(errors);
     }
 
     public static string GetFullPath(string? source)

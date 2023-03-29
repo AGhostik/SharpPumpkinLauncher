@@ -85,7 +85,7 @@ public class MinecraftLauncher
         LaunchMinecraftProgress?.Invoke(LaunchProgress.StartGame, 0f);
         await Task.Delay(10);
         
-        FileManager.StartProcess("java", launchArguments, exitedAction);
+        await FileManager.StartProcess("java", launchArguments, exitedAction);
     }
 
     private async Task RestoreMissedItems(MinecraftMissedInfo missedInfo)
