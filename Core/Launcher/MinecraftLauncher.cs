@@ -125,6 +125,7 @@ public class MinecraftLauncher
         
         CheckFileAndDirectoryMissed(ref minecraftMissedInfo, minecraftFileList.Client);
         CheckFileAndDirectoryMissed(ref minecraftMissedInfo, minecraftFileList.Server);
+        CheckFileAndDirectoryMissed(ref minecraftMissedInfo, minecraftFileList.AssetsIndex);
         
         if (minecraftFileList.Logging != null)
             CheckFileAndDirectoryMissed(ref minecraftMissedInfo, minecraftFileList.Logging);
@@ -221,11 +222,12 @@ public class MinecraftLauncher
         var client = new MinecraftFile(data.Client.Url, $"{minecraftPaths.VersionDirectory}\\{minecraftVersionId}.jar");
         var server = new MinecraftFile(data.Server.Url,
             $"{minecraftPaths.VersionDirectory}\\{minecraftVersionId}-server.jar");
+        var assetsIndex = new MinecraftFile(data.AssetsUrl, $"{minecraftPaths.AssetsDirectory}\\indexes\\{FileManager.GetFileName(data.AssetsUrl)}");
         
         var librariesFiles = GetLibrariesFiles(data.Libraries, minecraftPaths);
         var assetsFiles = GetAssetsFiles(assets, minecraftPaths);
         
-        var minecraftFileList = new MinecraftFileList(client, server, librariesFiles, assetsFiles);
+        var minecraftFileList = new MinecraftFileList(client, server, assetsIndex, librariesFiles, assetsFiles);
 
         if (data.LoggingData != null)
         {

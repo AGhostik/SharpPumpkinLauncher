@@ -40,6 +40,14 @@ internal static class FileManager
         Debug.WriteLine(output);
         Debug.WriteLine(errors);
     }
+    
+    public static string GetFileName(string? source)
+    {
+        if (string.IsNullOrEmpty(source))
+            return string.Empty;
+        
+        return Path.GetFileName(source);
+    }
 
     public static string GetFullPath(string? source)
     {
