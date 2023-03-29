@@ -96,6 +96,9 @@ public class MinecraftLauncher
         for (var i = 0; i < missedInfo.DirectoriesToCreate.Count; i++)
             FileManager.CreateDirectory(missedInfo.DirectoriesToCreate[i]);
 
+        for (var i = 0; i < missedInfo.CorruptedFiles.Count; i++)
+            FileManager.Delete(missedInfo.CorruptedFiles[i]);
+
         if (missedInfo.DownloadQueue.Count > 0)
             await DownloadMissingFiles(missedInfo.DownloadQueue, missedInfo.TotalDownloadSize);
 
@@ -177,48 +180,30 @@ public class MinecraftLauncher
 
     private static void CheckFileAndDirectoryMissed(ref MinecraftMissedInfo missedInfo, IMinecraftFile minecraftFile)
     {
-        if (CheckFileNotExist(minecraftFile, out var downloadInfo, out var size))
+        if (!FileManager.FileExist(minecraftFile.FileName))
         {
-            missedInfo.DownloadQueue.Add(downloadInfo);
-            missedInfo.TotalDownloadSize += size;
+            missedInfo.DownloadQueue.Add((new Uri(minecraftFile.Url), minecraftFile.FileName));
+            missedInfo.TotalDownloadSize += minecraftFile.Size;
+        }
+        else
+        {
+            var sha1 = FileManager.ComputeSha1(minecraftFile.FileName);
+            if (sha1 != minecraftFile.Sha1)
+            {
+                Debug.WriteLine($"File {minecraftFile.FileName} corrupted");
+                missedInfo.CorruptedFiles.Add(minecraftFile.FileName);
+                
+                missedInfo.DownloadQueue.Add((new Uri(minecraftFile.Url), minecraftFile.FileName));
+                missedInfo.TotalDownloadSize += minecraftFile.Size;
+            }
         }
 
-        if (CheckFileDirectoryNotExist(minecraftFile, out var directory) &&
-            !missedInfo.DirectoriesToCreate.Contains(directory))
+        var directory = FileManager.GetPathDirectory(minecraftFile.FileName);
+        if (!string.IsNullOrEmpty(directory))
         {
-            missedInfo.DirectoriesToCreate.Add(directory);
+            if (!FileManager.DirectoryExist(directory) && !missedInfo.DirectoriesToCreate.Contains(directory))
+                missedInfo.DirectoriesToCreate.Add(directory);
         }
-    }
-
-    private static bool CheckFileNotExist(IMinecraftFile minecraftFile, out (Uri, string) downloadInfo, out int size)
-    {
-        var fileName = minecraftFile.FileName;
-        var url = minecraftFile.Url;
-
-        if (FileManager.FileExist(fileName))
-        {
-            downloadInfo = default;
-            size = 0;
-            return false;
-        }
-        
-        downloadInfo = (new Uri(url), fileName);
-        size = minecraftFile.Size;
-        return true;
-    }
-    
-    private static bool CheckFileDirectoryNotExist(IMinecraftFile minecraftFile, out string directory)
-    {
-        var fileName = minecraftFile.FileName;
-
-        if (!FileManager.DirectoryExist(fileName))
-        {
-            directory = FileManager.GetPathDirectory(fileName) ?? string.Empty;
-            return true;
-        }
-
-        directory = string.Empty;
-        return false;
     }
 
     private async Task<MinecraftFileList?> GetFileList(MinecraftData data, MinecraftPaths minecraftPaths,
@@ -229,13 +214,13 @@ public class MinecraftLauncher
         if (assets == null)
             return null;
         
-        var client = new MinecraftFile(data.Client.Url, data.Client.Size,
+        var client = new MinecraftFile(data.Client.Url, data.Client.Size, data.Client.Sha1,
             $"{minecraftPaths.VersionDirectory}\\{minecraftVersionId}.jar");
         
-        var server = new MinecraftFile(data.Server.Url, data.Server.Size,
+        var server = new MinecraftFile(data.Server.Url, data.Server.Size, data.Server.Sha1,
             $"{minecraftPaths.VersionDirectory}\\{minecraftVersionId}-server.jar");
         
-        var assetsIndex = new MinecraftFile(data.AssetsIndex.Url, data.AssetsIndex.Size,
+        var assetsIndex = new MinecraftFile(data.AssetsIndex.Url, data.AssetsIndex.Size, data.AssetsIndex.Sha1,
             $"{minecraftPaths.AssetsDirectory}\\indexes\\{FileManager.GetFileName(data.AssetsIndex.Url)}");
         
         var librariesFiles = GetLibrariesFiles(data.Libraries, minecraftPaths);
@@ -246,7 +231,7 @@ public class MinecraftLauncher
         if (data.LoggingData != null)
         {
             minecraftFileList.Logging = new MinecraftFile(data.LoggingData.File.Url, data.LoggingData.File.Size,
-                $"{minecraftPaths.VersionDirectory}\\log4j2.xml");
+                data.LoggingData.File.Sha1, $"{minecraftPaths.VersionDirectory}\\log4j2.xml");
         }
 
         return minecraftFileList;
@@ -291,7 +276,8 @@ public class MinecraftLauncher
             if (libraryData.File != null)
             {
                 var fileName = $"{minecraftPaths.LibrariesDirectory}\\{libraryData.File.Path}";
-                var minecraftLibraryFile = new MinecraftLibraryFile(libraryData.File.Url, libraryData.File.Size, fileName);
+                var minecraftLibraryFile = new MinecraftLibraryFile(libraryData.File.Url, libraryData.File.Size,
+                    libraryData.File.Sha1, fileName);
                 result.Add(minecraftLibraryFile);
             }
         }
@@ -303,7 +289,7 @@ public class MinecraftLauncher
         IReadOnlyList<string> deleteFiles)
     {
         var nativeFileName = $"{temporaryDirectory}\\{file.Path}";
-        var minecraftNativeLibraryFile = new MinecraftLibraryFile(file.Url, file.Size, nativeFileName)
+        var minecraftNativeLibraryFile = new MinecraftLibraryFile(file.Url, file.Size, file.Sha1, nativeFileName)
         {
             NeedUnpack = true,
             Delete = deleteFiles
@@ -325,7 +311,8 @@ public class MinecraftLauncher
             
             var subDirectory = $"{hashString[0]}{hashString[1]}";
             var fileName = $"{minecraftPaths.AssetsDirectory}\\objects\\{subDirectory}\\{hashString}";
-            var minecraftFile = new MinecraftFile($"{AssetsUrl}/{subDirectory}/{hashString}", asset.Size, fileName);
+            var minecraftFile = new MinecraftFile($"{AssetsUrl}/{subDirectory}/{hashString}", asset.Size, asset.Hash,
+                fileName);
             
             result.Add(minecraftFile);
         }

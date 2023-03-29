@@ -156,6 +156,6 @@ internal static class FileManager
         foreach (var b in hash)
             formatted.Append($"{b:X2}");
 
-        return formatted.ToString();
+        return formatted.ToString().ToLower();
     }
 }
