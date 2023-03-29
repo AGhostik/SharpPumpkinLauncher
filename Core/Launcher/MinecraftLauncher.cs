@@ -68,8 +68,6 @@ public class MinecraftLauncher
 
         var minecraftPaths = new MinecraftPaths(launchData.GameDirectory, minecraftVersion.Id);
 
-        LaunchMinecraftProgress?.Invoke(LaunchProgress.GetFileList, 0f);
-        
         var fileList = await GetFileList(minecraftData, minecraftPaths, minecraftVersion.Id);
         if (fileList == null)
             return;
@@ -209,7 +207,13 @@ public class MinecraftLauncher
     private async Task<MinecraftFileList?> GetFileList(MinecraftData data, MinecraftPaths minecraftPaths,
         string minecraftVersionId)
     {
-        var assetsJson = await FileManager.DownloadJsonAsync(data.AssetsIndex.Url);
+        LaunchMinecraftProgress?.Invoke(LaunchProgress.GetFileList, 0f);
+        
+        var assetsJson = await FileManager.DownloadFile(data.AssetsIndex.Url, default, bytesReceived =>
+        {
+            LaunchMinecraftProgress?.Invoke(LaunchProgress.GetFileList, (float)bytesReceived / data.AssetsIndex.Size);
+        });
+        
         var assets = _jsonManager.GetAssets(assetsJson);
         if (assets == null)
             return null;
