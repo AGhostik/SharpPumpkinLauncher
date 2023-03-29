@@ -154,8 +154,8 @@ internal static class FileManager
         var formatted = new StringBuilder(2 * hash.Length);
         
         foreach (var b in hash)
-            formatted.Append($"{b:X2}");
+            formatted.Append($"{b:x2}");
 
-        return formatted.ToString().ToLower();
+        return formatted.ToString();
     }
 }
