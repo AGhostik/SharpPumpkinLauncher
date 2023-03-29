@@ -42,7 +42,7 @@ public sealed class MainWindowModel
 
     public Versions? AvailableVersions { get; private set; }
 
-    public async Task StartGame(ProfileViewModel profileViewModel)
+    public async Task StartGame(ProfileViewModel profileViewModel, Action gameExited)
     {
         if (string.IsNullOrEmpty(profileViewModel.PlayerName) ||
             string.IsNullOrEmpty(profileViewModel.SelectedVersion?.Id) ||
@@ -54,7 +54,7 @@ public sealed class MainWindowModel
             profileViewModel.SelectedVersion.Id,
             profileViewModel.Directory);
         
-        await _minecraftLauncher.LaunchMinecraft(launchData);
+        await _minecraftLauncher.LaunchMinecraft(launchData, gameExited);
     }
 
     public void SaveSelectedProfile(string profileName)

@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Subjects;
+using Avalonia.Threading;
 using DynamicData;
 using Launcher.PublicData;
 using MinecraftLauncher.Main.Profile;
@@ -14,24 +15,30 @@ namespace MinecraftLauncher.Main;
 public sealed class MainWindowViewModel : ReactiveObject
 {
     private readonly MainWindowModel _mainWindowModel;
+    private readonly ProgressViewModel _progressViewModel;
+    private readonly ProgressControl _progressControl;
     
     private ProfileViewModel? _selectedProfile;
     private object? _mainContent;
     private bool _isVersionsLoaded;
     private bool _isVersionsComboboxEnabled;
     private bool _skipSelectedProfileSaving;
+    private bool _isGameStarted;
 
     public MainWindowViewModel(MainWindowModel mainWindowModel)
     {
         _mainWindowModel = mainWindowModel;
-        
+
         mainWindowModel.VersionsLoaded += MainWindowModelOnVersionsLoaded;
+        
+        _progressViewModel = new ProgressViewModel();
+        _progressControl = new ProgressControl() { DataContext = _progressViewModel };
         
         StartGameCommand = ReactiveCommand.Create(StartGame, CanStartGame);
         NewProfileCommand = ReactiveCommand.Create(NewProfile, CanCreateNewProfile);
         EditProfileCommand = ReactiveCommand.Create(EditProfile, CanEditProfile);
         DeleteProfileCommand = ReactiveCommand.Create(DeleteProfile, CanDeleteProfile);
-        OpenSettingsCommand = ReactiveCommand.Create(OpenSettings);
+        OpenSettingsCommand = ReactiveCommand.Create(OpenSettings, CanOpenSettings);
     }
 
     public ProfileViewModel? SelectedProfile
@@ -81,6 +88,8 @@ public sealed class MainWindowViewModel : ReactiveObject
 
     public ReactiveCommand<Unit, Unit> OpenSettingsCommand { get; }
     
+    private Subject<bool> CanOpenSettings { get; } = new();
+    
     public ReactiveCommand<Unit, Unit> StartGameCommand { get; }
     
     private Subject<bool> CanStartGame { get; } = new();
@@ -89,31 +98,50 @@ public sealed class MainWindowViewModel : ReactiveObject
     {
         if (SelectedProfile == null)
             return;
+
+        _isGameStarted = true;
         
-        var viewModel = new ProgressViewModel();
-        MainContent = new ProgressControl() { DataContext = viewModel };
+        UpdateCanCreateProfile();
+        UpdateCanEditProfile();
+        UpdateCanDeleteProfile();
+        UpdateVersionsComboboxEnabled();
         
+        MainContent = _progressControl;
         _mainWindowModel.StartGameProgress += OnStartGameProgress;
         
-        await _mainWindowModel.StartGame(SelectedProfile);
+        await _mainWindowModel.StartGame(SelectedProfile, () => Dispatcher.UIThread.InvokeAsync(GameExited));
         
         _mainWindowModel.StartGameProgress -= OnStartGameProgress;
+    }
+
+    private void GameExited()
+    {
+        _isGameStarted = false;
+
+        _progressViewModel.Text = string.Empty;
+        _progressViewModel.ProgressValue = 0;
+        MainContent = null;
         
-        void OnStartGameProgress(LaunchProgress status, float progress01)
+        UpdateCanCreateProfile();
+        UpdateCanEditProfile();
+        UpdateCanDeleteProfile();
+        UpdateVersionsComboboxEnabled();
+    }
+    
+    private void OnStartGameProgress(LaunchProgress status, float progress01)
+    {
+        //todo: 
+        _progressViewModel.Text = status switch
         {
-            //todo: 
-            viewModel.Text = status switch
-            {
-                LaunchProgress.GetVersionData => "",
-                LaunchProgress.GetFileList => "",
-                LaunchProgress.GetLaunchArguments => "",
-                LaunchProgress.DownloadFiles => "",
-                LaunchProgress.StartGame => "",
-                _ => throw new ArgumentOutOfRangeException(nameof(status), status, null)
-            };
+            LaunchProgress.GetVersionData => "GetVersionData",
+            LaunchProgress.GetFileList => "GetFileList",
+            LaunchProgress.GetLaunchArguments => "GetLaunchArguments",
+            LaunchProgress.DownloadFiles => "DownloadFiles",
+            LaunchProgress.StartGame => "StartGame",
+            _ => throw new ArgumentOutOfRangeException(nameof(status), status, null)
+        };
             
-            viewModel.ProgressValue = 100f * progress01;
-        }
+        _progressViewModel.ProgressValue = 100f * progress01;
     }
 
     private void OpenSettings()
@@ -124,7 +152,6 @@ public sealed class MainWindowViewModel : ReactiveObject
     private void MainWindowModelOnVersionsLoaded()
     {
         _isVersionsLoaded = true;
-        CanCreateNewProfile.OnNext(true);
 
         Profiles.AddRange(_mainWindowModel.GetProfiles());
         
@@ -134,6 +161,7 @@ public sealed class MainWindowViewModel : ReactiveObject
         SelectedProfile = selectedProfile;
         _skipSelectedProfileSaving = false;
         
+        UpdateCanCreateProfile();
         UpdateVersionsComboboxEnabled();
     }
     
@@ -201,19 +229,24 @@ public sealed class MainWindowViewModel : ReactiveObject
     {
         MainContent = null;
     }
+
+    private void UpdateCanCreateProfile()
+    {
+        CanCreateNewProfile.OnNext(_isVersionsLoaded && !_isGameStarted);
+    }
     
     private void UpdateCanEditProfile()
     {
-        CanEditProfile.OnNext(_isVersionsLoaded && SelectedProfile != null);
+        CanEditProfile.OnNext(_isVersionsLoaded && SelectedProfile != null && !_isGameStarted);
     }
     
     private void UpdateCanDeleteProfile()
     {
-        CanDeleteProfile.OnNext(_isVersionsLoaded && SelectedProfile != null);
+        CanDeleteProfile.OnNext(_isVersionsLoaded && SelectedProfile != null && !_isGameStarted);
     }
 
     private void UpdateVersionsComboboxEnabled()
     {
-        IsVersionsComboboxEnabled = Profiles.Count > 0;
+        IsVersionsComboboxEnabled = Profiles.Count > 0 && !_isGameStarted;
     }
 }
