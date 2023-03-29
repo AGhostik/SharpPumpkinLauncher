@@ -2,6 +2,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.IO.Compression;
+using System.Net;
 
 namespace Launcher.Tools;
 
@@ -188,5 +189,12 @@ internal static class FileManager
             formatted.Append($"{b:x2}");
 
         return formatted.ToString();
+    }
+
+    public static async Task<bool> CheckConnection()
+    {
+        using var client = new HttpClient();
+        var response = await client.GetAsync("https://google.com");
+        return response.StatusCode == HttpStatusCode.OK;
     }
 }
