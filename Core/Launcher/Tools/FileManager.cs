@@ -101,24 +101,44 @@ internal static class FileManager
     }
 
     public static async Task DownloadFilesParallel(IEnumerable<(Uri source, string filename)> download,
-        Action<int>? eachDownloadedEvent = null)
+        Action<long>? bytesReceived = null)
     {
-        var index = 0;
+        var totalRead = 0L;
         
         await Parallel.ForEachAsync(
-            download, 
-            new ParallelOptions{MaxDegreeOfParallelism = 10},
+            download,
+            new ParallelOptions { MaxDegreeOfParallelism = 10 },
             DownloadFile);
         
         async ValueTask DownloadFile((Uri source, string filename) data, CancellationToken cancellationToken)
         {
             using var client = new HttpClient();
-            var stream = await client.GetStreamAsync(data.source, cancellationToken);
-            await using var fileStream = new FileStream(data.filename, FileMode.CreateNew);
-            await stream.CopyToAsync(fileStream, cancellationToken);
+            using var response = client
+                .GetAsync(data.source, HttpCompletionOption.ResponseHeadersRead, cancellationToken).Result;
+            response.EnsureSuccessStatusCode();
+
+            await using var contentStream = await response.Content.ReadAsStreamAsync(cancellationToken);
+            await using var fileStream = new FileStream(data.filename, FileMode.Create, FileAccess.Write,
+                FileShare.None, 8192, true);
             
-            eachDownloadedEvent?.Invoke(index);
-            index++;
+            var buffer = new byte[8192];
+            var isMoreToRead = true;
+
+            do
+            {
+                var read = await contentStream.ReadAsync(buffer, cancellationToken);
+                if (read == 0)
+                {
+                    isMoreToRead = false;
+                }
+                else
+                {
+                    await fileStream.WriteAsync(buffer.AsMemory(0, read), cancellationToken);
+
+                    totalRead += read;
+                    bytesReceived?.Invoke(totalRead);
+                }
+            } while (isMoreToRead);
         }
     }
 

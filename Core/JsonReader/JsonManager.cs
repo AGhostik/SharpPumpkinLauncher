@@ -79,8 +79,14 @@ public sealed class JsonManager
         if (minecraftVersionData == null)
             return null;
 
-        if (minecraftVersionData.AssetIndex == null || string.IsNullOrEmpty(minecraftVersionData.AssetIndex.Url))
+        if (minecraftVersionData.AssetIndex == null || string.IsNullOrEmpty(minecraftVersionData.AssetIndex.Url) ||
+            string.IsNullOrEmpty(minecraftVersionData.AssetIndex.Sha1))
+        {
             return null;
+        }
+        
+        var assetsIndex = new DownloadFile(minecraftVersionData.AssetIndex.Sha1, minecraftVersionData.AssetIndex.Size,
+            minecraftVersionData.AssetIndex.Url);
 
         if (string.IsNullOrEmpty(minecraftVersionData.Id) || string.IsNullOrEmpty(minecraftVersionData.Type) ||
             string.IsNullOrEmpty(minecraftVersionData.Assets) || string.IsNullOrEmpty(minecraftVersionData.MainClass))
@@ -104,16 +110,17 @@ public sealed class JsonManager
 
         var libraries = GetLibraries(minecraftVersionData);
 
-        return new MinecraftData(minecraftVersionData.Id,
-            minecraftVersionData.Type,
-            minecraftVersionData.Assets,
-            minecraftVersionData.AssetIndex.Url,
-            minecraftVersionData.MainClass,
-            minecraftVersionData.MinimumLauncherVersion,
-            minecraftVersionData.ReleaseTime,
-            minecraftVersionData.Time,
+        return new MinecraftData(
+            id: minecraftVersionData.Id,
+            type: minecraftVersionData.Type,
+            assetsVersion: minecraftVersionData.Assets,
+            mainClass: minecraftVersionData.MainClass,
+            minimumLauncherVersion: minecraftVersionData.MinimumLauncherVersion,
+            releaseTime: minecraftVersionData.ReleaseTime,
+            time: minecraftVersionData.Time,
             client,
             server,
+            assetsIndex,
             loggingData,
             arguments,
             libraries);

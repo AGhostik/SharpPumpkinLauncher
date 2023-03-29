@@ -1,4 +1,5 @@
-﻿using JsonReader;
+﻿using System.Diagnostics;
+using JsonReader;
 using JsonReader.PublicData.Assets;
 using JsonReader.PublicData.Game;
 using JsonReader.PublicData.Manifest;
@@ -85,6 +86,8 @@ public class MinecraftLauncher
         LaunchMinecraftProgress?.Invoke(LaunchProgress.StartGame, 0f);
         await Task.Delay(10);
         
+        Debug.WriteLine(launchArguments.Replace(" ", Environment.NewLine));
+        
         await FileManager.StartProcess("java", launchArguments, exitedAction);
     }
 
@@ -94,7 +97,7 @@ public class MinecraftLauncher
             FileManager.CreateDirectory(missedInfo.DirectoriesToCreate[i]);
 
         if (missedInfo.DownloadQueue.Count > 0)
-            await DownloadMissingFiles(missedInfo.DownloadQueue);
+            await DownloadMissingFiles(missedInfo.DownloadQueue, missedInfo.TotalDownloadSize);
 
         for (var i = 0; i < missedInfo.UnpackItems.Count; i++)
         {
@@ -106,19 +109,18 @@ public class MinecraftLauncher
             FileManager.Delete(missedInfo.PathsToDelete[i]);
     }
 
-    private async Task DownloadMissingFiles(IReadOnlyCollection<(Uri source, string fileName)> downloadQueue)
+    private async Task DownloadMissingFiles(IEnumerable<(Uri source, string fileName)> downloadQueue, long totalSize)
     {
         LaunchMinecraftProgress?.Invoke(LaunchProgress.DownloadFiles, 0f);
         await FileManager.DownloadFilesParallel(downloadQueue, Callback);
         
-        void Callback(int index)
+        void Callback(long bytesReceived)
         {
-            var number = index + 1;
-            LaunchMinecraftProgress?.Invoke(LaunchProgress.DownloadFiles, number / (float)downloadQueue.Count);
+            LaunchMinecraftProgress?.Invoke(LaunchProgress.DownloadFiles, (float)bytesReceived / totalSize);
         }
     }
 
-    private bool TryGetMissingInfo(MinecraftFileList minecraftFileList, MinecraftPaths minecraftPaths,
+    private static bool TryGetMissingInfo(MinecraftFileList minecraftFileList, MinecraftPaths minecraftPaths,
         out MinecraftMissedInfo minecraftMissedInfo)
     {
         minecraftMissedInfo = new MinecraftMissedInfo();
@@ -173,16 +175,22 @@ public class MinecraftLauncher
                minecraftMissedInfo.PathsToDelete.Count > 0;
     }
 
-    private void CheckFileAndDirectoryMissed(ref MinecraftMissedInfo missedInfo, IMinecraftFile minecraftFile)
+    private static void CheckFileAndDirectoryMissed(ref MinecraftMissedInfo missedInfo, IMinecraftFile minecraftFile)
     {
-        if (CheckFileExist(minecraftFile, out var downloadInfo))
+        if (CheckFileNotExist(minecraftFile, out var downloadInfo, out var size))
+        {
             missedInfo.DownloadQueue.Add(downloadInfo);
-        
-        if (CheckFileDirectoryExist(minecraftFile, out var directory) && !missedInfo.DirectoriesToCreate.Contains(directory))
+            missedInfo.TotalDownloadSize += size;
+        }
+
+        if (CheckFileDirectoryNotExist(minecraftFile, out var directory) &&
+            !missedInfo.DirectoriesToCreate.Contains(directory))
+        {
             missedInfo.DirectoriesToCreate.Add(directory);
+        }
     }
 
-    private bool CheckFileExist(IMinecraftFile minecraftFile, out (Uri, string) downloadInfo)
+    private static bool CheckFileNotExist(IMinecraftFile minecraftFile, out (Uri, string) downloadInfo, out int size)
     {
         var fileName = minecraftFile.FileName;
         var url = minecraftFile.Url;
@@ -190,14 +198,16 @@ public class MinecraftLauncher
         if (FileManager.FileExist(fileName))
         {
             downloadInfo = default;
+            size = 0;
             return false;
         }
         
         downloadInfo = (new Uri(url), fileName);
+        size = minecraftFile.Size;
         return true;
     }
     
-    private bool CheckFileDirectoryExist(IMinecraftFile minecraftFile, out string directory)
+    private static bool CheckFileDirectoryNotExist(IMinecraftFile minecraftFile, out string directory)
     {
         var fileName = minecraftFile.FileName;
 
@@ -214,15 +224,19 @@ public class MinecraftLauncher
     private async Task<MinecraftFileList?> GetFileList(MinecraftData data, MinecraftPaths minecraftPaths,
         string minecraftVersionId)
     {
-        var assetsJson = await FileManager.DownloadJsonAsync(data.AssetsUrl);
+        var assetsJson = await FileManager.DownloadJsonAsync(data.AssetsIndex.Url);
         var assets = _jsonManager.GetAssets(assetsJson);
         if (assets == null)
             return null;
         
-        var client = new MinecraftFile(data.Client.Url, $"{minecraftPaths.VersionDirectory}\\{minecraftVersionId}.jar");
-        var server = new MinecraftFile(data.Server.Url,
+        var client = new MinecraftFile(data.Client.Url, data.Client.Size,
+            $"{minecraftPaths.VersionDirectory}\\{minecraftVersionId}.jar");
+        
+        var server = new MinecraftFile(data.Server.Url, data.Server.Size,
             $"{minecraftPaths.VersionDirectory}\\{minecraftVersionId}-server.jar");
-        var assetsIndex = new MinecraftFile(data.AssetsUrl, $"{minecraftPaths.AssetsDirectory}\\indexes\\{FileManager.GetFileName(data.AssetsUrl)}");
+        
+        var assetsIndex = new MinecraftFile(data.AssetsIndex.Url, data.AssetsIndex.Size,
+            $"{minecraftPaths.AssetsDirectory}\\indexes\\{FileManager.GetFileName(data.AssetsIndex.Url)}");
         
         var librariesFiles = GetLibrariesFiles(data.Libraries, minecraftPaths);
         var assetsFiles = GetAssetsFiles(assets, minecraftPaths);
@@ -231,7 +245,7 @@ public class MinecraftLauncher
 
         if (data.LoggingData != null)
         {
-            minecraftFileList.Logging = new MinecraftFile(data.LoggingData.File.Url,
+            minecraftFileList.Logging = new MinecraftFile(data.LoggingData.File.Url, data.LoggingData.File.Size,
                 $"{minecraftPaths.VersionDirectory}\\log4j2.xml");
         }
 
@@ -277,7 +291,7 @@ public class MinecraftLauncher
             if (libraryData.File != null)
             {
                 var fileName = $"{minecraftPaths.LibrariesDirectory}\\{libraryData.File.Path}";
-                var minecraftLibraryFile = new MinecraftLibraryFile(libraryData.File.Url, fileName);
+                var minecraftLibraryFile = new MinecraftLibraryFile(libraryData.File.Url, libraryData.File.Size, fileName);
                 result.Add(minecraftLibraryFile);
             }
         }
@@ -289,7 +303,7 @@ public class MinecraftLauncher
         IReadOnlyList<string> deleteFiles)
     {
         var nativeFileName = $"{temporaryDirectory}\\{file.Path}";
-        var minecraftNativeLibraryFile = new MinecraftLibraryFile(file.Url, nativeFileName)
+        var minecraftNativeLibraryFile = new MinecraftLibraryFile(file.Url, file.Size, nativeFileName)
         {
             NeedUnpack = true,
             Delete = deleteFiles
@@ -311,7 +325,7 @@ public class MinecraftLauncher
             
             var subDirectory = $"{hashString[0]}{hashString[1]}";
             var fileName = $"{minecraftPaths.AssetsDirectory}\\objects\\{subDirectory}\\{hashString}";
-            var minecraftFile = new MinecraftFile($"{AssetsUrl}/{subDirectory}/{hashString}", fileName);
+            var minecraftFile = new MinecraftFile($"{AssetsUrl}/{subDirectory}/{hashString}", asset.Size, fileName);
             
             result.Add(minecraftFile);
         }
