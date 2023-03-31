@@ -2,7 +2,6 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.IO.Compression;
-using System.Net;
 
 namespace Launcher.Tools;
 
@@ -92,87 +91,6 @@ internal static class FileManager
         //todo: catch exceptions
         Directory.CreateDirectory(directory);
     }
-    
-    public static async Task<string> DownloadJsonAsync(string url)
-    {
-        using var client = new HttpClient();
-        var response = await client.GetAsync(new Uri(url));
-        var json = await response.Content.ReadAsStringAsync();
-        return json;
-    }
-    
-    public static async Task<string> DownloadFile(string url, CancellationToken cancellationToken, Action<long>? bytesReceived = null)
-    {
-        using var client = new HttpClient();
-        using var response = client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cancellationToken).Result;
-        response.EnsureSuccessStatusCode();
-
-        await using var contentStream = await response.Content.ReadAsStreamAsync(cancellationToken);
-            
-        var totalRead = 0L;
-        var buffer = new byte[8192];
-        var isMoreToRead = true;
-        var sb = new StringBuilder();
-
-        do
-        {
-            var read = await contentStream.ReadAsync(buffer, cancellationToken);
-            if (read == 0)
-            {
-                isMoreToRead = false;
-            }
-            else
-            {
-                sb.Append(Encoding.Default.GetString(buffer, 0, read));
-                totalRead += read;
-                bytesReceived?.Invoke(totalRead);
-            }
-        } while (isMoreToRead);
-
-        return sb.ToString();
-    }
-
-    public static async Task DownloadFilesParallel(IEnumerable<(Uri source, string filename)> download,
-        Action<long>? bytesReceived = null)
-    {
-        var totalRead = 0L;
-        
-        await Parallel.ForEachAsync(
-            download,
-            new ParallelOptions { MaxDegreeOfParallelism = 10 },
-            DownloadFileParallel);
-        
-        async ValueTask DownloadFileParallel((Uri source, string filename) data, CancellationToken cancellationToken)
-        {
-            using var client = new HttpClient();
-            using var response = client
-                .GetAsync(data.source, HttpCompletionOption.ResponseHeadersRead, cancellationToken).Result;
-            response.EnsureSuccessStatusCode();
-
-            await using var contentStream = await response.Content.ReadAsStreamAsync(cancellationToken);
-            await using var fileStream = new FileStream(data.filename, FileMode.Create, FileAccess.Write,
-                FileShare.None, 8192, true);
-            
-            var buffer = new byte[8192];
-            var isMoreToRead = true;
-
-            do
-            {
-                var read = await contentStream.ReadAsync(buffer, cancellationToken);
-                if (read == 0)
-                {
-                    isMoreToRead = false;
-                }
-                else
-                {
-                    await fileStream.WriteAsync(buffer.AsMemory(0, read), cancellationToken);
-
-                    totalRead += read;
-                    bytesReceived?.Invoke(totalRead);
-                }
-            } while (isMoreToRead);
-        }
-    }
 
     public static string? ComputeSha1(string fileName)
     {
@@ -189,12 +107,5 @@ internal static class FileManager
             formatted.Append($"{b:x2}");
 
         return formatted.ToString();
-    }
-
-    public static async Task<bool> CheckConnection()
-    {
-        using var client = new HttpClient();
-        var response = await client.GetAsync("https://google.com");
-        return response.StatusCode == HttpStatusCode.OK;
     }
 }

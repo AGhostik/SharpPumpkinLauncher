@@ -27,6 +27,7 @@ public sealed class MainWindowViewModel : ReactiveObject
     private bool _isVersionsLoaded;
     private bool _isProfilesComboboxEnabled;
     private bool _isGameStarted;
+    private bool _isStartGameVisible;
 
     public MainWindowViewModel(MainWindowModel mainWindowModel)
     {
@@ -42,12 +43,14 @@ public sealed class MainWindowViewModel : ReactiveObject
         _settingsControl = new SettingsControl() { DataContext = settingsViewModel };
         
         StartGameCommand = ReactiveCommand.Create(StartGame, CanStartGame);
+        AbortGameCommand = ReactiveCommand.Create(AbortStartGame, CanAbortGame);
         NewProfileCommand = ReactiveCommand.Create(NewProfile, CanCreateNewProfile);
         EditProfileCommand = ReactiveCommand.Create(EditProfile, CanEditProfile);
         DeleteProfileCommand = ReactiveCommand.Create(DeleteProfile, CanDeleteProfile);
         OpenSettingsCommand = ReactiveCommand.Create(OpenSettings, CanOpenSettings);
         
         CanOpenSettings.OnNext(true);
+        IsStartGameVisible = true;
         
         _currentSettings = SetupFromSettings();
         settingsViewModel.Directory = _currentSettings.Directory;
@@ -109,19 +112,32 @@ public sealed class MainWindowViewModel : ReactiveObject
     public ReactiveCommand<Unit, Unit> StartGameCommand { get; }
     
     private Subject<bool> CanStartGame { get; } = new();
+    
+    public ReactiveCommand<Unit, Unit> AbortGameCommand { get; }
+    
+    private Subject<bool> CanAbortGame { get; } = new();
+
+    public bool IsStartGameVisible
+    {
+        get => _isStartGameVisible;
+        set => this.RaiseAndSetIfChanged(ref _isStartGameVisible, value);
+    }
 
     private async void StartGame()
     {
-        if (SelectedProfile == null || string.IsNullOrEmpty(_currentSettings.Directory))
+        if (SelectedProfile == null || string.IsNullOrEmpty(_currentSettings.Directory) || _isGameStarted)
             return;
 
         _isGameStarted = true;
+        IsStartGameVisible = false;
         
         UpdateCanCreateProfile();
         UpdateCanEditProfile();
         UpdateCanDeleteProfile();
         UpdateProfilesComboboxEnabled();
         UpdateCanOpenSettings();
+        UpdateCanAbortGame();
+        UpdateCanStartGame();
         
         MainContent = _progressControl;
         _mainWindowModel.StartGameProgress += OnStartGameProgress;
@@ -132,11 +148,21 @@ public sealed class MainWindowViewModel : ReactiveObject
         _mainWindowModel.StartGameProgress -= OnStartGameProgress;
     }
 
+    private void AbortStartGame()
+    {
+        if (!_isGameStarted)
+            return;
+        
+        _mainWindowModel.AbortStartGame();
+        GameExited();
+    }
+
     private void GameExited()
     {
         _isGameStarted = false;
+        IsStartGameVisible = true;
 
-        _progressViewModel.Text = string.Empty;
+        //_progressViewModel.Text = string.Empty;
         _progressViewModel.ProgressValue = 0;
 
         UpdateCanCreateProfile();
@@ -144,6 +170,8 @@ public sealed class MainWindowViewModel : ReactiveObject
         UpdateCanDeleteProfile();
         UpdateProfilesComboboxEnabled();
         UpdateCanOpenSettings();
+        UpdateCanAbortGame();
+        UpdateCanStartGame();
     }
     
     private void OnStartGameProgress(LaunchProgress status, float progress01)
@@ -156,6 +184,7 @@ public sealed class MainWindowViewModel : ReactiveObject
             LaunchProgress.GetLaunchArguments => "GetLaunchArguments",
             LaunchProgress.DownloadFiles => "DownloadFiles",
             LaunchProgress.StartGame => "StartGame",
+            LaunchProgress.GameAborted => "GameAborted",
             _ => throw new ArgumentOutOfRangeException(nameof(status), status, null)
         };
             
@@ -185,11 +214,13 @@ public sealed class MainWindowViewModel : ReactiveObject
     
     private void UpdateCanStartGame()
     {
-        var canStartGame = SelectedProfile?.SelectedVersion != null &&
-                           !string.IsNullOrEmpty(SelectedProfile.PlayerName) &&
-                           !string.IsNullOrEmpty(SelectedProfile.SelectedVersion.Id) &&
-                           !string.IsNullOrEmpty(_currentSettings.Directory) &&
-                           _isVersionsLoaded;
+        var canStartGame = 
+            !_isGameStarted &&
+            SelectedProfile?.SelectedVersion != null &&
+            !string.IsNullOrEmpty(SelectedProfile.PlayerName) &&
+            !string.IsNullOrEmpty(SelectedProfile.SelectedVersion.Id) &&
+            !string.IsNullOrEmpty(_currentSettings.Directory) &&
+            _isVersionsLoaded;
         
         CanStartGame.OnNext(canStartGame);
     }
@@ -277,6 +308,11 @@ public sealed class MainWindowViewModel : ReactiveObject
     private void UpdateCanOpenSettings()
     {
         CanOpenSettings.OnNext(!_isGameStarted);
+    }
+
+    private void UpdateCanAbortGame()
+    {
+        CanAbortGame.OnNext(_isGameStarted);
     }
 
     private SettingsData SetupFromSettings()

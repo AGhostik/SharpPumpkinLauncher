@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Launcher.PublicData;
 using MinecraftLauncher.Main.Profile;
@@ -18,6 +19,10 @@ public sealed class MainWindowModel
 
     private Versions? _availableVersions;
     private Action<Versions>? _versionsLoaded;
+    private int _profilesToLoadCount;
+    private int _currentLoadedProfilesCount;
+
+    private CancellationTokenSource? _cancellationTokenSource;
 
     public event Action<Versions>? VersionsLoaded
     {
@@ -32,9 +37,6 @@ public sealed class MainWindowModel
     }
 
     public event Action<LaunchProgress, float>? StartGameProgress;
-
-    private int _profilesToLoadCount;
-    private int _currentLoadedProfilesCount;
     public event Action? AllProfilesLoaded;
 
     public MainWindowModel()
@@ -62,8 +64,20 @@ public sealed class MainWindowModel
             profileViewModel.PlayerName,
             profileViewModel.SelectedVersion.Id,
             directory);
+
+        _cancellationTokenSource = new CancellationTokenSource();
         
-        await _minecraftLauncher.LaunchMinecraft(launchData, gameExited);
+        await _minecraftLauncher.LaunchMinecraft(launchData, _cancellationTokenSource.Token, () =>
+        {
+            _cancellationTokenSource.Dispose();
+            _cancellationTokenSource = null;
+            gameExited.Invoke();
+        });
+    }
+
+    public void AbortStartGame()
+    {
+        _cancellationTokenSource?.Cancel();
     }
 
     public void SaveSelectedProfile(string profileName)

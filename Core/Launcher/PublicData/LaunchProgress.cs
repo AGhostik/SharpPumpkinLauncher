@@ -6,5 +6,6 @@ public enum LaunchProgress
     GetFileList,
     GetLaunchArguments,
     DownloadFiles,
-    StartGame
+    StartGame,
+    GameAborted
 }

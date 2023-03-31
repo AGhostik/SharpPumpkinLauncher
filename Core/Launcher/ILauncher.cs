@@ -6,7 +6,7 @@ internal interface ILauncher
 {
     event Action<LaunchProgress, float>? LaunchMinecraftProgress;
 
-    Task<Versions> GetAvailableVersions();
+    Task<Versions> GetAvailableVersions(CancellationToken cancellationToken);
 
-    Task LaunchMinecraft(LaunchData launchData, Action? exitedAction = null);
+    Task LaunchMinecraft(LaunchData launchData, CancellationToken cancellationToken, Action? exitedAction = null);
 }

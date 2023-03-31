@@ -85,7 +85,19 @@
                 VerticalAlignment="Bottom"
                 HorizontalContentAlignment="Center"
                 VerticalContentAlignment="Center"
+                IsVisible="{Binding IsStartGameVisible}"
                 Command="{Binding StartGameCommand}"/>
+            <Button
+                Grid.Row="2"
+                Content="Stop game" 
+                MinWidth="150"
+                MinHeight="50"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Bottom"
+                HorizontalContentAlignment="Center"
+                VerticalContentAlignment="Center"
+                IsVisible="{Binding !IsStartGameVisible}"
+                Command="{Binding AbortGameCommand}"/>
         </Grid>
     </Grid>
 </Window>
