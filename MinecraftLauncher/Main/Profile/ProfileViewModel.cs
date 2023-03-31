@@ -5,6 +5,7 @@ using System.Reactive;
 using System.Reactive.Subjects;
 using Avalonia.Data;
 using Launcher.PublicData;
+using MinecraftLauncher.Main.Validation;
 using ReactiveUI;
 using UserSettings;
 using Version = Launcher.PublicData.Version;
@@ -13,20 +14,24 @@ namespace MinecraftLauncher.Main.Profile;
 
 public sealed class ProfileViewModel : ReactiveObject
 {
+    private const string SetLastVersion = "SetLastVersion";
+    
     private string? _profileName;
     private string? _playerName;
-    private string? _directory;
     private Version? _selectedVersion;
+    private Versions? _versions;
     private bool _custom;
     private bool _latest;
     private bool _release;
     private bool _snapshot;
     private bool _beta;
     private bool _alpha;
-    private static Action<ProfileViewModel>? _save;
-    private static Action? _cancel;
-    private static Versions? _versions;
-    private static List<string?>? _restrictedNames;
+
+    private string? _loadedSelectedVersion;
+    private List<string?>? _restrictedNames;
+    private Action<ProfileViewModel>? _versionLoaded;
+    private Action<ProfileViewModel>? _save;
+    private Action? _cancel;
 
     private ProfileViewModel()
     {
@@ -34,39 +39,76 @@ public sealed class ProfileViewModel : ReactiveObject
         CloseProfileControlCommand = ReactiveCommand.Create(CloseProfileControl);
     }
 
-    public static ProfileViewModel CreateNew(Versions versions, IEnumerable<string?> restrictedNames,
-        Action<ProfileViewModel> save, Action cancel)
+    public static ProfileViewModel CreateDefault(Action<ProfileViewModel> versionLoaded)
     {
-        _restrictedNames = new List<string?>(restrictedNames);
-        _versions = versions;
-        _save = save;
-        _cancel = cancel;
-        return new ProfileViewModel() { Latest = true };
+        return new ProfileViewModel() 
+        { 
+            Latest = true,
+            ProfileName = "Minecraft game",
+            _restrictedNames = new List<string?>(),
+            _save = null,
+            _cancel = null,
+            _loadedSelectedVersion = SetLastVersion,
+            _versionLoaded = versionLoaded,
+        };
+    }
+    
+    public static ProfileViewModel CreateNew(IEnumerable<string?> restrictedNames, Action<ProfileViewModel> save,
+        Action cancel)
+    {
+        return new ProfileViewModel() 
+        { 
+            Latest = true,
+            _restrictedNames = new List<string?>(restrictedNames),
+            _save = save,
+            _cancel = cancel
+        };
     }
 
-    public static ProfileViewModel Edit(ProfileViewModel profileViewModel, Versions versions,
-        IEnumerable<string?> restrictedNames, Action<ProfileViewModel> save, Action cancel)
+    public static ProfileViewModel Edit(ProfileViewModel profileViewModel, IEnumerable<string?> restrictedNames,
+        Action<ProfileViewModel> save, Action cancel)
     {
-        _restrictedNames = new List<string?>(restrictedNames);
-        _versions = versions;
-        _save = save;
-        _cancel = cancel;
+        profileViewModel._save = save;
+        profileViewModel._cancel = cancel;
+        profileViewModel._restrictedNames = new List<string?>(restrictedNames);
+        
         return profileViewModel;
     }
 
-    public static ProfileViewModel Load(ProfileData profileData, Versions versions)
+    public static ProfileViewModel Load(ProfileData profileData, Action<ProfileViewModel> versionLoaded)
     {
-        Version? selectedVersion = null;
-        if (!string.IsNullOrEmpty(profileData.MinecraftVersion))
-            versions.AllVersions.TryGetValue(profileData.MinecraftVersion, out selectedVersion);
-        
-        return new ProfileViewModel()
+        var profileViewModel = new ProfileViewModel()
         {
-            ProfileName = profileData.Name,
-            PlayerName = profileData.PlayerNickname,
-            Directory = profileData.GameDirectory,
-            SelectedVersion = selectedVersion,
+            _profileName = profileData.Name,
+            _playerName = profileData.PlayerNickname,
+            Alpha = profileData.Alpha,
+            Beta = profileData.Beta,
+            Custom = profileData.Custom,
+            Snapshot = profileData.Snapshot,
+            Release = profileData.Release,
+            SelectedVersion = null,
+            _loadedSelectedVersion = profileData.MinecraftVersion,
+            _versionLoaded = versionLoaded,
         };
+
+        return profileViewModel;
+    }
+
+    public void SetVersions(Versions versions)
+    {
+        _versions = versions;
+
+        if (!string.IsNullOrEmpty(_loadedSelectedVersion))
+        {
+            if (_loadedSelectedVersion == SetLastVersion)
+                SelectedVersion = versions.Latest;
+            else if (versions.AllVersions.TryGetValue(_loadedSelectedVersion, out var selectedVersion))
+                SelectedVersion = selectedVersion;
+
+            _versionLoaded?.Invoke(this);
+        }
+
+        UpdateVisibleVersions();
     }
     
     public string? ProfileName
@@ -74,7 +116,7 @@ public sealed class ProfileViewModel : ReactiveObject
         get => _profileName;
         set
         {
-            if (!IsProfileNameValid(value, out var errorKey))
+            if (!ProfileNameValidation.IsProfileNameValid(value, _restrictedNames, out var errorKey))
                 throw new DataValidationException(errorKey);
 
             this.RaiseAndSetIfChanged(ref _profileName, value);
@@ -87,23 +129,10 @@ public sealed class ProfileViewModel : ReactiveObject
         get => _playerName;
         set
         {
-            if (!IsPlayerNameValid(value, out var errorKey))
+            if (!PlayerNameValidation.IsPlayerNameValid(value, out var errorKey))
                 throw new DataValidationException(errorKey);
             
             this.RaiseAndSetIfChanged(ref _playerName, value);
-            UpdateCanSaveProfile();
-        }
-    }
-
-    public string? Directory
-    {
-        get => _directory;
-        set
-        {
-            if (!IsDirectoryValid(value, out var errorKey))
-                throw new DataValidationException(errorKey);
-            
-            this.RaiseAndSetIfChanged(ref _directory, value);
             UpdateCanSaveProfile();
         }
     }
@@ -196,131 +225,59 @@ public sealed class ProfileViewModel : ReactiveObject
     
     private void UpdateCanSaveProfile()
     {
-        var value = IsProfileNameValid(ProfileName) &&
-                    IsPlayerNameValid(PlayerName) &&
-                    IsDirectoryValid(Directory);
+        var value = ProfileNameValidation.IsProfileNameValid(ProfileName, _restrictedNames) &&
+                    PlayerNameValidation.IsPlayerNameValid(PlayerName) &&
+                    SelectedVersion != null && !string.IsNullOrEmpty(SelectedVersion.Id);
         
         CanSaveProfile.OnNext(value);
     }
     
     private void UpdateVisibleVersions()
     {
-        if (_versions == null)
-            return;
-        
-        if (Alpha)
+        if (_versions != null)
         {
-            for (var i = 0; i < _versions.Alpha.Count; i++)
-                Versions.Add(_versions.Alpha[i]);
-        }
-        if (Beta)
-        {
-            for (var i = 0; i < _versions.Beta.Count; i++)
-                Versions.Add(_versions.Beta[i]);
-        }
-        if (Snapshot)
-        {
-            for (var i = 0; i < _versions.Snapshot.Count; i++)
-                Versions.Add(_versions.Snapshot[i]);
-        }
-        if (Release)
-        {
-            for (var i = 0; i < _versions.Release.Count; i++)
-                Versions.Add(_versions.Release[i]);
-        }
-        if (Latest)
-        {
-            if (_versions.Latest != null)
-                Versions.Add(_versions.Latest);
-            
-            if (_versions.LatestSnapshot != null)
-                Versions.Add(_versions.LatestSnapshot);
-        }
-        if (Custom)
-        {
-            //todo:
-            //for (var i = 0; i < _versions.Release.Count; i++)
-            //    Versions.Add(_versions.Release[i]);
-        }
-    }
+            if (Alpha)
+            {
+                for (var i = 0; i < _versions.Alpha.Count; i++)
+                    Versions.Add(_versions.Alpha[i]);
+            }
 
-    private static bool IsProfileNameValid(string? profileName)
-    {
-        return IsProfileNameValid(profileName, out _);
-    }
-    
-    private static bool IsProfileNameValid(string? profileName, out string errorKey)
-    {
-        if (string.IsNullOrEmpty(profileName))
-        {
-            errorKey = "Empty";
-            return false;
-        }
+            if (Beta)
+            {
+                for (var i = 0; i < _versions.Beta.Count; i++)
+                    Versions.Add(_versions.Beta[i]);
+            }
 
-        if (_restrictedNames != null && _restrictedNames.Contains(profileName))
-        {
-            errorKey = "Restricted";
-            return false;
-        }
+            if (Snapshot)
+            {
+                for (var i = 0; i < _versions.Snapshot.Count; i++)
+                    Versions.Add(_versions.Snapshot[i]);
+            }
 
-        errorKey = string.Empty;
-        return true;
-    }
+            if (Release)
+            {
+                for (var i = 0; i < _versions.Release.Count; i++)
+                    Versions.Add(_versions.Release[i]);
+            }
 
-    private static bool IsPlayerNameValid(string? playerName)
-    {
-        return IsPlayerNameValid(playerName, out _);
-    }
+            if (Latest)
+            {
+                if (_versions.Latest != null)
+                    Versions.Add(_versions.Latest);
 
-    private static bool IsPlayerNameValid(string? playerName, out string errorKey)
-    {
-        if (string.IsNullOrEmpty(playerName))
-        {
-            errorKey = "Empty";
-            return false;
-        }
+                if (_versions.LatestSnapshot != null)
+                    Versions.Add(_versions.LatestSnapshot);
+            }
 
-        if (playerName.Length < 3)
-        {
-            errorKey = "Short";
-            return false;
+            if (Custom)
+            {
+                //todo:
+                //for (var i = 0; i < _versions.Release.Count; i++)
+                //    Versions.Add(_versions.Release[i]);
+            }
         }
         
-        if (playerName.Length > 16)
-        {
-            errorKey = "Long";
-            return false;
-        }
-        
-        for (var i = 0; i < playerName.Length; i++)
-        {
-            var c = playerName[i];
-            
-            if (char.IsLetterOrDigit(c) || c == '_')
-                continue;
-
-            errorKey = "RestrictedChar";
-            return false;
-        }
-
-        errorKey = string.Empty;
-        return true;
-    }
-
-    private static bool IsDirectoryValid(string? path)
-    {
-        return IsDirectoryValid(path, out _);
-    }
-    
-    private static bool IsDirectoryValid(string? path, out string errorKey)
-    {
-        if (string.IsNullOrEmpty(path))
-        {
-            errorKey = "Empty";
-            return false;
-        }
-        
-        errorKey = string.Empty;
-        return true;
+        if (SelectedVersion != null && !Versions.Contains(SelectedVersion))
+            Versions.Add(SelectedVersion);
     }
 }

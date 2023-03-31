@@ -1,0 +1,44 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:settings="clr-namespace:MinecraftLauncher.Main.Settings"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:DataType="settings:SettingsViewModel"
+             x:CompileBindings="True"
+             x:Class="MinecraftLauncher.Main.Settings.SettingsControl">
+    <StackPanel>
+        <TextBox 
+            Margin="5"
+            Watermark="Default player name"
+            Text="{Binding DefaultPlayerName}" />
+        <TextBox 
+            Margin="5"
+            Watermark="Directory"
+            Text="{Binding Directory}" />
+        <ComboBox
+            Margin="5"
+            PlaceholderText="Minecraft version"
+            PlaceholderForeground="gray"
+            HorizontalAlignment="Stretch"
+            VirtualizationMode="Simple"
+            Items="{Binding Visibilities}"
+            SelectedItem="{Binding LauncherVisibility}" />
+        <Grid ColumnDefinitions="*, *">
+            <Button
+                Grid.Column="0"
+                Margin="5"
+                HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Center"
+                Content="Save"
+                Command="{Binding SaveCommand}"/>
+            <Button
+                Grid.Column="1"
+                Margin="5"
+                HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Center"
+                Content="Cancel"
+                Command="{Binding CloseCommand}"/>
+        </Grid>
+    </StackPanel>
+</UserControl>

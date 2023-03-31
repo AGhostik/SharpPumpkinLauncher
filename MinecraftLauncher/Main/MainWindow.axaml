@@ -43,7 +43,7 @@
                 Grid.Row="0"
                 HorizontalAlignment="Center"
                 MinWidth="350"
-                IsEnabled="{Binding IsVersionsComboboxEnabled}"
+                IsEnabled="{Binding IsProfilesComboboxEnabled}"
                 SelectedItem="{Binding SelectedProfile}"
                 Items="{Binding Profiles}">
                 <ComboBox.ItemTemplate>

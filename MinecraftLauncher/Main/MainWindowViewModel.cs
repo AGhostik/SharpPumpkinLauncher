@@ -8,6 +8,7 @@ using DynamicData;
 using Launcher.PublicData;
 using MinecraftLauncher.Main.Profile;
 using MinecraftLauncher.Main.Progress;
+using MinecraftLauncher.Main.Settings;
 using ReactiveUI;
 
 namespace MinecraftLauncher.Main;
@@ -17,28 +18,43 @@ public sealed class MainWindowViewModel : ReactiveObject
     private readonly MainWindowModel _mainWindowModel;
     private readonly ProgressViewModel _progressViewModel;
     private readonly ProgressControl _progressControl;
+    private readonly SettingsControl _settingsControl;
     
+    private SettingsData _currentSettings;
     private ProfileViewModel? _selectedProfile;
     private object? _mainContent;
+    private bool _dontSaveSelectedProfile;
     private bool _isVersionsLoaded;
-    private bool _isVersionsComboboxEnabled;
-    private bool _skipSelectedProfileSaving;
+    private bool _isProfilesComboboxEnabled;
     private bool _isGameStarted;
 
     public MainWindowViewModel(MainWindowModel mainWindowModel)
     {
         _mainWindowModel = mainWindowModel;
 
-        mainWindowModel.VersionsLoaded += MainWindowModelOnVersionsLoaded;
+        mainWindowModel.VersionsLoaded += OnVersionsLoaded;
+        mainWindowModel.AllProfilesLoaded += UpdateCanStartGame;
         
         _progressViewModel = new ProgressViewModel();
         _progressControl = new ProgressControl() { DataContext = _progressViewModel };
+
+        var settingsViewModel = new SettingsViewModel(SettingsSaved, SetDefaultMainContent);
+        _settingsControl = new SettingsControl() { DataContext = settingsViewModel };
         
         StartGameCommand = ReactiveCommand.Create(StartGame, CanStartGame);
         NewProfileCommand = ReactiveCommand.Create(NewProfile, CanCreateNewProfile);
         EditProfileCommand = ReactiveCommand.Create(EditProfile, CanEditProfile);
         DeleteProfileCommand = ReactiveCommand.Create(DeleteProfile, CanDeleteProfile);
         OpenSettingsCommand = ReactiveCommand.Create(OpenSettings, CanOpenSettings);
+        
+        CanOpenSettings.OnNext(true);
+        
+        _currentSettings = SetupFromSettings();
+        settingsViewModel.Directory = _currentSettings.Directory;
+        settingsViewModel.DefaultPlayerName = _currentSettings.DefaultPlayerName;
+        settingsViewModel.LauncherVisibility = _currentSettings.LauncherVisibility;
+        
+        SetDefaultMainContent();
     }
 
     public ProfileViewModel? SelectedProfile
@@ -48,7 +64,7 @@ public sealed class MainWindowViewModel : ReactiveObject
         {
             this.RaiseAndSetIfChanged(ref _selectedProfile, value);
 
-            if (!_skipSelectedProfileSaving)
+            if (!_dontSaveSelectedProfile)
             {
                 if (value != null && !string.IsNullOrEmpty(value.ProfileName))
                     _mainWindowModel.SaveSelectedProfile(value.ProfileName);
@@ -62,10 +78,10 @@ public sealed class MainWindowViewModel : ReactiveObject
 
     public ObservableCollection<ProfileViewModel> Profiles { get; } = new();
 
-    public bool IsVersionsComboboxEnabled
+    public bool IsProfilesComboboxEnabled
     {
-        get => _isVersionsComboboxEnabled;
-        set => this.RaiseAndSetIfChanged(ref _isVersionsComboboxEnabled, value);
+        get => _isProfilesComboboxEnabled;
+        set => this.RaiseAndSetIfChanged(ref _isProfilesComboboxEnabled, value);
     }
 
     public object? MainContent
@@ -96,7 +112,7 @@ public sealed class MainWindowViewModel : ReactiveObject
 
     private async void StartGame()
     {
-        if (SelectedProfile == null)
+        if (SelectedProfile == null || string.IsNullOrEmpty(_currentSettings.Directory))
             return;
 
         _isGameStarted = true;
@@ -104,12 +120,14 @@ public sealed class MainWindowViewModel : ReactiveObject
         UpdateCanCreateProfile();
         UpdateCanEditProfile();
         UpdateCanDeleteProfile();
-        UpdateVersionsComboboxEnabled();
+        UpdateProfilesComboboxEnabled();
+        UpdateCanOpenSettings();
         
         MainContent = _progressControl;
         _mainWindowModel.StartGameProgress += OnStartGameProgress;
         
-        await _mainWindowModel.StartGame(SelectedProfile, () => Dispatcher.UIThread.InvokeAsync(GameExited));
+        await _mainWindowModel.StartGame(SelectedProfile, _currentSettings.Directory,
+            () => Dispatcher.UIThread.InvokeAsync(GameExited));
         
         _mainWindowModel.StartGameProgress -= OnStartGameProgress;
     }
@@ -120,12 +138,12 @@ public sealed class MainWindowViewModel : ReactiveObject
 
         _progressViewModel.Text = string.Empty;
         _progressViewModel.ProgressValue = 0;
-        MainContent = null;
-        
+
         UpdateCanCreateProfile();
         UpdateCanEditProfile();
         UpdateCanDeleteProfile();
-        UpdateVersionsComboboxEnabled();
+        UpdateProfilesComboboxEnabled();
+        UpdateCanOpenSettings();
     }
     
     private void OnStartGameProgress(LaunchProgress status, float progress01)
@@ -146,31 +164,31 @@ public sealed class MainWindowViewModel : ReactiveObject
 
     private void OpenSettings()
     {
-        //
+        MainContent = _settingsControl;
+    }
+
+    private void SettingsSaved(SettingsData settingsData)
+    {
+        _currentSettings = settingsData;
+        _mainWindowModel.SaveSettings(settingsData);
     }
     
-    private void MainWindowModelOnVersionsLoaded()
+    private void OnVersionsLoaded(Versions versions)
     {
         _isVersionsLoaded = true;
 
-        Profiles.AddRange(_mainWindowModel.GetProfiles());
-        
-        _skipSelectedProfileSaving = true;
-        var lastSelectedProfileName = _mainWindowModel.GetLastSelectedProfile();
-        var selectedProfile = Profiles.FirstOrDefault(profile => profile.ProfileName == lastSelectedProfileName);
-        SelectedProfile = selectedProfile;
-        _skipSelectedProfileSaving = false;
-        
         UpdateCanCreateProfile();
-        UpdateVersionsComboboxEnabled();
+        UpdateCanEditProfile();
+        UpdateCanDeleteProfile();
+        UpdateProfilesComboboxEnabled();
     }
     
     private void UpdateCanStartGame()
     {
-        var canStartGame = SelectedProfile != null && SelectedProfile.SelectedVersion != null &&
+        var canStartGame = SelectedProfile?.SelectedVersion != null &&
                            !string.IsNullOrEmpty(SelectedProfile.PlayerName) &&
-                           !string.IsNullOrEmpty(SelectedProfile.Directory) &&
                            !string.IsNullOrEmpty(SelectedProfile.SelectedVersion.Id) &&
+                           !string.IsNullOrEmpty(_currentSettings.Directory) &&
                            _isVersionsLoaded;
         
         CanStartGame.OnNext(canStartGame);
@@ -178,14 +196,17 @@ public sealed class MainWindowViewModel : ReactiveObject
 
     private void NewProfile()
     {
-        if (_mainWindowModel.AvailableVersions == null)
-            return;
+        var profileViewModel = ProfileViewModel.CreateNew(
+            Profiles.Select(profile => profile.ProfileName),
+            NewProfileSaved,
+            SetDefaultMainContent);
+
+        profileViewModel.PlayerName = _currentSettings.DefaultPlayerName;
+        _mainWindowModel.VersionsLoaded += profileViewModel.SetVersions;
         
         MainContent = new ProfileControl()
         {
-            DataContext = ProfileViewModel.CreateNew(_mainWindowModel.AvailableVersions,
-                Profiles.Select(profile => profile.ProfileName),
-                NewProfileSaved, CloseProfileContent)
+            DataContext = profileViewModel
         };
     }
 
@@ -194,27 +215,30 @@ public sealed class MainWindowViewModel : ReactiveObject
         Profiles.Add(newProfileViewModel);
         SelectedProfile ??= newProfileViewModel;
 
-        MainContent = null;
-        UpdateVersionsComboboxEnabled();
+        SetDefaultMainContent();
+        UpdateProfilesComboboxEnabled();
         _mainWindowModel.SaveProfile(newProfileViewModel);
     }
     
     private void EditProfile()
     {
-        if (SelectedProfile == null || _mainWindowModel.AvailableVersions == null)
+        if (SelectedProfile == null)
             return;
         
         MainContent = new ProfileControl()
         {
-            DataContext = ProfileViewModel.Edit(SelectedProfile, _mainWindowModel.AvailableVersions,
-                Profiles.Where(profile => profile.ProfileName != SelectedProfile.ProfileName).Select(profile => profile.ProfileName),
-                ProfileEdited, CloseProfileContent)
+            DataContext = ProfileViewModel.Edit(
+                SelectedProfile,
+                Profiles.Where(profile => profile.ProfileName != SelectedProfile.ProfileName)
+                    .Select(profile => profile.ProfileName),
+                ProfileEdited,
+                SetDefaultMainContent)
         };
     }
 
     private void ProfileEdited(ProfileViewModel editedProfileViewModel)
     {
-        MainContent = null;
+        SetDefaultMainContent();
     }
     
     private void DeleteProfile()
@@ -222,12 +246,12 @@ public sealed class MainWindowViewModel : ReactiveObject
         if (SelectedProfile != null)
             Profiles.Remove(SelectedProfile);
         
-        IsVersionsComboboxEnabled = Profiles.Count > 0;
+        IsProfilesComboboxEnabled = Profiles.Count > 0;
     }
     
-    private void CloseProfileContent()
+    private void SetDefaultMainContent()
     {
-        MainContent = null;
+        MainContent = _progressControl;
     }
 
     private void UpdateCanCreateProfile()
@@ -245,8 +269,42 @@ public sealed class MainWindowViewModel : ReactiveObject
         CanDeleteProfile.OnNext(_isVersionsLoaded && SelectedProfile != null && !_isGameStarted);
     }
 
-    private void UpdateVersionsComboboxEnabled()
+    private void UpdateProfilesComboboxEnabled()
     {
-        IsVersionsComboboxEnabled = Profiles.Count > 0 && !_isGameStarted;
+        IsProfilesComboboxEnabled = Profiles.Count > 0 && !_isGameStarted;
+    }
+
+    private void UpdateCanOpenSettings()
+    {
+        CanOpenSettings.OnNext(!_isGameStarted);
+    }
+
+    private SettingsData SetupFromSettings()
+    {
+        var settingsLoaded = _mainWindowModel.LoadSettings(out var profiles, out var lastSelectedProfile,
+            out var settingsData);
+
+        if (settingsLoaded && settingsData != null)
+        {
+            Profiles.AddRange(profiles);
+            _dontSaveSelectedProfile = true;
+            SelectedProfile = lastSelectedProfile;
+            _dontSaveSelectedProfile = false;
+
+            return settingsData;
+        }
+
+        CreateDefaultSettings(out var defaultSettingsData);
+        _mainWindowModel.SaveSettings(defaultSettingsData);
+
+        return defaultSettingsData;
+    }
+
+    private void CreateDefaultSettings(out SettingsData settingsData)
+    {
+        settingsData = new SettingsData();
+        var profileViewModel = ProfileViewModel.CreateDefault(NewProfileSaved);
+        profileViewModel.PlayerName = settingsData.DefaultPlayerName;
+        _mainWindowModel.VersionsLoaded += profileViewModel.SetVersions;
     }
 }

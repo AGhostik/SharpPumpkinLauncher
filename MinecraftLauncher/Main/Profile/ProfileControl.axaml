@@ -17,10 +17,6 @@
             Margin="5" 
             Watermark="Player name" 
             Text="{Binding PlayerName}" />
-        <TextBox 
-            Margin="5"
-            Watermark="Directory"
-            Text="{Binding Directory}" />
         <ComboBox
             Margin="5"
             PlaceholderText="Minecraft version"
