@@ -16,13 +16,10 @@ namespace MinecraftLauncher
         {
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
-                var model = new MainWindowModel();
                 var mainWindow = new MainWindow()
                 {
-                    DataContext = new MainWindowViewModel(model)
+                    DataContext = new MainWindowViewModel(new MainWindowModel())
                 };
-                
-                mainWindow.Opened += async (_, _) => await model.InitAsync();
 
                 desktop.MainWindow = mainWindow;
             }

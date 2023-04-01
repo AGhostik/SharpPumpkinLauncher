@@ -9,10 +9,10 @@ public sealed class MinecraftLauncher : ILauncher
     private ILauncher? _launcher;
     public event Action<LaunchProgress, float>? LaunchMinecraftProgress;
     
-    public async Task<Versions> GetAvailableVersions(CancellationToken cancellationToken = default)
+    public async Task<Versions> GetAvailableVersions(string directory, CancellationToken cancellationToken = default)
     {
         var launcher = await GetLauncher();
-        return await launcher.GetAvailableVersions(cancellationToken);
+        return await launcher.GetAvailableVersions(directory, cancellationToken);
     }
 
     public async Task LaunchMinecraft(LaunchData launchData, CancellationToken cancellationToken, Action? exitedAction = null)

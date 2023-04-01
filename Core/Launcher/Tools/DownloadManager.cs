@@ -8,9 +8,17 @@ public static class DownloadManager
 {
     public static async Task<bool> CheckConnection()
     {
-        using var client = new HttpClient();
-        var response = await client.GetAsync("https://google.com");
-        return response.StatusCode == HttpStatusCode.OK;
+        try
+        {
+            using var client = new HttpClient();
+            var response = await client.GetAsync("https://google.com");
+            return response.StatusCode == HttpStatusCode.OK;
+        }
+        catch (HttpRequestException e)
+        {
+            Debug.WriteLine(e);
+            return false;
+        }
     }
     
     public static async Task<string> DownloadJsonAsync(string url, CancellationToken cancellationToken)

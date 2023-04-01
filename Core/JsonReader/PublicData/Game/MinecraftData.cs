@@ -1,4 +1,7 @@
-﻿namespace JsonReader.PublicData.Game;
+﻿using JsonReader.PublicData.Manifest;
+using JsonReader.Tools;
+
+namespace JsonReader.PublicData.Game;
 
 public sealed class MinecraftData
 {
@@ -8,6 +11,7 @@ public sealed class MinecraftData
     {
         Id = id;
         Type = type;
+        MinecraftType = MinecraftTypeConverter.GetMinecraftType(type);
         AssetsVersion = assetsVersion;
         MainClass = mainClass;
         MinimumLauncherVersion = minimumLauncherVersion;
@@ -23,6 +27,7 @@ public sealed class MinecraftData
 
     public string Id { get; }
     public string Type { get; }
+    public MinecraftType MinecraftType { get; }
     public string AssetsVersion { get; }
     public string MainClass { get; }
     public int MinimumLauncherVersion { get; }

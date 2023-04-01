@@ -1,7 +1,5 @@
 using System.Diagnostics;
 using JsonReader;
-using JsonReader.PublicData.Assets;
-using JsonReader.PublicData.Game;
 using JsonReader.PublicData.Manifest;
 using Launcher.Data;
 using Launcher.PublicData;
@@ -12,11 +10,7 @@ namespace Launcher;
 
 internal sealed class OnlineLauncher : ILauncher
 {
-    private const string AssetsUrl = "https://resources.download.minecraft.net";
-    private const string VersionsUrl = "https://piston-meta.mojang.com/mc/game/version_manifest_v2.json";
-    
     private readonly JsonManager _jsonManager;
-
     private readonly Dictionary<string, MinecraftVersion> _minecraftVersions = new();
 
     public event Action<LaunchProgress, float>? LaunchMinecraftProgress;
@@ -26,9 +20,9 @@ internal sealed class OnlineLauncher : ILauncher
         _jsonManager = new JsonManager();
     }
     
-    public async Task<Versions> GetAvailableVersions(CancellationToken cancellationToken)
+    public async Task<Versions> GetAvailableVersions(string directory, CancellationToken cancellationToken)
     {
-        var versionsJson = await DownloadManager.DownloadJsonAsync(VersionsUrl, cancellationToken);
+        var versionsJson = await DownloadManager.DownloadJsonAsync(WellKnownUrls.VersionsUrl, cancellationToken);
         var versions = _jsonManager.GetVersions(versionsJson);
 
         _minecraftVersions.Clear();
@@ -69,11 +63,24 @@ internal sealed class OnlineLauncher : ILauncher
             if (minecraftData == null)
                 return;
 
-            var minecraftPaths = new MinecraftPaths(launchData.GameDirectory, minecraftVersion.Id);
+            var minecraftPaths = new MinecraftPaths(launchData.GameDirectory, minecraftData.Id);
+            
+            FileManager.CreateDirectory(minecraftPaths.VersionDirectory);
+            await FileManager.WriteFile($"{minecraftPaths.VersionDirectory}\\{minecraftData.Id}.json",
+                minecraftVersionJson);
 
-            var fileList = await GetFileList(minecraftData, minecraftPaths, minecraftVersion.Id, cancellationToken);
-            if (fileList == null)
+            var assetsJson = await DownloadManager.DownloadJsonAsync(minecraftData.AssetsIndex.Url, cancellationToken);
+            FileManager.CreateDirectory(minecraftPaths.AssetsIndexDirectory);
+            await FileManager.WriteFile(
+                $"{minecraftPaths.AssetsIndexDirectory}\\{FileManager.GetFileName(minecraftData.AssetsIndex.Url)}",
+                minecraftVersionJson);
+            
+            var assetsData = _jsonManager.GetAssets(assetsJson);
+            if (assetsData == null)
                 return;
+
+            LaunchMinecraftProgress?.Invoke(LaunchProgress.GetFileList, 0f);
+            var fileList = FileManager.GetFileList(minecraftData, assetsData, minecraftPaths, minecraftData.Id);
             
             LaunchMinecraftProgress?.Invoke(LaunchProgress.GetLaunchArguments, 0f);
 
@@ -138,7 +145,6 @@ internal sealed class OnlineLauncher : ILauncher
         
         CheckFileAndDirectoryMissed(ref minecraftMissedInfo, minecraftFileList.Client);
         CheckFileAndDirectoryMissed(ref minecraftMissedInfo, minecraftFileList.Server);
-        CheckFileAndDirectoryMissed(ref minecraftMissedInfo, minecraftFileList.AssetsIndex);
         
         if (minecraftFileList.Logging != null)
             CheckFileAndDirectoryMissed(ref minecraftMissedInfo, minecraftFileList.Logging);
@@ -152,7 +158,8 @@ internal sealed class OnlineLauncher : ILauncher
             if (libraryFile.NeedUnpack)
             {
                 var unpackDirectory = minecraftPaths.NativesDirectory;
-                if (!FileManager.DirectoryExist(unpackDirectory) && !minecraftMissedInfo.DirectoriesToCreate.Contains(unpackDirectory))
+                if (!FileManager.DirectoryExist(unpackDirectory) &&
+                    !minecraftMissedInfo.DirectoriesToCreate.Contains(unpackDirectory))
                     minecraftMissedInfo.DirectoriesToCreate.Add(unpackDirectory);
 
                 minecraftMissedInfo.UnpackItems.Add((libraryFile.FileName, unpackDirectory));
@@ -214,144 +221,10 @@ internal sealed class OnlineLauncher : ILauncher
         }
     }
 
-    private async Task<MinecraftFileList?> GetFileList(MinecraftData data, MinecraftPaths minecraftPaths,
-        string minecraftVersionId, CancellationToken cancellationToken)
-    {
-        LaunchMinecraftProgress?.Invoke(LaunchProgress.GetFileList, 0f);
-        
-        var assetsJson = await DownloadManager.DownloadFile(data.AssetsIndex.Url, cancellationToken, bytesReceived =>
-        {
-            LaunchMinecraftProgress?.Invoke(LaunchProgress.GetFileList, (float)bytesReceived / data.AssetsIndex.Size);
-        });
-        
-        LaunchMinecraftProgress?.Invoke(LaunchProgress.GetFileList, 1f);
-        
-        var assets = _jsonManager.GetAssets(assetsJson);
-        if (assets == null)
-            return null;
-        
-        var client = new MinecraftFile(data.Client.Url, data.Client.Size, data.Client.Sha1,
-            $"{minecraftPaths.VersionDirectory}\\{minecraftVersionId}.jar");
-        
-        var server = new MinecraftFile(data.Server.Url, data.Server.Size, data.Server.Sha1,
-            $"{minecraftPaths.VersionDirectory}\\{minecraftVersionId}-server.jar");
-        
-        var assetsIndex = new MinecraftFile(data.AssetsIndex.Url, data.AssetsIndex.Size, data.AssetsIndex.Sha1,
-            $"{minecraftPaths.AssetsDirectory}\\indexes\\{FileManager.GetFileName(data.AssetsIndex.Url)}");
-        
-        var librariesFiles = GetLibrariesFiles(data.Libraries, minecraftPaths);
-        var assetsFiles = GetAssetsFiles(assets, minecraftPaths);
-        
-        var minecraftFileList = new MinecraftFileList(client, server, assetsIndex, librariesFiles, assetsFiles);
-
-        if (data.LoggingData != null)
-        {
-            minecraftFileList.Logging = new MinecraftFile(data.LoggingData.File.Url, data.LoggingData.File.Size,
-                data.LoggingData.File.Sha1, $"{minecraftPaths.VersionDirectory}\\log4j2.xml");
-        }
-
-        return minecraftFileList;
-    }
-
-    private static IReadOnlyList<MinecraftLibraryFile> GetLibrariesFiles(IReadOnlyList<Library> libraries,
-        MinecraftPaths minecraftPaths)
-    {
-        var result = new List<MinecraftLibraryFile>(libraries.Count);
-        for (var i = 0; i < libraries.Count; i++)
-        {
-            var libraryData = libraries[i];
-            
-            if (!OsRuleManager.IsAllowed(libraryData.Rules))
-                continue;
-
-            if (OperatingSystem.IsWindows())
-            {
-                if (!string.IsNullOrEmpty(libraryData.NativesWindows) && libraryData.NativesWindowsFile != null)
-                {
-                    result.Add(GetNativeLibraryFile(libraryData.NativesWindowsFile, minecraftPaths.TemporaryDirectory,
-                        libraryData.Delete));
-                }
-            }
-            else if (OperatingSystem.IsLinux())
-            {
-                if (!string.IsNullOrEmpty(libraryData.NativesLinux) && libraryData.NativesLinuxFile != null)
-                {
-                    result.Add(GetNativeLibraryFile(libraryData.NativesLinuxFile, minecraftPaths.TemporaryDirectory,
-                        libraryData.Delete));
-                }
-            }
-            else if (OperatingSystem.IsMacOS())
-            {
-                if (!string.IsNullOrEmpty(libraryData.NativesOsx) && libraryData.NativesOsxFile != null)
-                {
-                    result.Add(GetNativeLibraryFile(libraryData.NativesOsxFile, minecraftPaths.TemporaryDirectory,
-                        libraryData.Delete));
-                }
-            }
-
-            if (libraryData.File != null)
-            {
-                var fileName = $"{minecraftPaths.LibrariesDirectory}\\{libraryData.File.Path}";
-                var minecraftLibraryFile = new MinecraftLibraryFile(libraryData.File.Url, libraryData.File.Size,
-                    libraryData.File.Sha1, fileName);
-                result.Add(minecraftLibraryFile);
-            }
-        }
-
-        return result;
-    }
-
-    private static MinecraftLibraryFile GetNativeLibraryFile(LibraryFile file, string temporaryDirectory,
-        IReadOnlyList<string> deleteFiles)
-    {
-        var nativeFileName = $"{temporaryDirectory}\\{file.Path}";
-        var minecraftNativeLibraryFile = new MinecraftLibraryFile(file.Url, file.Size, file.Sha1, nativeFileName)
-        {
-            NeedUnpack = true,
-            Delete = deleteFiles
-        };
-        return minecraftNativeLibraryFile;
-    }
-    
-    private static IReadOnlyList<MinecraftFile> GetAssetsFiles(IReadOnlyList<Asset> assets, MinecraftPaths minecraftPaths)
-    {
-        var result = new List<MinecraftFile>(assets.Count);
-        for (var i = 0; i < assets.Count; i++)
-        {
-            var asset = assets[i];
-
-            var hashString = asset.Hash;
-            
-            if (hashString.Length < 2)
-                continue;
-            
-            var subDirectory = $"{hashString[0]}{hashString[1]}";
-            var fileName = $"{minecraftPaths.AssetsDirectory}\\objects\\{subDirectory}\\{hashString}";
-            var minecraftFile = new MinecraftFile($"{AssetsUrl}/{subDirectory}/{hashString}", asset.Size, asset.Hash,
-                fileName);
-            
-            result.Add(minecraftFile);
-        }
-        
-        return result;
-    }
-    
     private static List<PublicData.Version> GetVersionList(IEnumerable<MinecraftVersion> minecraftVersions)
     {
-        return minecraftVersions
-            .Select(version => new PublicData.Version(version.Id, GetVersionType(version.Type))).ToList();
-    }
-
-    private static VersionType GetVersionType(MinecraftType version)
-    {
-        return version switch
-        {
-            MinecraftType.Release => VersionType.Release,
-            MinecraftType.Snapshot => VersionType.Snapshot,
-            MinecraftType.Beta => VersionType.Beta,
-            MinecraftType.Alpha => VersionType.Alpha,
-            _ => throw new ArgumentOutOfRangeException(nameof(version), version, null)
-        };
+        return minecraftVersions.Select(version =>
+            new PublicData.Version(version.Id, MinecraftTypeConverter.GetVersionType(version.Type))).ToList();
     }
 
     private void AddMinecraftVersionToDictionary(IReadOnlyList<MinecraftVersion> minecraftVersions)

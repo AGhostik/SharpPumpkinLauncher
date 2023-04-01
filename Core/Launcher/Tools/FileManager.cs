@@ -2,6 +2,9 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.IO.Compression;
+using JsonReader.PublicData.Assets;
+using JsonReader.PublicData.Game;
+using Launcher.Data;
 
 namespace Launcher.Tools;
 
@@ -77,6 +80,22 @@ internal static class FileManager
         return Directory.Exists(path);
     }
 
+    public static IReadOnlyList<DirectoryInfo> GetSubDirectories(string? path)
+    {
+        if (string.IsNullOrEmpty(path))
+            return Array.Empty<DirectoryInfo>();
+
+        return Directory.GetDirectories(path).Select(dir => new DirectoryInfo(dir)).ToArray();
+    }
+    
+    public static IReadOnlyList<FileInfo> GetFileInfos(string? path)
+    {
+        if (string.IsNullOrEmpty(path))
+            return Array.Empty<FileInfo>();
+
+        return Directory.GetFiles(path).Select(file => new FileInfo(file)).ToArray();
+    }
+
     public static void Delete(string path)
     {
         if (FileExist(path)) 
@@ -107,5 +126,131 @@ internal static class FileManager
             formatted.Append($"{b:x2}");
 
         return formatted.ToString();
+    }
+
+    public static async Task<string?> ReadFile(string fileName, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrEmpty(fileName))
+            return null;
+
+        if (!File.Exists(fileName))
+            return null;
+        
+        using var streamReader = new StreamReader(fileName);
+        return await streamReader.ReadToEndAsync(cancellationToken);
+    }
+
+    public static async Task WriteFile(string? path, string? content)
+    {
+        if (string.IsNullOrEmpty(path) || string.IsNullOrEmpty(content))
+            return;
+        
+        await File.WriteAllTextAsync(path, content);
+    }
+    
+    public static MinecraftFileList GetFileList(MinecraftData data, IReadOnlyList<Asset> assets,
+        MinecraftPaths minecraftPaths, string minecraftVersionId)
+    {
+        var client = new MinecraftFile(data.Client.Url, data.Client.Size, data.Client.Sha1,
+            $"{minecraftPaths.VersionDirectory}\\{minecraftVersionId}.jar");
+        
+        var server = new MinecraftFile(data.Server.Url, data.Server.Size, data.Server.Sha1,
+            $"{minecraftPaths.VersionDirectory}\\{minecraftVersionId}-server.jar");
+        
+        var librariesFiles = GetLibrariesFiles(data.Libraries, minecraftPaths);
+        var assetsFiles = GetAssetsFiles(assets, minecraftPaths);
+        
+        var minecraftFileList = new MinecraftFileList(client, server, librariesFiles, assetsFiles);
+
+        if (data.LoggingData != null)
+        {
+            minecraftFileList.Logging = new MinecraftFile(data.LoggingData.File.Url, data.LoggingData.File.Size,
+                data.LoggingData.File.Sha1, $"{minecraftPaths.VersionDirectory}\\log4j2.xml");
+        }
+
+        return minecraftFileList;
+    }
+
+    private static IReadOnlyList<MinecraftLibraryFile> GetLibrariesFiles(IReadOnlyList<Library> libraries,
+        MinecraftPaths minecraftPaths)
+    {
+        var result = new List<MinecraftLibraryFile>(libraries.Count);
+        for (var i = 0; i < libraries.Count; i++)
+        {
+            var libraryData = libraries[i];
+            
+            if (!OsRuleManager.IsAllowed(libraryData.Rules))
+                continue;
+
+            if (OperatingSystem.IsWindows())
+            {
+                if (!string.IsNullOrEmpty(libraryData.NativesWindows) && libraryData.NativesWindowsFile != null)
+                {
+                    result.Add(GetNativeLibraryFile(libraryData.NativesWindowsFile, minecraftPaths.TemporaryDirectory,
+                        libraryData.Delete));
+                }
+            }
+            else if (OperatingSystem.IsLinux())
+            {
+                if (!string.IsNullOrEmpty(libraryData.NativesLinux) && libraryData.NativesLinuxFile != null)
+                {
+                    result.Add(GetNativeLibraryFile(libraryData.NativesLinuxFile, minecraftPaths.TemporaryDirectory,
+                        libraryData.Delete));
+                }
+            }
+            else if (OperatingSystem.IsMacOS())
+            {
+                if (!string.IsNullOrEmpty(libraryData.NativesOsx) && libraryData.NativesOsxFile != null)
+                {
+                    result.Add(GetNativeLibraryFile(libraryData.NativesOsxFile, minecraftPaths.TemporaryDirectory,
+                        libraryData.Delete));
+                }
+            }
+
+            if (libraryData.File != null)
+            {
+                var fileName = $"{minecraftPaths.LibrariesDirectory}\\{libraryData.File.Path}";
+                var minecraftLibraryFile = new MinecraftLibraryFile(libraryData.File.Url, libraryData.File.Size,
+                    libraryData.File.Sha1, fileName);
+                result.Add(minecraftLibraryFile);
+            }
+        }
+
+        return result;
+    }
+
+    private static MinecraftLibraryFile GetNativeLibraryFile(LibraryFile file, string temporaryDirectory,
+        IReadOnlyList<string> deleteFiles)
+    {
+        var nativeFileName = $"{temporaryDirectory}\\{file.Path}";
+        var minecraftNativeLibraryFile = new MinecraftLibraryFile(file.Url, file.Size, file.Sha1, nativeFileName)
+        {
+            NeedUnpack = true,
+            Delete = deleteFiles
+        };
+        return minecraftNativeLibraryFile;
+    }
+    
+    private static IReadOnlyList<MinecraftFile> GetAssetsFiles(IReadOnlyList<Asset> assets, MinecraftPaths minecraftPaths)
+    {
+        var result = new List<MinecraftFile>(assets.Count);
+        for (var i = 0; i < assets.Count; i++)
+        {
+            var asset = assets[i];
+
+            var hashString = asset.Hash;
+            
+            if (hashString.Length < 2)
+                continue;
+            
+            var subDirectory = $"{hashString[0]}{hashString[1]}";
+            var fileName = $"{minecraftPaths.AssetsDirectory}\\objects\\{subDirectory}\\{hashString}";
+            var minecraftFile = new MinecraftFile($"{WellKnownUrls.AssetsUrl}/{subDirectory}/{hashString}", asset.Size,
+                asset.Hash, fileName);
+            
+            result.Add(minecraftFile);
+        }
+        
+        return result;
     }
 }

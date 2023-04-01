@@ -17,12 +17,12 @@ public sealed class MainWindowModel
 {
     private readonly MinecraftLauncher _minecraftLauncher;
 
+    private CancellationTokenSource? _cancellationTokenSource;
+
     private Versions? _availableVersions;
     private Action<Versions>? _versionsLoaded;
     private int _profilesToLoadCount;
     private int _currentLoadedProfilesCount;
-
-    private CancellationTokenSource? _cancellationTokenSource;
 
     public event Action<Versions>? VersionsLoaded
     {
@@ -39,31 +39,50 @@ public sealed class MainWindowModel
     public event Action<LaunchProgress, float>? StartGameProgress;
     public event Action? AllProfilesLoaded;
 
+    private event Action SettingsDirectorySet;
+
     public MainWindowModel()
     {
         _minecraftLauncher = new MinecraftLauncher();
         _minecraftLauncher.LaunchMinecraftProgress +=
             (status, progress01) => StartGameProgress?.Invoke(status, progress01);
+
+        SettingsDirectorySet += LoadAvailableVersions;
+
+        if (LoadSettings(out var allProfiles, out var lastSelectedProfile, out var settingsData) && settingsData != null)
+        {
+            Profiles = allProfiles;
+            LastSelectedProfile = lastSelectedProfile;
+            CurrentSettings = settingsData;
+        }
+        else
+        {
+            CreateDefaultSettings(out var profileViewModel, out var defaultSettingsData);
+            Profiles = new []{ profileViewModel };
+            LastSelectedProfile = profileViewModel;
+            CurrentSettings = defaultSettingsData;
+        }
+        
+        SettingsDirectorySet.Invoke();
     }
 
-    public async Task InitAsync()
-    {
-        var availableVersions = await _minecraftLauncher.GetAvailableVersions();
-        _availableVersions = availableVersions;
-        _versionsLoaded?.Invoke(availableVersions);
-    }
+    public IReadOnlyList<ProfileViewModel> Profiles { get; }
 
-    public async Task StartGame(ProfileViewModel profileViewModel, string directory, Action gameExited)
+    public ProfileViewModel? LastSelectedProfile { get; }
+
+    public SettingsData CurrentSettings { get; private set; }
+
+    public async Task StartGame(ProfileViewModel profileViewModel, Action gameExited)
     {
         if (string.IsNullOrEmpty(profileViewModel.PlayerName) ||
             string.IsNullOrEmpty(profileViewModel.SelectedVersion?.Id) ||
-            string.IsNullOrEmpty(directory))
+            string.IsNullOrEmpty(CurrentSettings.Directory))
             return;
         
         var launchData = new LaunchData(
             profileViewModel.PlayerName,
             profileViewModel.SelectedVersion.Id,
-            directory);
+            CurrentSettings.Directory);
 
         _cancellationTokenSource = new CancellationTokenSource();
         
@@ -80,13 +99,64 @@ public sealed class MainWindowModel
         _cancellationTokenSource?.Cancel();
     }
 
+    public void SetSettingsData(SettingsData settingsData)
+    {
+        var needInvokeEvent = CurrentSettings.Directory != settingsData.Directory;
+        CurrentSettings = settingsData;
+
+        LauncherSettings.Instance.Data.LauncherVisibility = (int)settingsData.LauncherVisibility;
+        LauncherSettings.Instance.Data.GameDirectory = settingsData.Directory;
+        LauncherSettings.Instance.Data.DefaultPlayerName = settingsData.DefaultPlayerName;
+        LauncherSettings.Save();
+        
+        if (needInvokeEvent)
+            SettingsDirectorySet.Invoke();
+    }
+
     public void SaveSelectedProfile(string profileName)
     {
         LauncherSettings.Instance.Data.LastProfileName = profileName;
         LauncherSettings.Save();
     }
 
-    public bool LoadSettings(out IReadOnlyList<ProfileViewModel> allProfiles, out ProfileViewModel? lastSelectedProfile,
+    private void ProfileLoaded(ProfileViewModel profileViewModel)
+    {
+        _currentLoadedProfilesCount++;
+        if (_currentLoadedProfilesCount == _profilesToLoadCount)
+            AllProfilesLoaded?.Invoke();
+    }
+    
+    public void SaveProfile(ProfileViewModel profileViewModel)
+    {
+        if (LauncherSettings.Instance.Data.Profiles == null)
+            LauncherSettings.Instance.Data.Profiles = new List<ProfileData>();
+        
+        if (LauncherSettings.Instance.Data.Profiles.Find(p => p.Name == profileViewModel.ProfileName) != null)
+            return;
+        
+        var profileData = new ProfileData()
+        {
+            Name = profileViewModel.ProfileName,
+            PlayerNickname = profileViewModel.PlayerName,
+            MinecraftVersion = profileViewModel.SelectedVersion?.Id,
+            Alpha = profileViewModel.Alpha,
+            Beta = profileViewModel.Beta,
+            Custom = profileViewModel.Custom,
+            Release = profileViewModel.Release,
+            Snapshot = profileViewModel.Snapshot,
+        };
+        LauncherSettings.Instance.Data.Profiles.Add(profileData);
+        LauncherSettings.Save();
+    }
+    
+    private async void LoadAvailableVersions()
+    {
+        var availableVersions = await _minecraftLauncher.GetAvailableVersions(CurrentSettings.Directory);
+        _availableVersions = availableVersions;
+        _versionsLoaded?.Invoke(availableVersions);
+    }
+    
+    private bool LoadSettings(out IReadOnlyList<ProfileViewModel> allProfiles, out ProfileViewModel? lastSelectedProfile,
         out SettingsData? settingsData)
     {
         var profiles = new List<ProfileViewModel>();
@@ -133,42 +203,12 @@ public sealed class MainWindowModel
         
         return true;
     }
-
-    private void ProfileLoaded(ProfileViewModel profileViewModel)
-    {
-        _currentLoadedProfilesCount++;
-        if (_currentLoadedProfilesCount == _profilesToLoadCount)
-            AllProfilesLoaded?.Invoke();
-    }
-
-    public void SaveSettings(SettingsData settingsData)
-    {
-        LauncherSettings.Instance.Data.LauncherVisibility = (int)settingsData.LauncherVisibility;
-        LauncherSettings.Instance.Data.GameDirectory = settingsData.Directory;
-        LauncherSettings.Instance.Data.DefaultPlayerName = settingsData.DefaultPlayerName;
-        LauncherSettings.Save();
-    }
     
-    public void SaveProfile(ProfileViewModel profileViewModel)
+    private void CreateDefaultSettings(out ProfileViewModel profileViewModel, out SettingsData settingsData)
     {
-        if (LauncherSettings.Instance.Data.Profiles == null)
-            LauncherSettings.Instance.Data.Profiles = new List<ProfileData>();
-        
-        if (LauncherSettings.Instance.Data.Profiles.Find(p => p.Name == profileViewModel.ProfileName) != null)
-            return;
-        
-        var profileData = new ProfileData()
-        {
-            Name = profileViewModel.ProfileName,
-            PlayerNickname = profileViewModel.PlayerName,
-            MinecraftVersion = profileViewModel.SelectedVersion?.Id,
-            Alpha = profileViewModel.Alpha,
-            Beta = profileViewModel.Beta,
-            Custom = profileViewModel.Custom,
-            Release = profileViewModel.Release,
-            Snapshot = profileViewModel.Snapshot,
-        };
-        LauncherSettings.Instance.Data.Profiles.Add(profileData);
-        LauncherSettings.Save();
+        settingsData = new SettingsData();
+        profileViewModel = ProfileViewModel.CreateDefault(SaveProfile);
+        profileViewModel.PlayerName = settingsData.DefaultPlayerName;
+        VersionsLoaded += profileViewModel.SetVersions;
     }
 }

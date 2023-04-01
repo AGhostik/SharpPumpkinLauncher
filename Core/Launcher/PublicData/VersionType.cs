@@ -5,5 +5,6 @@ public enum VersionType
     Release,
     Snapshot,
     Beta,
-    Alpha
+    Alpha,
+    Custom
 }
