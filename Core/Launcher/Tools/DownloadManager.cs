@@ -28,37 +28,6 @@ public static class DownloadManager
         var json = await response.Content.ReadAsStringAsync(cancellationToken);
         return json;
     }
-    
-    public static async Task<string> DownloadFile(string url, CancellationToken cancellationToken, Action<long>? bytesReceived = null)
-    {
-        using var client = new HttpClient();
-        using var response = client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cancellationToken).Result;
-        response.EnsureSuccessStatusCode();
-
-        await using var contentStream = await response.Content.ReadAsStreamAsync(cancellationToken);
-            
-        var totalRead = 0L;
-        var buffer = new byte[8192];
-        var isMoreToRead = true;
-        var sb = new StringBuilder();
-
-        do
-        {
-            var read = await contentStream.ReadAsync(buffer, cancellationToken);
-            if (read == 0)
-            {
-                isMoreToRead = false;
-            }
-            else
-            {
-                sb.Append(Encoding.Default.GetString(buffer, 0, read));
-                totalRead += read;
-                bytesReceived?.Invoke(totalRead);
-            }
-        } while (isMoreToRead);
-
-        return sb.ToString();
-    }
 
     public static async Task DownloadFilesParallel(IEnumerable<(Uri source, string filename)> download,
         CancellationToken cancellationToken, Action<long>? bytesReceived = null, Action? failed = null)

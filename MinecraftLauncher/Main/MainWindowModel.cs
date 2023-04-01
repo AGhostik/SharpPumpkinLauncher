@@ -75,14 +75,14 @@ public sealed class MainWindowModel
     public async Task StartGame(ProfileViewModel profileViewModel, Action gameExited)
     {
         if (string.IsNullOrEmpty(profileViewModel.PlayerName) ||
-            string.IsNullOrEmpty(profileViewModel.SelectedVersion?.Id) ||
-            string.IsNullOrEmpty(CurrentSettings.Directory))
+            string.IsNullOrEmpty(CurrentSettings.Directory) ||
+            profileViewModel.SelectedVersion == null)
             return;
         
         var launchData = new LaunchData(
             profileViewModel.PlayerName,
-            profileViewModel.SelectedVersion.Id,
-            CurrentSettings.Directory);
+            CurrentSettings.Directory,
+            profileViewModel.SelectedVersion);
 
         _cancellationTokenSource = new CancellationTokenSource();
         

@@ -91,10 +91,12 @@ internal sealed class OfflineLauncher : ILauncher
     {
         try
         {
-            var minecraftPaths = new MinecraftPaths(launchData.GameDirectory, launchData.VersionId);
+            LaunchMinecraftProgress?.Invoke(LaunchProgress.GetVersionData, 0f);
+            
+            var minecraftPaths = new MinecraftPaths(launchData.GameDirectory, launchData.Version.Id);
 
             var minecraftVersionJson =
-                await FileManager.ReadFile($"{minecraftPaths.VersionDirectory}\\{launchData.VersionId}.json",
+                await FileManager.ReadFile($"{minecraftPaths.VersionDirectory}\\{launchData.Version.Id}.json",
                     cancellationToken);
 
             var minecraftData = _jsonManager.GetMinecraftData(minecraftVersionJson);
@@ -116,6 +118,7 @@ internal sealed class OfflineLauncher : ILauncher
                 new LaunchArgumentsData(minecraftData, fileList, minecraftPaths, launchData.PlayerName);
             var launchArguments = LaunchArgumentsBuilder.GetLaunchArguments(minecraftData, launchArgumentsData);
 
+            LaunchMinecraftProgress?.Invoke(LaunchProgress.StartGame, 0f);
             await FileManager.StartProcess("java", launchArguments, exitedAction);
         }
         catch (TaskCanceledException e)

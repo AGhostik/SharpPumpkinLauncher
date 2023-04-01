@@ -197,8 +197,6 @@ public sealed class MainWindowViewModel : ReactiveObject
         _progressViewModel.Text = status switch
         {
             LaunchProgress.GetVersionData => "GetVersionData",
-            LaunchProgress.GetFileList => "GetFileList",
-            LaunchProgress.GetLaunchArguments => "GetLaunchArguments",
             LaunchProgress.DownloadFiles => "DownloadFiles",
             LaunchProgress.StartGame => "StartGame",
             LaunchProgress.GameAborted => "GameAborted",

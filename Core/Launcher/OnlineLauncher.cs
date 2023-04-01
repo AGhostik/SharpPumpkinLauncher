@@ -11,8 +11,6 @@ namespace Launcher;
 internal sealed class OnlineLauncher : ILauncher
 {
     private readonly JsonManager _jsonManager;
-    private readonly Dictionary<string, MinecraftVersion> _minecraftVersions = new();
-
     public event Action<LaunchProgress, float>? LaunchMinecraftProgress;
 
     public OnlineLauncher()
@@ -24,16 +22,9 @@ internal sealed class OnlineLauncher : ILauncher
     {
         var versionsJson = await DownloadManager.DownloadJsonAsync(WellKnownUrls.VersionsUrl, cancellationToken);
         var versions = _jsonManager.GetVersions(versionsJson);
-
-        _minecraftVersions.Clear();
         
         if (versions == null)
             return Versions.Empty;
-        
-        AddMinecraftVersionToDictionary(versions.Alpha);
-        AddMinecraftVersionToDictionary(versions.Beta);
-        AddMinecraftVersionToDictionary(versions.Snapshot);
-        AddMinecraftVersionToDictionary(versions.Release);
 
         return new Versions(
             versions.Latest,
@@ -49,15 +40,15 @@ internal sealed class OnlineLauncher : ILauncher
     {
         try
         {
-            if (string.IsNullOrEmpty(launchData.VersionId))
-                return;
-        
-            if (!_minecraftVersions.TryGetValue(launchData.VersionId, out var minecraftVersion))
+            if (string.IsNullOrEmpty(launchData.Version.Id))
                 return;
             
+            if (string.IsNullOrEmpty(launchData.Version.Url))
+                return;
+
             LaunchMinecraftProgress?.Invoke(LaunchProgress.GetVersionData, 0f);
 
-            var minecraftVersionJson = await DownloadManager.DownloadJsonAsync(minecraftVersion.Url, cancellationToken);
+            var minecraftVersionJson = await DownloadManager.DownloadJsonAsync(launchData.Version.Url, cancellationToken);
             var minecraftData = _jsonManager.GetMinecraftData(minecraftVersionJson);
 
             if (minecraftData == null)
@@ -79,10 +70,7 @@ internal sealed class OnlineLauncher : ILauncher
             if (assetsData == null)
                 return;
 
-            LaunchMinecraftProgress?.Invoke(LaunchProgress.GetFileList, 0f);
             var fileList = FileManager.GetFileList(minecraftData, assetsData, minecraftPaths, minecraftData.Id);
-            
-            LaunchMinecraftProgress?.Invoke(LaunchProgress.GetLaunchArguments, 0f);
 
             var launchArgumentsData =
                 new LaunchArgumentsData(minecraftData, fileList, minecraftPaths, launchData.PlayerName);
@@ -224,12 +212,6 @@ internal sealed class OnlineLauncher : ILauncher
     private static List<PublicData.Version> GetVersionList(IEnumerable<MinecraftVersion> minecraftVersions)
     {
         return minecraftVersions.Select(version =>
-            new PublicData.Version(version.Id, MinecraftTypeConverter.GetVersionType(version.Type))).ToList();
-    }
-
-    private void AddMinecraftVersionToDictionary(IReadOnlyList<MinecraftVersion> minecraftVersions)
-    {
-        for (var i = 0; i < minecraftVersions.Count; i++)
-            _minecraftVersions.Add(minecraftVersions[i].Id, minecraftVersions[i]);
+            new PublicData.Version(version.Id, version.Url, MinecraftTypeConverter.GetVersionType(version.Type))).ToList();
     }
 }
