@@ -1,5 +1,4 @@
-﻿using System.Security.Cryptography;
-using System.Text;
+﻿using System.Text;
 using JsonReader.PublicData.Game;
 
 namespace Launcher.Tools;
@@ -13,11 +12,9 @@ internal sealed class LaunchArgumentsBuilder
             return GetArguments(launchArgumentsData, minecraftVersionData.Arguments, minecraftVersionData.MainClass,
                 minecraftVersionData.MinimumLauncherVersion);
         }
-        else
-        {
-            return GetLegacyArguments(launchArgumentsData, minecraftVersionData.Arguments.LegacyArguments,
-                minecraftVersionData.MainClass);
-        }
+
+        return GetLegacyArguments(launchArgumentsData, minecraftVersionData.Arguments.LegacyArguments,
+            minecraftVersionData.MainClass, minecraftVersionData.MinimumLauncherVersion);
     }
 
     private static string GetArguments(LaunchArgumentsData launchArgumentsData, Arguments arguments,
@@ -79,9 +76,8 @@ internal sealed class LaunchArgumentsBuilder
             .Replace("${classpath_separator}", separator.ToString())
             .Replace("${primary_jar}", launchArgumentsData.ClientJar)
             .Replace("${library_directory}", launchArgumentsData.LibrariesDirectory)
-            .Replace("${game_directory}", launchArgumentsData.GameDirectory)
-            .Replace("Windows 10", "\"Windows 10\""); //todo:
-
+            .Replace("${game_directory}", launchArgumentsData.GameDirectory);
+        
         if (!string.IsNullOrEmpty(launchArgumentsData.LoggingArgument) &&
             !string.IsNullOrEmpty(launchArgumentsData.LoggingFile))
         {
@@ -117,40 +113,24 @@ internal sealed class LaunchArgumentsBuilder
             .Replace("${game_directory}", launchArgumentsData.GameDirectory)
             .Replace("${assets_root}", launchArgumentsData.AssetsDirectory)
             .Replace("${assets_index_name}", launchArgumentsData.AssetsVersion)
-            .Replace("${auth_uuid}", GetUuid(launchArgumentsData.PlayerName))
-            .Replace("${auth_access_token}", "null")
-            .Replace("${clientid}", "null")
-            .Replace("${auth_xuid}", "null")
-            .Replace("${user_type}", "mojang")
+            .Replace("${auth_uuid}", launchArgumentsData.AuthUuid)
+            .Replace("${auth_access_token}", launchArgumentsData.AuthAccessToken)
+            .Replace("${clientid}", launchArgumentsData.ClientId)
+            .Replace("${auth_xuid}", launchArgumentsData.AuthXuid)
+            .Replace("${user_type}", launchArgumentsData.UserType)
             .Replace("${version_type}", launchArgumentsData.VersionType)
-            .Replace("${resolution_width}", "1200")
-            .Replace("${resolution_height}", "720");
+            .Replace("${resolution_width}", launchArgumentsData.Width)
+            .Replace("${resolution_height}", launchArgumentsData.Height);
+        //  .Replace("${user_properties}", "{}");
+        //  .Replace("${auth_session}", "null");
     }
     
     private static string GetLegacyArguments(LaunchArgumentsData launchArgumentsData, LegacyArguments legacyArguments,
-        string mainClass)
+        string mainClass, int launcherVersion)
     {
-        //todo:
-        //     var args = minecraftVersion.MinecraftArguments;
-        //     args = args.Replace("${auth_player_name}", profile.Nickname);
-        //     args = args.Replace("${version_name}", minecraftVersion.Id);
-        //     args = args.Replace("${game_directory}", profile.GameDirectory);
-        //     args = args.Replace("${assets_root}", profile.GameDirectory + "assets");
-        //     args = args.Replace("${assets_index_name}", minecraftVersion.Assets);
-        //     args = args.Replace("${auth_uuid}", GetUuid(profile.Nickname));
-        //     args = args.Replace("${auth_access_token}", "null");
-        //     args = args.Replace("${user_properties}", "{}");
-        //     args = args.Replace("${user_type}", "mojang");
-        //     args = args.Replace("${auth_session}", "null");
-        //     args = args.Replace("${game_assets}", profile.GameDirectory + "\\assets\\virtual\\legacy");
+        var jvmFilledArguments = FillJmvParameters(legacyArguments.Jvm, launchArgumentsData, launcherVersion);
+        var gameFilledArguments = FillGameArguments(legacyArguments.Game, launchArgumentsData);
         
-        return $"{legacyArguments.Jvm} -cp {mainClass} {legacyArguments.Game}";
-    }
-    
-    private static string GetUuid(string nickname)
-    {
-        var data = MD5.HashData(Encoding.Default.GetBytes(nickname));
-        var guid = new Guid(data);
-        return guid.ToString();
+        return $"{jvmFilledArguments} {mainClass} {gameFilledArguments}";
     }
 }

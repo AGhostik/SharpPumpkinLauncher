@@ -246,7 +246,7 @@ public sealed class JsonManager
         if (!string.IsNullOrEmpty(minecraftVersionData.MinecraftArguments))
         {
             var legacyArguments = new LegacyArguments(minecraftVersionData.MinecraftArguments,
-                "-Djava.library.path=${natives_directory}} -cp ${classpath}");
+                "-Djava.library.path=${natives_directory} -cp ${classpath}");
             
             arguments = new Arguments(legacyArguments);
             return true;
@@ -274,6 +274,9 @@ public sealed class JsonManager
                     var value = gameArg.Value[j];
                     if (string.IsNullOrEmpty(value))
                         continue;
+                    
+                    if (value.Contains("Windows 10"))
+                        value = value.Replace("Windows 10", "\"Windows 10\"");
                     
                     values.Add(value);
                 }

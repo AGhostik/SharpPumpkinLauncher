@@ -11,8 +11,6 @@ internal sealed class MinecraftPaths
         LibrariesDirectory = $"{gameDirectory}\\libraries";
         VersionDirectory = $"{gameDirectory}\\versions\\{versionId}";
         NativesDirectory = $"{VersionDirectory}\\natives";
-
-        TemporaryDirectory = $"{gameDirectory}\\temp";
     }
     
     public string GameDirectory { get; }
@@ -22,6 +20,4 @@ internal sealed class MinecraftPaths
     public string LibrariesDirectory { get; }
     public string VersionDirectory { get; }
     public string NativesDirectory { get; }
-    
-    public string TemporaryDirectory { get; }
 }

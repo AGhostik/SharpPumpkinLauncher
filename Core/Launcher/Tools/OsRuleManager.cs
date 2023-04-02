@@ -42,8 +42,10 @@ internal sealed class OsRuleManager
 
     public static bool IsAllowed(IReadOnlyList<Rule>? rules)
     {
-        if (rules == null)
+        if (rules == null || rules.Count == 0)
             return true;
+
+        var isAllowed = false;
         
         for (var i = 0; i < rules.Count; i++)
         {
@@ -56,27 +58,39 @@ internal sealed class OsRuleManager
             }
 
             if (rule.Os == null)
-                continue;
-            
-            if ((rule.Os.Name == _currentOsName || string.IsNullOrEmpty(rule.Os.Name)) &&
-                (rule.Os.Version == _currentOsVersion || string.IsNullOrEmpty(rule.Os.Version)) &&
-                (rule.Os.Architecture == _currentOsArchitecture || string.IsNullOrEmpty(rule.Os.Architecture)))
             {
                 switch (rule.Action)
                 {
                     case Allow:
-                        return true;
+                        isAllowed = true;
+                        break;
 
                     case Disallow:
-                        return false;
+                        isAllowed = false;
+                        break;
                 }
+                continue;
             }
-            else
+            
+            if (!string.IsNullOrEmpty(rule.Os.Name) && rule.Os.Name != _currentOsName)
+                continue;
+
+            if (!string.IsNullOrEmpty(rule.Os.Version) && rule.Os.Version != _currentOsVersion)
+                continue;
+
+            if (!string.IsNullOrEmpty(rule.Os.Architecture) && rule.Os.Architecture != _currentOsArchitecture)
+                continue;
+
+            switch (rule.Action)
             {
-                return false;
+                case Allow:
+                    return true;
+
+                case Disallow:
+                    return false;
             }
         }
 
-        return true;
+        return isAllowed;
     }
 }

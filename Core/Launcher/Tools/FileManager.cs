@@ -31,7 +31,7 @@ internal static class FileManager
         process.Exited += (_, _) =>
         {
             exitedAction?.Invoke();
-            Debug.WriteLine(process.ExitCode);
+            Debug.WriteLine($"Exit code: {process.ExitCode}");
         };
 
         process.Start();
@@ -40,7 +40,10 @@ internal static class FileManager
         var errors = await process.StandardError.ReadToEndAsync();             
         await process.WaitForExitAsync(); // need to avoid game stuck at loading screen
         
+        Debug.WriteLine("Output:");
         Debug.WriteLine(output);
+        
+        Debug.WriteLine("Errors:");
         Debug.WriteLine(errors);
     }
     
@@ -182,37 +185,43 @@ internal static class FileManager
             if (!OsRuleManager.IsAllowed(libraryData.Rules))
                 continue;
 
-            if (OperatingSystem.IsWindows())
+            if (!libraryData.IsNative)
             {
-                if (!string.IsNullOrEmpty(libraryData.NativesWindows) && libraryData.NativesWindowsFile != null)
+                if (libraryData.File != null)
                 {
-                    result.Add(GetNativeLibraryFile(libraryData.NativesWindowsFile, minecraftPaths.TemporaryDirectory,
-                        libraryData.Delete));
+                    var fileName = $"{minecraftPaths.LibrariesDirectory}\\{libraryData.File.Path}";
+                    var minecraftLibraryFile = new MinecraftLibraryFile(libraryData.File.Url, libraryData.File.Size,
+                        libraryData.File.Sha1, fileName);
+                    result.Add(minecraftLibraryFile);
                 }
             }
-            else if (OperatingSystem.IsLinux())
+            else
             {
-                if (!string.IsNullOrEmpty(libraryData.NativesLinux) && libraryData.NativesLinuxFile != null)
+                if (OperatingSystem.IsWindows())
                 {
-                    result.Add(GetNativeLibraryFile(libraryData.NativesLinuxFile, minecraftPaths.TemporaryDirectory,
-                        libraryData.Delete));
+                    if (!string.IsNullOrEmpty(libraryData.NativesWindows) && libraryData.NativesWindowsFile != null)
+                    {
+                        result.Add(GetNativeLibraryFile(libraryData.NativesWindowsFile,
+                            minecraftPaths.LibrariesDirectory,
+                            libraryData.Delete));
+                    }
                 }
-            }
-            else if (OperatingSystem.IsMacOS())
-            {
-                if (!string.IsNullOrEmpty(libraryData.NativesOsx) && libraryData.NativesOsxFile != null)
+                else if (OperatingSystem.IsLinux())
                 {
-                    result.Add(GetNativeLibraryFile(libraryData.NativesOsxFile, minecraftPaths.TemporaryDirectory,
-                        libraryData.Delete));
+                    if (!string.IsNullOrEmpty(libraryData.NativesLinux) && libraryData.NativesLinuxFile != null)
+                    {
+                        result.Add(GetNativeLibraryFile(libraryData.NativesLinuxFile, minecraftPaths.LibrariesDirectory,
+                            libraryData.Delete));
+                    }
                 }
-            }
-
-            if (libraryData.File != null)
-            {
-                var fileName = $"{minecraftPaths.LibrariesDirectory}\\{libraryData.File.Path}";
-                var minecraftLibraryFile = new MinecraftLibraryFile(libraryData.File.Url, libraryData.File.Size,
-                    libraryData.File.Sha1, fileName);
-                result.Add(minecraftLibraryFile);
+                else if (OperatingSystem.IsMacOS())
+                {
+                    if (!string.IsNullOrEmpty(libraryData.NativesOsx) && libraryData.NativesOsxFile != null)
+                    {
+                        result.Add(GetNativeLibraryFile(libraryData.NativesOsxFile, minecraftPaths.LibrariesDirectory,
+                            libraryData.Delete));
+                    }
+                }
             }
         }
 

@@ -49,6 +49,8 @@ public static class DownloadManager
             
             var localRead = 0L;
             var isMoreToRead = true;
+            
+            Debug.WriteLine($"Download file: {data.filename}");
 
             do
             {

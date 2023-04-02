@@ -63,7 +63,7 @@ internal sealed class OnlineLauncher : ILauncher
             var assetsJson = await DownloadManager.DownloadJsonAsync(minecraftData.AssetsIndex.Url, cancellationToken);
             FileManager.CreateDirectory(minecraftPaths.AssetsIndexDirectory);
             await FileManager.WriteFile(
-                $"{minecraftPaths.AssetsIndexDirectory}\\{FileManager.GetFileName(minecraftData.AssetsIndex.Url)}",
+                $"{minecraftPaths.AssetsIndexDirectory}\\{minecraftData.AssetsVersion}.json",
                 minecraftVersionJson);
             
             var assetsData = _jsonManager.GetAssets(assetsJson);
@@ -83,6 +83,7 @@ internal sealed class OnlineLauncher : ILauncher
             await Task.Delay(10, cancellationToken);
             
             Debug.WriteLine(launchArguments.Replace(" ", Environment.NewLine));
+            Debug.WriteLine("Start game");
             
             await FileManager.StartProcess("java", launchArguments, exitedAction);
         }
@@ -108,6 +109,8 @@ internal sealed class OnlineLauncher : ILauncher
         {
             var (fileName, destination) = missedInfo.UnpackItems[i];
             FileManager.ExtractToDirectory(fileName, destination);
+            
+            Debug.WriteLine($"Unzip jar: {fileName}");
         }
 
         for (var i = 0; i < missedInfo.PathsToDelete.Count; i++)
@@ -137,7 +140,6 @@ internal sealed class OnlineLauncher : ILauncher
         if (minecraftFileList.Logging != null)
             CheckFileAndDirectoryMissed(ref minecraftMissedInfo, minecraftFileList.Logging);
 
-        var anyLibraryNeedUnpack = false;
         for (var i = 0; i < minecraftFileList.LibraryFiles.Count; i++)
         {
             var libraryFile = minecraftFileList.LibraryFiles[i];
@@ -145,14 +147,11 @@ internal sealed class OnlineLauncher : ILauncher
 
             if (libraryFile.NeedUnpack)
             {
-                var unpackDirectory = minecraftPaths.NativesDirectory;
-                if (!FileManager.DirectoryExist(unpackDirectory) &&
-                    !minecraftMissedInfo.DirectoriesToCreate.Contains(unpackDirectory))
-                    minecraftMissedInfo.DirectoriesToCreate.Add(unpackDirectory);
+                var natives = minecraftPaths.NativesDirectory;
+                if (!FileManager.DirectoryExist(natives) && !minecraftMissedInfo.DirectoriesToCreate.Contains(natives))
+                    minecraftMissedInfo.DirectoriesToCreate.Add(natives);
 
-                minecraftMissedInfo.UnpackItems.Add((libraryFile.FileName, unpackDirectory));
-                minecraftMissedInfo.PathsToDelete.Add(libraryFile.FileName);
-                anyLibraryNeedUnpack = true;
+                minecraftMissedInfo.UnpackItems.Add((libraryFile.FileName, natives));
             }
 
             if (libraryFile.Delete != null)
@@ -164,12 +163,6 @@ internal sealed class OnlineLauncher : ILauncher
                     minecraftMissedInfo.PathsToDelete.Add(path);
                 }
             }
-        }
-
-        if (anyLibraryNeedUnpack)
-        {
-            if (!minecraftMissedInfo.PathsToDelete.Contains(minecraftPaths.TemporaryDirectory))
-                minecraftMissedInfo.PathsToDelete.Add(minecraftPaths.TemporaryDirectory);
         }
         
         for (var i = 0; i < minecraftFileList.AssetFiles.Count; i++)
@@ -185,6 +178,7 @@ internal sealed class OnlineLauncher : ILauncher
     {
         if (!FileManager.FileExist(minecraftFile.FileName))
         {
+            Debug.WriteLine($"File not exist: {minecraftFile.FileName}");
             missedInfo.DownloadQueue.Add((new Uri(minecraftFile.Url), minecraftFile.FileName));
             missedInfo.TotalDownloadSize += minecraftFile.Size;
         }

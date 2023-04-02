@@ -26,4 +26,7 @@ public sealed class Library
     public string? NativesOsx { get; }
     public IReadOnlyList<Rule> Rules { get; }
     public IReadOnlyList<string> Delete { get; }
+
+    public bool IsNative => !string.IsNullOrEmpty(NativesWindows) || !string.IsNullOrEmpty(NativesLinux) ||
+                            !string.IsNullOrEmpty(NativesOsx);
 }
