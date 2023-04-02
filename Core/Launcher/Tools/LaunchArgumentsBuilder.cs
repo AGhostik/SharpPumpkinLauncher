@@ -120,9 +120,10 @@ internal sealed class LaunchArgumentsBuilder
             .Replace("${user_type}", launchArgumentsData.UserType)
             .Replace("${version_type}", launchArgumentsData.VersionType)
             .Replace("${resolution_width}", launchArgumentsData.Width)
-            .Replace("${resolution_height}", launchArgumentsData.Height);
-        //  .Replace("${user_properties}", "{}");
-        //  .Replace("${auth_session}", "null");
+            .Replace("${resolution_height}", launchArgumentsData.Height)
+            .Replace("${game_assets}", launchArgumentsData.AssetsDirectory)
+            .Replace("${user_properties}", "{}")
+            .Replace("${auth_session}", "null");
     }
     
     private static string GetLegacyArguments(LaunchArgumentsData launchArgumentsData, LegacyArguments legacyArguments,

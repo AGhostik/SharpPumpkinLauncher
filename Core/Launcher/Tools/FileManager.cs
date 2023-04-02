@@ -161,7 +161,10 @@ internal static class FileManager
             $"{minecraftPaths.VersionDirectory}\\{minecraftVersionId}-server.jar");
         
         var librariesFiles = GetLibrariesFiles(data.Libraries, minecraftPaths);
-        var assetsFiles = GetAssetsFiles(assets, minecraftPaths);
+
+        var assetsFiles = data.IsLegacyAssets()
+            ? GetLegacyAssetsFiles(assets, minecraftPaths)
+            : GetAssetsFiles(assets, minecraftPaths);
         
         var minecraftFileList = new MinecraftFileList(client, server, librariesFiles, assetsFiles);
 
@@ -246,14 +249,36 @@ internal static class FileManager
         for (var i = 0; i < assets.Count; i++)
         {
             var asset = assets[i];
-
             var hashString = asset.Hash;
             
             if (hashString.Length < 2)
                 continue;
             
             var subDirectory = $"{hashString[0]}{hashString[1]}";
-            var fileName = $"{minecraftPaths.AssetsDirectory}\\objects\\{subDirectory}\\{hashString}";
+            var fileName = $"{minecraftPaths.AssetsObjectsDirectory}\\{subDirectory}\\{hashString}";
+            var minecraftFile = new MinecraftFile($"{WellKnownUrls.AssetsUrl}/{subDirectory}/{hashString}", asset.Size,
+                asset.Hash, fileName);
+            
+            result.Add(minecraftFile);
+        }
+        
+        return result;
+    }
+    
+    private static IReadOnlyList<MinecraftFile> GetLegacyAssetsFiles(IReadOnlyList<Asset> assets,
+        MinecraftPaths minecraftPaths)
+    {
+        var result = new List<MinecraftFile>(assets.Count);
+        for (var i = 0; i < assets.Count; i++)
+        {
+            var asset = assets[i];
+            var hashString = asset.Hash;
+            
+            if (hashString.Length < 2)
+                continue;
+            
+            var subDirectory = $"{hashString[0]}{hashString[1]}";
+            var fileName = $"{minecraftPaths.AssetsLegacyDirectory}\\{asset.Name}";
             var minecraftFile = new MinecraftFile($"{WellKnownUrls.AssetsUrl}/{subDirectory}/{hashString}", asset.Size,
                 asset.Hash, fileName);
             

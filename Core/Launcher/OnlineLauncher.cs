@@ -61,9 +61,9 @@ internal sealed class OnlineLauncher : ILauncher
                 minecraftVersionJson);
 
             var assetsJson = await DownloadManager.DownloadJsonAsync(minecraftData.AssetsIndex.Url, cancellationToken);
-            FileManager.CreateDirectory(minecraftPaths.AssetsIndexDirectory);
+            FileManager.CreateDirectory(minecraftPaths.AssetsIndexesDirectory);
             await FileManager.WriteFile(
-                $"{minecraftPaths.AssetsIndexDirectory}\\{minecraftData.AssetsVersion}.json",
+                $"{minecraftPaths.AssetsIndexesDirectory}\\{minecraftData.AssetsVersion}.json",
                 assetsJson);
             
             var assetsData = _jsonManager.GetAssets(assetsJson);

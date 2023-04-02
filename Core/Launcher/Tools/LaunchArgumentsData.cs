@@ -18,7 +18,9 @@ internal sealed class LaunchArgumentsData
         AssetsVersion = minecraftData.AssetsVersion;
 
         GameDirectory = FileManager.GetFullPath(minecraftPaths.GameDirectory);
-        AssetsDirectory = FileManager.GetFullPath(minecraftPaths.AssetsDirectory);
+        AssetsDirectory = minecraftData.IsLegacyAssets() ?
+            FileManager.GetFullPath(minecraftPaths.AssetsLegacyDirectory) :
+            FileManager.GetFullPath(minecraftPaths.AssetsDirectory);
         LibrariesDirectory = FileManager.GetFullPath(minecraftPaths.LibrariesDirectory);
         NativesDirectory = FileManager.GetFullPath(minecraftPaths.NativesDirectory);
 

@@ -105,7 +105,7 @@ internal sealed class OfflineLauncher : ILauncher
                 return;
 
             var assetsDataJson = await FileManager.ReadFile(
-                $"{minecraftPaths.AssetsIndexDirectory}\\{minecraftData.AssetsVersion}.json",
+                $"{minecraftPaths.AssetsIndexesDirectory}\\{minecraftData.AssetsVersion}.json",
                 cancellationToken);
             var assetsData = _jsonManager.GetAssets(assetsDataJson);
 
