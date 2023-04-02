@@ -64,7 +64,7 @@ internal sealed class OnlineLauncher : ILauncher
             FileManager.CreateDirectory(minecraftPaths.AssetsIndexDirectory);
             await FileManager.WriteFile(
                 $"{minecraftPaths.AssetsIndexDirectory}\\{minecraftData.AssetsVersion}.json",
-                minecraftVersionJson);
+                assetsJson);
             
             var assetsData = _jsonManager.GetAssets(assetsJson);
             if (assetsData == null)
