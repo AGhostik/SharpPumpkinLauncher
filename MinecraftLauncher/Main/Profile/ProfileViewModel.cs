@@ -234,6 +234,8 @@ public sealed class ProfileViewModel : ReactiveObject
     
     private void UpdateVisibleVersions()
     {
+        Versions.Clear();
+        
         if (_versions != null)
         {
             if (Alpha)
