@@ -22,8 +22,8 @@ internal sealed class LaunchArgumentsData
         LibrariesDirectory = FileManager.GetFullPath(minecraftPaths.LibrariesDirectory);
         NativesDirectory = FileManager.GetFullPath(minecraftPaths.NativesDirectory);
 
-        LoggingArgument = minecraftData.LoggingData?.Argument ?? "null";
-        LoggingFile = fileList.Logging == null ? "null" : $"\"{FileManager.GetFullPath(fileList.Logging.FileName)}\"";
+        LoggingArgument = minecraftData.LoggingData?.Argument ?? string.Empty;
+        LoggingFile = fileList.Logging == null ? string.Empty : $"\"{FileManager.GetFullPath(fileList.Logging.FileName)}\"";
 
         var lib = new List<string>(fileList.LibraryFiles.Count);
         for (var i = 0; i < fileList.LibraryFiles.Count; i++)
