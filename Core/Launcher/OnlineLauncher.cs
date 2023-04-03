@@ -35,93 +35,149 @@ internal sealed class OnlineLauncher : ILauncher
             GetVersionList(versions.Alpha));
     }
     
-    public async Task LaunchMinecraft(LaunchData launchData, CancellationToken cancellationToken,
+    public async Task<ErrorCode> LaunchMinecraft(LaunchData launchData, CancellationToken cancellationToken,
         Action? exitedAction = null)
     {
         try
         {
             if (string.IsNullOrEmpty(launchData.Version.Id))
-                return;
+                return ErrorCode.VersionId;
             
             if (string.IsNullOrEmpty(launchData.Version.Url))
-                return;
+                return ErrorCode.Url;
 
-            LaunchMinecraftProgress?.Invoke(LaunchProgress.GetVersionData, 0f);
+            LaunchMinecraftProgress?.Invoke(LaunchProgress.Prepare, 0f);
 
-            var minecraftVersionJson = await DownloadManager.DownloadJsonAsync(launchData.Version.Url, cancellationToken);
+            var minecraftVersionJson =
+                await DownloadManager.DownloadJsonAsync(launchData.Version.Url, cancellationToken);
+
+            if (string.IsNullOrEmpty(minecraftVersionJson))
+                return ErrorCode.Download;
+            
             var minecraftData = _jsonManager.GetMinecraftData(minecraftVersionJson);
 
             if (minecraftData == null)
-                return;
+                return ErrorCode.MinecraftData;
 
             var minecraftPaths = new MinecraftPaths(launchData.GameDirectory, minecraftData.Id);
             
-            FileManager.CreateDirectory(minecraftPaths.VersionDirectory);
-            await FileManager.WriteFile($"{minecraftPaths.VersionDirectory}\\{minecraftData.Id}.json",
-                minecraftVersionJson);
+            var versionsDirectoryCreated = FileManager.CreateDirectory(minecraftPaths.VersionDirectory);
+            if (!versionsDirectoryCreated)
+                return ErrorCode.CreateDirectory;
+            
+            var versionJsonCreated =
+                await FileManager.WriteFile($"{minecraftPaths.VersionDirectory}\\{minecraftData.Id}.json",
+                    minecraftVersionJson);
+            if (!versionJsonCreated)
+                return ErrorCode.CreateFile;
 
             var assetsJson = await DownloadManager.DownloadJsonAsync(minecraftData.AssetsIndex.Url, cancellationToken);
-            FileManager.CreateDirectory(minecraftPaths.AssetsIndexesDirectory);
-            await FileManager.WriteFile(
-                $"{minecraftPaths.AssetsIndexesDirectory}\\{minecraftData.AssetsVersion}.json",
-                assetsJson);
+            
+            if (string.IsNullOrEmpty(assetsJson))
+                return ErrorCode.Download;
+            
+            var assetsIndexDirectoryCreated = FileManager.CreateDirectory(minecraftPaths.AssetsIndexesDirectory);
+            if (!assetsIndexDirectoryCreated)
+                return ErrorCode.CreateDirectory;
+
+            var assetsIndexJsonCreated =
+                await FileManager.WriteFile(
+                    $"{minecraftPaths.AssetsIndexesDirectory}\\{minecraftData.AssetsVersion}.json", assetsJson);
+            if (!assetsIndexJsonCreated)
+                return ErrorCode.CreateFile;
             
             var assetsData = _jsonManager.GetAssets(assetsJson);
             if (assetsData == null)
-                return;
+                return ErrorCode.AssetsData;
 
             var fileList = FileManager.GetFileList(minecraftData, assetsData, minecraftPaths, minecraftData.Id);
 
             var launchArgumentsData =
                 new LaunchArgumentsData(minecraftData, fileList, minecraftPaths, launchData.PlayerName);
+
+            if (!launchArgumentsData.IsValid)
+                return ErrorCode.LaunchArgument;
+            
             var launchArguments = LaunchArgumentsBuilder.GetLaunchArguments(minecraftData, launchArgumentsData);
             
-            if (TryGetMissingInfo(fileList, minecraftPaths, out var minecraftMissedInfo))
-                await RestoreMissedItems(minecraftMissedInfo, cancellationToken);
+            Debug.WriteLine(launchArguments.Replace(" ", Environment.NewLine));
+
+            var missingInfoError = GetMissingInfo(fileList, minecraftPaths, out var minecraftMissedInfo);
+            if (missingInfoError != ErrorCode.NoError)
+                return missingInfoError;
+            
+            if (!minecraftMissedInfo.IsEmpty)
+            {
+                var restoreResult = await RestoreMissedItems(minecraftMissedInfo, cancellationToken);
+                if (restoreResult != ErrorCode.NoError)
+                    return restoreResult;
+            }
 
             LaunchMinecraftProgress?.Invoke(LaunchProgress.StartGame, 0f);
-            await Task.Delay(10, cancellationToken);
+
+            var startGame = await FileManager.StartProcess("java", launchArguments, exitedAction);
+            if (!startGame)
+                return ErrorCode.StartProcess;
             
-            Debug.WriteLine(launchArguments.Replace(" ", Environment.NewLine));
-            Debug.WriteLine("Start game");
+            LaunchMinecraftProgress?.Invoke(LaunchProgress.End, 0f);
             
-            await FileManager.StartProcess("java", launchArguments, exitedAction);
+            return ErrorCode.NoError;
         }
-        catch (TaskCanceledException e)
+        catch (Exception e)
         {
             Console.WriteLine(e);
-            LaunchMinecraftProgress?.Invoke(LaunchProgress.GameAborted, 0f);
+            LaunchMinecraftProgress?.Invoke(LaunchProgress.End, 0f);
+            return ErrorCode.GameAborted;
         }
     }
 
-    private async Task RestoreMissedItems(MinecraftMissedInfo missedInfo, CancellationToken cancellationToken)
+    private async Task<ErrorCode> RestoreMissedItems(MinecraftMissedInfo missedInfo, CancellationToken cancellationToken)
     {
         for (var i = 0; i < missedInfo.DirectoriesToCreate.Count; i++)
-            FileManager.CreateDirectory(missedInfo.DirectoriesToCreate[i]);
+        {
+            var result = FileManager.CreateDirectory(missedInfo.DirectoriesToCreate[i]);
+            if (!result)
+                return ErrorCode.CreateDirectory;
+        }
 
         for (var i = 0; i < missedInfo.CorruptedFiles.Count; i++)
-            FileManager.Delete(missedInfo.CorruptedFiles[i]);
+        {
+            var result = FileManager.Delete(missedInfo.CorruptedFiles[i]);
+            if (!result)
+                return ErrorCode.DeleteFileOrDirectory;
+        }
 
         if (missedInfo.DownloadQueue.Count > 0)
-            await DownloadMissingFiles(missedInfo.DownloadQueue, missedInfo.TotalDownloadSize, cancellationToken);
+        {
+            var result = await DownloadMissingFiles(missedInfo.DownloadQueue, missedInfo.TotalDownloadSize,
+                cancellationToken);
+            if (!result)
+                return ErrorCode.Download;
+        }
 
         for (var i = 0; i < missedInfo.UnpackItems.Count; i++)
         {
             var (fileName, destination) = missedInfo.UnpackItems[i];
-            FileManager.ExtractToDirectory(fileName, destination);
-            
-            Debug.WriteLine($"Unzip jar: {fileName}");
+            var result = FileManager.ExtractToDirectory(fileName, destination);
+            if (!result)
+                return ErrorCode.ExtractArchive;
         }
 
         for (var i = 0; i < missedInfo.PathsToDelete.Count; i++)
-            FileManager.Delete(missedInfo.PathsToDelete[i]);
+        {
+            var result = FileManager.Delete(missedInfo.PathsToDelete[i]);
+            if (!result)
+                return ErrorCode.DeleteFileOrDirectory;
+        }
+
+        return ErrorCode.NoError;
     }
 
-    private async Task DownloadMissingFiles(IEnumerable<(Uri source, string fileName)> downloadQueue, long totalSize,
+    private async Task<bool> DownloadMissingFiles(IEnumerable<(Uri source, string fileName)> downloadQueue, long totalSize,
         CancellationToken cancellationToken)
     {
         LaunchMinecraftProgress?.Invoke(LaunchProgress.DownloadFiles, 0f);
-        await DownloadManager.DownloadFilesParallel(downloadQueue, cancellationToken, Callback);
+        return await DownloadManager.DownloadFilesParallel(downloadQueue, cancellationToken, Callback);
         
         void Callback(long bytesReceived)
         {
@@ -129,21 +185,35 @@ internal sealed class OnlineLauncher : ILauncher
         }
     }
 
-    private static bool TryGetMissingInfo(MinecraftFileList minecraftFileList, MinecraftPaths minecraftPaths,
+    private static ErrorCode GetMissingInfo(MinecraftFileList minecraftFileList, MinecraftPaths minecraftPaths,
         out MinecraftMissedInfo minecraftMissedInfo)
     {
         minecraftMissedInfo = new MinecraftMissedInfo();
         
-        CheckFileAndDirectoryMissed(ref minecraftMissedInfo, minecraftFileList.Client);
-        CheckFileAndDirectoryMissed(ref minecraftMissedInfo, minecraftFileList.Server);
-        
+        var clientFileError = CheckFileAndDirectoryMissed(ref minecraftMissedInfo, minecraftFileList.Client);
+        if (clientFileError != ErrorCode.NoError)
+            return clientFileError;
+
+        if (minecraftFileList.Server != null)
+        {
+            var serverFileError = CheckFileAndDirectoryMissed(ref minecraftMissedInfo, minecraftFileList.Server);
+            if (serverFileError != ErrorCode.NoError)
+                return serverFileError;
+        }
+
         if (minecraftFileList.Logging != null)
-            CheckFileAndDirectoryMissed(ref minecraftMissedInfo, minecraftFileList.Logging);
+        {
+            var loggingFileError = CheckFileAndDirectoryMissed(ref minecraftMissedInfo, minecraftFileList.Logging);
+            if (loggingFileError != ErrorCode.NoError)
+                return loggingFileError;
+        }
 
         for (var i = 0; i < minecraftFileList.LibraryFiles.Count; i++)
         {
             var libraryFile = minecraftFileList.LibraryFiles[i];
-            CheckFileAndDirectoryMissed(ref minecraftMissedInfo, libraryFile);
+            var libraryFileError = CheckFileAndDirectoryMissed(ref minecraftMissedInfo, libraryFile);
+            if (libraryFileError != ErrorCode.NoError)
+                return libraryFileError;
 
             if (libraryFile.NeedUnpack)
             {
@@ -164,17 +234,18 @@ internal sealed class OnlineLauncher : ILauncher
                 }
             }
         }
-        
-        for (var i = 0; i < minecraftFileList.AssetFiles.Count; i++)
-            CheckFileAndDirectoryMissed(ref minecraftMissedInfo, minecraftFileList.AssetFiles[i]);
 
-        return minecraftMissedInfo.DownloadQueue.Count > 0 ||
-               minecraftMissedInfo.DirectoriesToCreate.Count > 0 ||
-               minecraftMissedInfo.UnpackItems.Count > 0 ||
-               minecraftMissedInfo.PathsToDelete.Count > 0;
+        for (var i = 0; i < minecraftFileList.AssetFiles.Count; i++)
+        {
+            var assetFileError = CheckFileAndDirectoryMissed(ref minecraftMissedInfo, minecraftFileList.AssetFiles[i]);
+            if (assetFileError != ErrorCode.NoError)
+                return assetFileError;
+        }
+
+        return ErrorCode.NoError;
     }
 
-    private static void CheckFileAndDirectoryMissed(ref MinecraftMissedInfo missedInfo, IMinecraftFile minecraftFile)
+    private static ErrorCode CheckFileAndDirectoryMissed(ref MinecraftMissedInfo missedInfo, IMinecraftFile minecraftFile)
     {
         if (!FileManager.FileExist(minecraftFile.FileName))
         {
@@ -185,7 +256,11 @@ internal sealed class OnlineLauncher : ILauncher
         else
         {
             var sha1 = FileManager.ComputeSha1(minecraftFile.FileName);
-            if (sha1 != minecraftFile.Sha1)
+            if (string.IsNullOrEmpty(sha1))
+            {
+                Debug.WriteLine($"Cant compute sha1 for file: {minecraftFile.FileName}");
+            }
+            else if (sha1 != minecraftFile.Sha1)
             {
                 Debug.WriteLine($"File {minecraftFile.FileName} corrupted ({sha1} != {minecraftFile.Sha1})");
                 missedInfo.CorruptedFiles.Add(minecraftFile.FileName);
@@ -201,11 +276,32 @@ internal sealed class OnlineLauncher : ILauncher
             if (!FileManager.DirectoryExist(directory) && !missedInfo.DirectoriesToCreate.Contains(directory))
                 missedInfo.DirectoriesToCreate.Add(directory);
         }
+        else
+        {
+            return ErrorCode.Check;
+        }
+
+        return ErrorCode.NoError;
     }
 
     private static List<PublicData.Version> GetVersionList(IEnumerable<MinecraftVersion> minecraftVersions)
     {
-        return minecraftVersions.Select(version =>
-            new PublicData.Version(version.Id, version.Url, MinecraftTypeConverter.GetVersionType(version.Type))).ToList();
+        var result = new List<PublicData.Version>();
+        foreach (var minecraftVersion in minecraftVersions)
+        {
+            try
+            {
+                var type = MinecraftTypeConverter.GetVersionType(minecraftVersion.Type);
+                var version = new PublicData.Version(minecraftVersion.Id, minecraftVersion.Url, type);
+                
+                result.Add(version);
+            }
+            catch (ArgumentOutOfRangeException e)
+            {
+                Debug.WriteLine(e);
+            }
+        }
+
+        return result;
     }
 }

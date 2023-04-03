@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -86,12 +87,16 @@ public sealed class MainWindowModel
 
         _cancellationTokenSource = new CancellationTokenSource();
         
-        await _minecraftLauncher.LaunchMinecraft(launchData, _cancellationTokenSource.Token, () =>
+        var result = await _minecraftLauncher.LaunchMinecraft(launchData, _cancellationTokenSource.Token, gameExited.Invoke);
+
+        if (result != ErrorCode.NoError)
         {
-            _cancellationTokenSource.Dispose();
-            _cancellationTokenSource = null;
             gameExited.Invoke();
-        });
+            Debug.WriteLine(result);
+        }
+        
+        _cancellationTokenSource.Dispose();
+        _cancellationTokenSource = null;
     }
 
     public void AbortStartGame()

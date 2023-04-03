@@ -18,6 +18,7 @@ public sealed class Versions
 
     public IReadOnlyList<MinecraftVersion> Alpha => _alpha;
     
+    /// <exception cref="ArgumentOutOfRangeException">Unknown type value</exception>
     public void AddMinecraftVersion(string id, string url, string sha1, string type)
     {
         var minecraftVersion = new MinecraftVersion(id, url, sha1, type);

@@ -196,10 +196,10 @@ public sealed class MainWindowViewModel : ReactiveObject
         //todo: 
         _progressViewModel.Text = status switch
         {
-            LaunchProgress.GetVersionData => "GetVersionData",
+            LaunchProgress.Prepare => "Prepare",
             LaunchProgress.DownloadFiles => "DownloadFiles",
             LaunchProgress.StartGame => "StartGame",
-            LaunchProgress.GameAborted => "GameAborted",
+            LaunchProgress.End => "End",
             _ => throw new ArgumentOutOfRangeException(nameof(status), status, null)
         };
             

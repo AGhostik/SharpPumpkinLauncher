@@ -1,11 +1,12 @@
 using System.Diagnostics;
 using System.Net;
-using System.Text;
 
 namespace Launcher.Tools;
 
 public static class DownloadManager
 {
+    private const int MaxAttemptCount = 3;
+    
     public static async Task<bool> CheckConnection()
     {
         try
@@ -14,24 +15,40 @@ public static class DownloadManager
             var response = await client.GetAsync("https://google.com");
             return response.StatusCode == HttpStatusCode.OK;
         }
-        catch (HttpRequestException e)
+        catch (Exception e)
         {
             Debug.WriteLine(e);
             return false;
         }
     }
     
-    public static async Task<string> DownloadJsonAsync(string url, CancellationToken cancellationToken)
+    public static async Task<string?> DownloadJsonAsync(string url, CancellationToken cancellationToken)
     {
-        using var client = new HttpClient();
-        var response = await client.GetAsync(new Uri(url), cancellationToken);
-        var json = await response.Content.ReadAsStringAsync(cancellationToken);
-        return json;
+        var currentAttempt = 0;
+        do
+        {
+            try
+            {
+                using var client = new HttpClient();
+                var response = await client.GetAsync(new Uri(url), cancellationToken);
+                var json = await response.Content.ReadAsStringAsync(cancellationToken);
+                return json;
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e);
+                currentAttempt++;
+                await Task.Delay(1000 * currentAttempt, cancellationToken);
+            }
+        } while (currentAttempt < MaxAttemptCount);
+
+        return null;
     }
 
-    public static async Task DownloadFilesParallel(IEnumerable<(Uri source, string filename)> download,
-        CancellationToken cancellationToken, Action<long>? bytesReceived = null, Action? failed = null)
+    public static async Task<bool> DownloadFilesParallel(IEnumerable<(Uri source, string filename)> download,
+        CancellationToken cancellationToken, Action<long>? bytesReceived = null)
     {
+        var isSucced = true;
         var totalRead = 0L;
 
         var internalTokenSource = new CancellationTokenSource();
@@ -41,10 +58,11 @@ public static class DownloadManager
             download,
             new ParallelOptions { MaxDegreeOfParallelism = 10, CancellationToken = linkedTokenSource.Token },
             DownloadFileParallel);
+
+        return isSucced;
         
         async ValueTask DownloadFileParallel((Uri source, string filename) data, CancellationToken token)
         {
-            const int attemptCount = 3;
             var currentAttempt = 0;
             
             var localRead = 0L;
@@ -86,7 +104,7 @@ public static class DownloadManager
                 }
                 catch (Exception e)
                 {
-                    Debug.WriteLine($"failed download file {data.filename}\n{e}");
+                    Debug.WriteLine(e);
 
                     if (isMoreToRead)
                     {
@@ -102,11 +120,11 @@ public static class DownloadManager
                         return;
                     }
                 }
-            } while (isMoreToRead && currentAttempt < attemptCount);
+            } while (isMoreToRead && currentAttempt < MaxAttemptCount);
 
-            if (currentAttempt >= attemptCount)
+            if (currentAttempt >= MaxAttemptCount)
             {
-                failed?.Invoke();
+                isSucced = false;
                 internalTokenSource.Cancel();
             }
         }

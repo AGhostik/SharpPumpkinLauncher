@@ -5,8 +5,9 @@ namespace JsonReader.PublicData.Game;
 
 public sealed class MinecraftData
 {
+    /// <exception cref="ArgumentOutOfRangeException">Unknown type value</exception>
     public MinecraftData(string id, string type, string assetsVersion, string mainClass, int minimumLauncherVersion,
-        DateTime releaseTime, DateTime time, DownloadFile client, DownloadFile server, DownloadFile assetsIndex,
+        DateTime releaseTime, DateTime time, DownloadFile client, DownloadFile? server, DownloadFile assetsIndex,
         Logging? loggingData, Arguments arguments, IReadOnlyList<Library> libraries)
     {
         Id = id;
@@ -34,7 +35,7 @@ public sealed class MinecraftData
     public DateTime ReleaseTime { get; }
     public DateTime Time { get; }
     public DownloadFile Client { get; }
-    public DownloadFile Server { get; }
+    public DownloadFile? Server { get; }
     public DownloadFile AssetsIndex { get; }
     public Logging? LoggingData { get; }
     public Arguments Arguments { get; }

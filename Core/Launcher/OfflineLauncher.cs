@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using JsonReader;
 using Launcher.PublicData;
 using Launcher.Tools;
@@ -29,69 +30,81 @@ internal sealed class OfflineLauncher : ILauncher
         var subDirectories = FileManager.GetSubDirectories(paths.VersionDirectory);
         for (var i = 0; i < subDirectories.Count; i++)
         {
-            var subDirectory = subDirectories[i];
-            var fileInfos = FileManager.GetFileInfos(subDirectory.FullName);
-            var hasJar = false;
-            var jsonPath = string.Empty;
-            for (var j = 0; j < fileInfos.Count; j++)
+            try
             {
-                var fileInfo = fileInfos[j];
-                if (fileInfo.Name == $"{subDirectory.Name}.jar")
+                var subDirectory = subDirectories[i];
+                var fileInfos = FileManager.GetFileInfos(subDirectory.FullName);
+                var hasJar = false;
+                var jsonPath = string.Empty;
+                for (var j = 0; j < fileInfos.Count; j++)
                 {
-                    hasJar = true;
+                    var fileInfo = fileInfos[j];
+                    if (fileInfo.Name == $"{subDirectory.Name}.jar")
+                    {
+                        hasJar = true;
+                    }
+                    else if (fileInfo.Name == $"{subDirectory.Name}.json")
+                    {
+                        jsonPath = fileInfo.FullName;
+                    }
                 }
-                else if (fileInfo.Name == $"{subDirectory.Name}.json")
+
+                if (!hasJar || string.IsNullOrEmpty(jsonPath))
+                    continue;
+                
+                var json = await FileManager.ReadFile(jsonPath, cancellationToken);
+                if (string.IsNullOrEmpty(json))
                 {
-                    jsonPath = fileInfo.FullName;
+                    Debug.WriteLine($"Cant read file: {jsonPath}");
+                    continue;
+                }
+                    
+                var minecraftData = _jsonManager.GetMinecraftData(json);
+                if (minecraftData == null)
+                {
+                    Debug.WriteLine($"Cant read json: {jsonPath}");
+                    continue;
+                }
+                
+                var type = MinecraftTypeConverter.GetVersionType(minecraftData.MinecraftType);
+                var version = new Version(minecraftData.Id, type);
+
+                switch (type)
+                {
+                    case VersionType.Release:
+                        release.Add(version);
+                        break;
+                    case VersionType.Snapshot:
+                        snapshot.Add(version);
+                        break;
+                    case VersionType.Beta:
+                        beta.Add(version);
+                        break;
+                    case VersionType.Alpha:
+                        alpha.Add(version);
+                        break;
+                    case VersionType.Custom:
+                        break;
+                    default:
+                        Debug.WriteLine($"Unknown minecraft type: {type}");
+                        break;
                 }
             }
-
-            if (!hasJar || string.IsNullOrEmpty(jsonPath))
-                continue;
-            
-            var json = await FileManager.ReadFile(jsonPath, cancellationToken);
-            if (string.IsNullOrEmpty(json))
-                continue;
-                
-            var minecraftData = _jsonManager.GetMinecraftData(json);
-            if (minecraftData == null)
-                continue;
-            
-            //todo: write to dictionary minecraftData
-
-            var type = MinecraftTypeConverter.GetVersionType(minecraftData.MinecraftType);
-            var version = new Version(minecraftData.Id, type);
-
-            switch (type)
+            catch (ArgumentOutOfRangeException e)
             {
-                case VersionType.Release:
-                    release.Add(version);
-                    break;
-                case VersionType.Snapshot:
-                    snapshot.Add(version);
-                    break;
-                case VersionType.Beta:
-                    beta.Add(version);
-                    break;
-                case VersionType.Alpha:
-                    alpha.Add(version);
-                    break;
-                case VersionType.Custom:
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
+                Debug.WriteLine(e);
             }
         }
 
         return new Versions(null, null, release, snapshot, beta, alpha);
     }
 
-    public async Task LaunchMinecraft(LaunchData launchData, CancellationToken cancellationToken,
+    public async Task<ErrorCode> LaunchMinecraft(LaunchData launchData, CancellationToken cancellationToken,
         Action? exitedAction = null)
     {
         try
         {
-            LaunchMinecraftProgress?.Invoke(LaunchProgress.GetVersionData, 0f);
+            LaunchMinecraftProgress?.Invoke(LaunchProgress.Prepare, 0f);
             
             var minecraftPaths = new MinecraftPaths(launchData.GameDirectory, launchData.Version.Id);
 
@@ -99,32 +112,51 @@ internal sealed class OfflineLauncher : ILauncher
                 await FileManager.ReadFile($"{minecraftPaths.VersionDirectory}\\{launchData.Version.Id}.json",
                     cancellationToken);
 
+            if (string.IsNullOrEmpty(minecraftVersionJson))
+                return ErrorCode.ReadFile;
+
             var minecraftData = _jsonManager.GetMinecraftData(minecraftVersionJson);
 
             if (minecraftData == null)
-                return;
+                return ErrorCode.MinecraftData;
 
             var assetsDataJson = await FileManager.ReadFile(
                 $"{minecraftPaths.AssetsIndexesDirectory}\\{minecraftData.AssetsVersion}.json",
                 cancellationToken);
+
+            if (string.IsNullOrEmpty(assetsDataJson))
+                return ErrorCode.ReadFile;
+            
             var assetsData = _jsonManager.GetAssets(assetsDataJson);
 
             if (assetsData == null)
-                return;
+                return ErrorCode.AssetsData;
 
             var fileList = FileManager.GetFileList(minecraftData, assetsData, minecraftPaths, minecraftData.Id);
 
             var launchArgumentsData =
                 new LaunchArgumentsData(minecraftData, fileList, minecraftPaths, launchData.PlayerName);
+            
+            if (!launchArgumentsData.IsValid)
+                return ErrorCode.LaunchArgument;
+            
             var launchArguments = LaunchArgumentsBuilder.GetLaunchArguments(minecraftData, launchArgumentsData);
 
             LaunchMinecraftProgress?.Invoke(LaunchProgress.StartGame, 0f);
-            await FileManager.StartProcess("java", launchArguments, exitedAction);
+            
+            var startGame = await FileManager.StartProcess("java", launchArguments, exitedAction);
+            if (!startGame)
+                return ErrorCode.StartProcess;
+            
+            LaunchMinecraftProgress?.Invoke(LaunchProgress.End, 0f);
+            
+            return ErrorCode.NoError;
         }
-        catch (TaskCanceledException e)
+        catch (Exception e)
         {
             Console.WriteLine(e);
-            LaunchMinecraftProgress?.Invoke(LaunchProgress.GameAborted, 0f);
+            LaunchMinecraftProgress?.Invoke(LaunchProgress.End, 0f);
+            return ErrorCode.GameAborted;
         }
     }
 }

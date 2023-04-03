@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Diagnostics;
+using System.Text.Json;
 using JsonReader.InternalData.Assets;
 using JsonReader.InternalData.Game;
 using JsonReader.InternalData.Manifest;
@@ -12,118 +13,146 @@ public sealed class JsonManager
 {
     public IReadOnlyList<Asset>? GetAssets(string? json)
     {
-        if (string.IsNullOrEmpty(json))
-            return null;
-        
-        var assetsData = JsonSerializer.Deserialize<AssetsData>(json);
-
-        if (assetsData?.AssetList == null)
-            return null;
-
-        var hashs = new HashSet<string>();
-        var result = new List<Asset>(assetsData.AssetList.Count);
-        foreach (var assetData in assetsData.AssetList)
+        try
         {
-            if (string.IsNullOrEmpty(assetData.Value.Hash))
-                continue;
-            
-            if (hashs.Contains(assetData.Value.Hash))
-                continue;
-            
-            result.Add(new Asset(assetData.Key, assetData.Value.Hash, assetData.Value.Size));
-            hashs.Add(assetData.Value.Hash);
-        }
+            if (string.IsNullOrEmpty(json))
+                return null;
 
-        return result;
+            var assetsData = JsonSerializer.Deserialize<AssetsData>(json);
+
+            if (assetsData?.AssetList == null)
+                return null;
+
+            var hashs = new HashSet<string>();
+            var result = new List<Asset>(assetsData.AssetList.Count);
+            foreach (var assetData in assetsData.AssetList)
+            {
+                if (string.IsNullOrEmpty(assetData.Value.Hash))
+                    continue;
+
+                if (hashs.Contains(assetData.Value.Hash))
+                    continue;
+
+                result.Add(new Asset(assetData.Key, assetData.Value.Hash, assetData.Value.Size));
+                hashs.Add(assetData.Value.Hash);
+            }
+
+            return result;
+        }
+        catch (Exception e)
+        {
+            Debug.WriteLine(e);
+            return null;
+        }
     }
     
     public Versions? GetVersions(string? json)
     {
-        if (string.IsNullOrEmpty(json))
-            return null;
-        
-        var manifest = JsonSerializer.Deserialize<ManifestData>(json);
-
-        if (manifest == null)
-            return null;
-        
-        var result = new Versions();
-        if (manifest.Versions != null)
+        try
         {
-            for (var i = 0; i < manifest.Versions.Length; i++)
+            if (string.IsNullOrEmpty(json))
+                return null;
+
+            var manifest = JsonSerializer.Deserialize<ManifestData>(json);
+
+            if (manifest == null)
+                return null;
+
+            var result = new Versions();
+            if (manifest.Versions != null)
             {
-                var version = manifest.Versions[i];
-                if (version.Id == null || version.Url == null || version.Sha1 == null || version.Type == null)
-                    continue;
+                for (var i = 0; i < manifest.Versions.Length; i++)
+                {
+                    var version = manifest.Versions[i];
+                    if (version.Id == null || version.Url == null || version.Sha1 == null || version.Type == null)
+                        continue;
 
-                result.AddMinecraftVersion(version.Id, version.Url, version.Sha1, version.Type);
+                    result.AddMinecraftVersion(version.Id, version.Url, version.Sha1, version.Type);
+                }
             }
-        }
 
-        if (manifest.Latest != null)
+            if (manifest.Latest != null)
+            {
+                result.Latest = manifest.Latest.Release;
+                result.LatestSnapshot = manifest.Latest.Snapshoot;
+            }
+
+            return result;
+        }
+        catch (Exception e)
         {
-            result.Latest = manifest.Latest.Release;
-            result.LatestSnapshot = manifest.Latest.Snapshoot;
+            Debug.WriteLine(e);
+            return null;
         }
-
-        return result;
     }
 
     public MinecraftData? GetMinecraftData(string? json)
     {
-        if (string.IsNullOrEmpty(json))
-            return null;
-        
-        var minecraftVersionData = JsonSerializer.Deserialize<MinecraftVersionData>(json);
-
-        if (minecraftVersionData == null)
-            return null;
-
-        if (minecraftVersionData.AssetIndex == null || string.IsNullOrEmpty(minecraftVersionData.AssetIndex.Url) ||
-            string.IsNullOrEmpty(minecraftVersionData.AssetIndex.Sha1))
+        try
         {
+            if (string.IsNullOrEmpty(json))
+                return null;
+
+            var minecraftVersionData = JsonSerializer.Deserialize<MinecraftVersionData>(json);
+
+            if (minecraftVersionData == null)
+                return null;
+
+            if (minecraftVersionData.AssetIndex == null || string.IsNullOrEmpty(minecraftVersionData.AssetIndex.Url) ||
+                string.IsNullOrEmpty(minecraftVersionData.AssetIndex.Sha1))
+            {
+                return null;
+            }
+
+            var assetsIndex = new DownloadFile(minecraftVersionData.AssetIndex.Sha1,
+                minecraftVersionData.AssetIndex.Size,
+                minecraftVersionData.AssetIndex.Url);
+
+            if (string.IsNullOrEmpty(minecraftVersionData.Id) || string.IsNullOrEmpty(minecraftVersionData.Type) ||
+                string.IsNullOrEmpty(minecraftVersionData.Assets) ||
+                string.IsNullOrEmpty(minecraftVersionData.MainClass))
+            {
+                return null;
+            }
+
+            if (minecraftVersionData.Downloads?.Client == null)
+                return null;
+
+            if (!TryGetDownloadFile(minecraftVersionData.Downloads.Client, out var client))
+                return null;
+
+            DownloadFile? server = null;
+            if (minecraftVersionData.Downloads.Server != null &&
+                !TryGetDownloadFile(minecraftVersionData.Downloads.Server, out server))
+                return null;
+
+            var loggingData = GetLoggingData(minecraftVersionData);
+
+            if (!TryGetArguments(minecraftVersionData, out var arguments))
+                return null;
+
+            var libraries = GetLibraries(minecraftVersionData);
+
+            return new MinecraftData(
+                id: minecraftVersionData.Id,
+                type: minecraftVersionData.Type,
+                assetsVersion: minecraftVersionData.Assets,
+                mainClass: minecraftVersionData.MainClass,
+                minimumLauncherVersion: minecraftVersionData.MinimumLauncherVersion,
+                releaseTime: minecraftVersionData.ReleaseTime,
+                time: minecraftVersionData.Time,
+                client,
+                server,
+                assetsIndex,
+                loggingData,
+                arguments,
+                libraries);
+        }
+        catch (Exception e)
+        {
+            Debug.WriteLine(e);
             return null;
         }
-        
-        var assetsIndex = new DownloadFile(minecraftVersionData.AssetIndex.Sha1, minecraftVersionData.AssetIndex.Size,
-            minecraftVersionData.AssetIndex.Url);
-
-        if (string.IsNullOrEmpty(minecraftVersionData.Id) || string.IsNullOrEmpty(minecraftVersionData.Type) ||
-            string.IsNullOrEmpty(minecraftVersionData.Assets) || string.IsNullOrEmpty(minecraftVersionData.MainClass))
-        {
-            return null;
-        }
-
-        if (minecraftVersionData.Downloads?.Client == null || minecraftVersionData.Downloads?.Server == null)
-            return null;
-
-        if (!TryGetDownloadFile(minecraftVersionData.Downloads.Client, out var client))
-            return null;
-        
-        if (!TryGetDownloadFile(minecraftVersionData.Downloads.Server, out var server))
-            return null;
-
-        var loggingData = GetLoggingData(minecraftVersionData);
-
-        if (!TryGetArguments(minecraftVersionData, out var arguments))
-            return null;
-
-        var libraries = GetLibraries(minecraftVersionData);
-
-        return new MinecraftData(
-            id: minecraftVersionData.Id,
-            type: minecraftVersionData.Type,
-            assetsVersion: minecraftVersionData.Assets,
-            mainClass: minecraftVersionData.MainClass,
-            minimumLauncherVersion: minecraftVersionData.MinimumLauncherVersion,
-            releaseTime: minecraftVersionData.ReleaseTime,
-            time: minecraftVersionData.Time,
-            client,
-            server,
-            assetsIndex,
-            loggingData,
-            arguments,
-            libraries);
     }
 
     private static IReadOnlyList<Library> GetLibraries(MinecraftVersionData minecraftVersionData)

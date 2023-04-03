@@ -2,8 +2,8 @@ namespace Launcher.PublicData;
 
 public enum LaunchProgress
 {
-    GetVersionData,
+    Prepare,
     DownloadFiles,
     StartGame,
-    GameAborted
+    End
 }

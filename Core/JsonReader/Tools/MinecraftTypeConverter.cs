@@ -9,6 +9,7 @@ internal static class MinecraftTypeConverter
     private const string Release = "release";
     private const string Snapshot = "snapshot";
 
+    /// <exception cref="ArgumentOutOfRangeException">Unknown argument value</exception>
     public static MinecraftType GetMinecraftType(string type)
     {
         return type switch

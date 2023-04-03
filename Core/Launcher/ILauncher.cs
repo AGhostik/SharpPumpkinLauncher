@@ -8,5 +8,5 @@ internal interface ILauncher
 
     Task<Versions> GetAvailableVersions(string directory, CancellationToken cancellationToken);
 
-    Task LaunchMinecraft(LaunchData launchData, CancellationToken cancellationToken, Action? exitedAction = null);
+    Task<ErrorCode> LaunchMinecraft(LaunchData launchData, CancellationToken cancellationToken, Action? exitedAction = null);
 }

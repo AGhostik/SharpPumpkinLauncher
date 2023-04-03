@@ -1,4 +1,5 @@
-﻿using System.Security.Cryptography;
+﻿using System.Diagnostics;
+using System.Security.Cryptography;
 using System.Text;
 using JsonReader.PublicData.Game;
 using Launcher.Data;
@@ -12,27 +13,64 @@ internal sealed class LaunchArgumentsData
     {
         VersionId = minecraftData.Id;
         VersionType = minecraftData.Type;
-        ClientJar = FileManager.GetFullPath(fileList.Client.FileName);
         PlayerName = playerName;
-
         AssetsVersion = minecraftData.AssetsVersion;
 
-        GameDirectory = FileManager.GetFullPath(minecraftPaths.GameDirectory);
-        AssetsDirectory = minecraftData.IsLegacyAssets() ?
+        if (minecraftData.LoggingData?.Argument != null)
+            LoggingArgument = minecraftData.LoggingData.Argument;
+        else
+            LoggingArgument = string.Empty;
+
+        if (fileList.Logging != null)
+        {
+            var path = FileManager.GetFullPath(fileList.Logging.FileName);
+            LoggingFile = !string.IsNullOrEmpty(path) ? $"\"{path}\"" : string.Empty;
+        }
+        else
+            LoggingFile = string.Empty;
+
+        var isValid = true;
+
+        var clientJar = FileManager.GetFullPath(fileList.Client.FileName);
+        var gameDirectory = FileManager.GetFullPath(minecraftPaths.GameDirectory);
+        var assetsDirectory = minecraftData.IsLegacyAssets() ?
             FileManager.GetFullPath(minecraftPaths.AssetsLegacyDirectory) :
             FileManager.GetFullPath(minecraftPaths.AssetsDirectory);
-        LibrariesDirectory = FileManager.GetFullPath(minecraftPaths.LibrariesDirectory);
-        NativesDirectory = FileManager.GetFullPath(minecraftPaths.NativesDirectory);
+        var librariesDirectory = FileManager.GetFullPath(minecraftPaths.LibrariesDirectory);
+        var nativesDirectory = FileManager.GetFullPath(minecraftPaths.NativesDirectory);
 
-        LoggingArgument = minecraftData.LoggingData?.Argument ?? string.Empty;
-        LoggingFile = fileList.Logging == null ? string.Empty : $"\"{FileManager.GetFullPath(fileList.Logging.FileName)}\"";
+        if (string.IsNullOrEmpty(clientJar) || string.IsNullOrEmpty(gameDirectory) ||
+            string.IsNullOrEmpty(assetsDirectory) || string.IsNullOrEmpty(librariesDirectory) ||
+            string.IsNullOrEmpty(nativesDirectory))
+        {
+            isValid = false;
+            clientJar = string.Empty;
+            gameDirectory = string.Empty;
+            assetsDirectory = string.Empty;
+            librariesDirectory = string.Empty;
+            nativesDirectory = string.Empty;
+        }
+        
+        ClientJar = clientJar;
+        GameDirectory = gameDirectory;
+        AssetsDirectory = assetsDirectory;
+        LibrariesDirectory = librariesDirectory;
+        NativesDirectory = nativesDirectory;
 
         var lib = new List<string>(fileList.LibraryFiles.Count);
         for (var i = 0; i < fileList.LibraryFiles.Count; i++)
         {
             if (fileList.LibraryFiles[i].NeedUnpack)
                 continue;
-            lib.Add(FileManager.GetFullPath(fileList.LibraryFiles[i].FileName));
+            
+            var path = FileManager.GetFullPath(fileList.LibraryFiles[i].FileName);
+            if (string.IsNullOrEmpty(path))
+            {
+                isValid = false;
+                break;
+            }
+            
+            lib.Add(path);
         }
 
         Libraries = lib;
@@ -41,12 +79,16 @@ internal sealed class LaunchArgumentsData
         AuthAccessToken = "null";
         ClientId = "null";
         AuthXuid = "null";
-        AuthUuid = GetUuid(PlayerName);
+        AuthUuid = GetUuid(PlayerName) ?? "null";
         UserType = "mojang";
         
         Width = "1200";
         Height = "720";
+
+        IsValid = isValid;
     }
+    
+    public bool IsValid { get; }
     
     public string Width { get; }
     public string Height { get; }
@@ -76,10 +118,21 @@ internal sealed class LaunchArgumentsData
     
     public IReadOnlyList<string> Libraries { get; }
     
-    private static string GetUuid(string nickname)
+    private static string? GetUuid(string? nickname)
     {
-        var data = MD5.HashData(Encoding.Default.GetBytes(nickname));
-        var guid = new Guid(data);
-        return guid.ToString();
+        try
+        {
+            if (string.IsNullOrEmpty(nickname))
+                return null;
+            
+            var data = MD5.HashData(Encoding.Default.GetBytes(nickname));
+            var guid = new Guid(data);
+            return guid.ToString();
+        }
+        catch (Exception e)
+        {
+            Debug.WriteLine(e);
+            return null;
+        }
     }
 }

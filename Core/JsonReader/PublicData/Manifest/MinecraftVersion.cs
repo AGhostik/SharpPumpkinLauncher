@@ -4,6 +4,7 @@ namespace JsonReader.PublicData.Manifest;
 
 public sealed class MinecraftVersion
 {
+    /// <exception cref="ArgumentOutOfRangeException">Unknown type value</exception>
     public MinecraftVersion(string id, string url, string sha1, string type)
     {
         Id = id;

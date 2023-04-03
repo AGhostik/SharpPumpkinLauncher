@@ -5,6 +5,7 @@ namespace Launcher.Tools;
 
 internal static class MinecraftTypeConverter
 {
+    /// <exception cref="ArgumentOutOfRangeException">Unknowm argument value</exception>
     public static VersionType GetVersionType(MinecraftType version)
     {
         return version switch

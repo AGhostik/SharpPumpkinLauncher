@@ -10,67 +10,100 @@ namespace Launcher.Tools;
 
 internal static class FileManager
 {
-    public static async Task StartProcess(string fileName, string? args, Action? exitedAction = null)
+    public static async Task<bool> StartProcess(string fileName, string? args, Action? exitedAction = null)
     {
-        var startInfo = new ProcessStartInfo()
+        try
         {
-            FileName = fileName,
-            Arguments = args,
-            UseShellExecute = false,
-            RedirectStandardError = true,
-            RedirectStandardOutput = true,
-            CreateNoWindow = true,
-            Verb = "runas"
-        };
+            var startInfo = new ProcessStartInfo()
+            {
+                FileName = fileName,
+                Arguments = args,
+                UseShellExecute = false,
+                RedirectStandardError = true,
+                RedirectStandardOutput = true,
+                CreateNoWindow = true,
+                Verb = "runas"
+            };
 
-        var process = new Process
+            var process = new Process
+            {
+                StartInfo = startInfo,
+                EnableRaisingEvents = true
+            };
+            process.Exited += (_, _) =>
+            {
+                exitedAction?.Invoke();
+                Debug.WriteLine($"Exit code: {process.ExitCode}");
+            };
+
+            var result = process.Start();
+
+            var output = await process.StandardOutput.ReadToEndAsync();
+            var errors = await process.StandardError.ReadToEndAsync();
+            await process.WaitForExitAsync(); // need to avoid game stuck at loading screen
+
+            Debug.WriteLine("Output:");
+            Debug.WriteLine(output);
+
+            Debug.WriteLine("Errors:");
+            Debug.WriteLine(errors);
+
+            return result;
+        }
+        catch (Exception e)
         {
-            StartInfo = startInfo,
-            EnableRaisingEvents = true
-        };
-        process.Exited += (_, _) =>
+            Debug.WriteLine(e);
+            return false;
+        }
+    }
+
+    public static string? GetFullPath(string? source)
+    {
+        try
         {
-            exitedAction?.Invoke();
-            Debug.WriteLine($"Exit code: {process.ExitCode}");
-        };
+            if (string.IsNullOrEmpty(source))
+                return null;
 
-        process.Start();
-        
-        var output = await process.StandardOutput.ReadToEndAsync();         
-        var errors = await process.StandardError.ReadToEndAsync();             
-        await process.WaitForExitAsync(); // need to avoid game stuck at loading screen
-        
-        Debug.WriteLine("Output:");
-        Debug.WriteLine(output);
-        
-        Debug.WriteLine("Errors:");
-        Debug.WriteLine(errors);
-    }
-    
-    public static string GetFileName(string? source)
-    {
-        if (string.IsNullOrEmpty(source))
-            return string.Empty;
-        
-        return Path.GetFileName(source);
+            return Path.GetFullPath(source);
+        }
+        catch (Exception e)
+        {
+            Debug.WriteLine(e);
+            return null;
+        }
     }
 
-    public static string GetFullPath(string? source)
+    public static string? GetPathDirectory(string? source)
     {
-        if (string.IsNullOrEmpty(source))
-            return string.Empty;
-        
-        return Path.GetFullPath(source);
+        try
+        {
+            if (string.IsNullOrEmpty(source))
+                return null;
+            
+            return Path.GetDirectoryName(source);
+        }
+        catch (Exception e)
+        {
+            Debug.WriteLine(e);
+            return null;
+        }
     }
 
-    public static string? GetPathDirectory(string source)
+    public static bool ExtractToDirectory(string? sourceArchive, string? destinationDirectory)
     {
-        return Path.GetDirectoryName(source);
-    }
-
-    public static void ExtractToDirectory(string sourceArchive, string destinationDirectory)
-    {
-        ZipFile.ExtractToDirectory(sourceArchive, destinationDirectory, overwriteFiles: true);
+        try
+        {
+            if (string.IsNullOrEmpty(sourceArchive) || string.IsNullOrEmpty(destinationDirectory))
+                return false;
+            
+            ZipFile.ExtractToDirectory(sourceArchive, destinationDirectory, overwriteFiles: true);
+            return true;
+        }
+        catch (Exception e)
+        {
+            Debug.WriteLine(e);
+            return false;
+        }
     }
 
     public static bool FileExist(string path)
@@ -85,70 +118,127 @@ internal static class FileManager
 
     public static IReadOnlyList<DirectoryInfo> GetSubDirectories(string? path)
     {
-        if (string.IsNullOrEmpty(path))
-            return Array.Empty<DirectoryInfo>();
+        try
+        {
+            if (string.IsNullOrEmpty(path))
+                return Array.Empty<DirectoryInfo>();
 
-        return Directory.GetDirectories(path).Select(dir => new DirectoryInfo(dir)).ToArray();
+            return Directory.GetDirectories(path).Select(dir => new DirectoryInfo(dir)).ToArray();
+        }
+        catch (Exception e)
+        {
+            Debug.WriteLine(e);
+            return Array.Empty<DirectoryInfo>();
+        }
     }
     
     public static IReadOnlyList<FileInfo> GetFileInfos(string? path)
     {
-        if (string.IsNullOrEmpty(path))
+        try
+        {
+            if (string.IsNullOrEmpty(path))
+                return Array.Empty<FileInfo>();
+
+            return Directory.GetFiles(path).Select(file => new FileInfo(file)).ToArray();
+        }
+        catch (Exception e)
+        {
+            Debug.WriteLine(e);
             return Array.Empty<FileInfo>();
-
-        return Directory.GetFiles(path).Select(file => new FileInfo(file)).ToArray();
+        }
     }
 
-    public static void Delete(string path)
+    public static bool Delete(string? path)
     {
-        if (FileExist(path)) 
-            File.Delete(path);
+        try
+        {
+            if (string.IsNullOrEmpty(path))
+                return false;
+            
+            if (File.Exists(path))
+                File.Delete(path);
 
-        if (DirectoryExist(path)) 
-            Directory.Delete(path, true);
+            if (Directory.Exists(path))
+                Directory.Delete(path, true);
+
+            return true;
+        }
+        catch (Exception e)
+        {
+            Debug.WriteLine(e);
+            return false;
+        }
     }
 
-    public static void CreateDirectory(string directory)
+    public static bool CreateDirectory(string? directory)
     {
-        //todo: catch exceptions
-        Directory.CreateDirectory(directory);
+        try
+        {
+            if (string.IsNullOrEmpty(directory))
+                return false;
+            
+            Directory.CreateDirectory(directory);
+            return true;
+        }
+        catch (Exception e)
+        {
+            Debug.WriteLine(e);
+            return false;
+        }
     }
 
-    public static string? ComputeSha1(string fileName)
+    public static string? ComputeSha1(string? fileName)
     {
-        if (string.IsNullOrEmpty(fileName))
+        try
+        {
+            if (string.IsNullOrEmpty(fileName))
+                return null;
+        
+            using var fileStream = new FileStream(fileName, FileMode.Open);
+            using var bufferedStream = new BufferedStream(fileStream);
+            var sha1 = SHA1.Create();
+            var hash = sha1.ComputeHash(bufferedStream);
+            var formatted = new StringBuilder(2 * hash.Length);
+            
+            foreach (var b in hash)
+                formatted.Append($"{b:x2}");
+
+            return formatted.ToString();
+        }
+        catch (Exception e)
+        {
+            Debug.WriteLine(e);
             return null;
-        
-        using var fileStream = new FileStream(fileName, FileMode.Open);
-        using var bufferedStream = new BufferedStream(fileStream);
-        var sha1 = SHA1.Create();
-        var hash = sha1.ComputeHash(bufferedStream);
-        var formatted = new StringBuilder(2 * hash.Length);
-        
-        foreach (var b in hash)
-            formatted.Append($"{b:x2}");
-
-        return formatted.ToString();
+        }
     }
 
     public static async Task<string?> ReadFile(string fileName, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(fileName))
-            return null;
+        try
+        {
+            if (string.IsNullOrEmpty(fileName))
+                return null;
 
-        if (!File.Exists(fileName))
+            if (!File.Exists(fileName))
+                return null;
+            
+            using var streamReader = new StreamReader(fileName);
+            return await streamReader.ReadToEndAsync(cancellationToken);
+        }
+        catch (Exception e)
+        {
+            Debug.WriteLine(e);
             return null;
-        
-        using var streamReader = new StreamReader(fileName);
-        return await streamReader.ReadToEndAsync(cancellationToken);
+        }
     }
 
-    public static async Task WriteFile(string? path, string? content)
+    public static async Task<bool> WriteFile(string? path, string? content)
     {
         if (string.IsNullOrEmpty(path) || string.IsNullOrEmpty(content))
-            return;
+            return false;
         
         await File.WriteAllTextAsync(path, content);
+        return true;
     }
     
     public static MinecraftFileList GetFileList(MinecraftData data, IReadOnlyList<Asset> assets,
@@ -156,10 +246,14 @@ internal static class FileManager
     {
         var client = new MinecraftFile(data.Client.Url, data.Client.Size, data.Client.Sha1,
             $"{minecraftPaths.VersionDirectory}\\{minecraftVersionId}.jar");
-        
-        var server = new MinecraftFile(data.Server.Url, data.Server.Size, data.Server.Sha1,
-            $"{minecraftPaths.VersionDirectory}\\{minecraftVersionId}-server.jar");
-        
+
+        MinecraftFile? server = null;
+        if (data.Server != null)
+        {
+            server = new MinecraftFile(data.Server.Url, data.Server.Size, data.Server.Sha1,
+                $"{minecraftPaths.VersionDirectory}\\{minecraftVersionId}-server.jar");
+        }
+
         var librariesFiles = GetLibrariesFiles(data.Libraries, minecraftPaths);
 
         var assetsFiles = data.IsLegacyAssets()
@@ -250,9 +344,12 @@ internal static class FileManager
         {
             var asset = assets[i];
             var hashString = asset.Hash;
-            
+
             if (hashString.Length < 2)
+            {
+                Debug.WriteLine($"Invalid asset hash; name: '{asset.Name}', hash: '{asset.Hash}'");
                 continue;
+            }
             
             var subDirectory = $"{hashString[0]}{hashString[1]}";
             var fileName = $"{minecraftPaths.AssetsObjectsDirectory}\\{subDirectory}\\{hashString}";
@@ -273,9 +370,12 @@ internal static class FileManager
         {
             var asset = assets[i];
             var hashString = asset.Hash;
-            
+
             if (hashString.Length < 2)
+            {
+                Debug.WriteLine($"Invalid asset hash; name: '{asset.Name}', hash: '{asset.Hash}'");
                 continue;
+            }
             
             var subDirectory = $"{hashString[0]}{hashString[1]}";
             var fileName = $"{minecraftPaths.AssetsLegacyDirectory}\\{asset.Name}";
