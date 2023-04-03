@@ -81,7 +81,6 @@
                 Content="{Binding MainContent}" />
             <Button
                 Grid.Row="2"
-                Content="{x:Static resources:Localization.StartGame}" 
                 MinWidth="150"
                 MinHeight="50"
                 HorizontalAlignment="Center"
@@ -89,10 +88,24 @@
                 HorizontalContentAlignment="Center"
                 VerticalContentAlignment="Center"
                 IsVisible="{Binding IsStartGameVisible}"
-                Command="{Binding StartGameCommand}"/>
+                Command="{Binding StartGameCommand}">
+                <Button.Content>
+                    <Grid ColumnDefinitions="Auto, Auto">
+                        <Image
+                            Name="Image"
+                            Grid.Column="0"
+                            VerticalAlignment="Center"
+                            Source="/Resources/golden_pickaxe.png" />
+                        <TextBlock
+                            Grid.Column="1"
+                            Margin="5, 0, 5, 0"
+                            VerticalAlignment="Center"
+                            Text="{x:Static resources:Localization.StartGame}" />
+                    </Grid>
+                </Button.Content>
+            </Button>
             <Button
                 Grid.Row="2"
-                Content="{x:Static resources:Localization.StopGame}" 
                 MinWidth="150"
                 MinHeight="50"
                 HorizontalAlignment="Center"
@@ -100,7 +113,8 @@
                 HorizontalContentAlignment="Center"
                 VerticalContentAlignment="Center"
                 IsVisible="{Binding !IsStartGameVisible}"
-                Command="{Binding AbortGameCommand}"/>
+                Command="{Binding AbortGameCommand}"
+                Content="{x:Static resources:Localization.StopGame}" />
         </Grid>
     </Grid>
 </Window>
