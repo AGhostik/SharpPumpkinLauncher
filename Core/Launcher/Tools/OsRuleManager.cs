@@ -14,7 +14,7 @@ internal sealed class OsRuleManager
     private const string OsArchitecture86 = "x84";
 
     private const string IsDemoUser = "is_demo_user";
-    private const string HasCustomResolution = "has_custom_resolution";
+    //private const string HasCustomResolution = "has_custom_resolution";
 
     private static readonly string _currentOsName;
     private static readonly string _currentOsVersion;
