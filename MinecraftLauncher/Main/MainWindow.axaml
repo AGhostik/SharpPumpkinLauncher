@@ -11,6 +11,7 @@
         x:Class="MinecraftLauncher.Main.MainWindow"
         x:DataType="main:MainWindowViewModel"
         x:CompileBindings="True"
+        Icon="/Resources/icon.png"
         Title="{x:Static resources:Localization.Title}">
     <Grid ColumnDefinitions="Auto, *">
         <Grid Grid.Column="0" RowDefinitions="Auto, Auto, Auto, *, Auto" Background="lightgray">
