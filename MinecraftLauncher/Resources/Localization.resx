@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+            
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <data name="Title" xml:space="preserve">
+        <value>Minecraft Launcher</value>
+    </data>
+    <data name="NewProfile" xml:space="preserve">
+        <value>New profile</value>
+    </data>
+    <data name="EditProfile" xml:space="preserve">
+        <value>Edit profile</value>
+    </data>
+    <data name="DeleteProfile" xml:space="preserve">
+        <value>Delete profile</value>
+    </data>
+    <data name="Settings" xml:space="preserve">
+        <value>Settings</value>
+    </data>
+    <data name="StartGame" xml:space="preserve">
+        <value>Play</value>
+    </data>
+    <data name="StopGame" xml:space="preserve">
+        <value>Stop game</value>
+    </data>
+    <data name="ProfileName" xml:space="preserve">
+        <value>Profile name</value>
+    </data>
+    <data name="PlayerName" xml:space="preserve">
+        <value>Player name</value>
+    </data>
+    <data name="MinecraftVersion" xml:space="preserve">
+        <value>Minecraft version</value>
+    </data>
+    <data name="Custom" xml:space="preserve">
+        <value>Custom</value>
+    </data>
+    <data name="Latest" xml:space="preserve">
+        <value>Latest</value>
+    </data>
+    <data name="Release" xml:space="preserve">
+        <value>Release</value>
+    </data>
+    <data name="Snapshot" xml:space="preserve">
+        <value>Snapshot</value>
+    </data>
+    <data name="Beta" xml:space="preserve">
+        <value>Beta</value>
+    </data>
+    <data name="Alpha" xml:space="preserve">
+        <value>Alpha</value>
+    </data>
+    <data name="SaveProfile" xml:space="preserve">
+        <value>Save profile</value>
+    </data>
+    <data name="Cancel" xml:space="preserve">
+        <value>Cancel</value>
+    </data>
+    <data name="DefaultPlayerName" xml:space="preserve">
+        <value>Default player name</value>
+    </data>
+    <data name="Directory" xml:space="preserve">
+        <value>Directory</value>
+    </data>
+    <data name="Save" xml:space="preserve">
+        <value>Save</value>
+    </data>
+</root>

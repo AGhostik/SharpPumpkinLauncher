@@ -4,38 +4,39 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:main="clr-namespace:MinecraftLauncher.Main"
         xmlns:profile="clr-namespace:MinecraftLauncher.Main.Profile"
+        xmlns:resources="clr-namespace:MinecraftLauncher.Resources"
         mc:Ignorable="d" 
         MinWidth="650" MinHeight="350"
         Width="650" Height="350"
         x:Class="MinecraftLauncher.Main.MainWindow"
         x:DataType="main:MainWindowViewModel"
         x:CompileBindings="True"
-        Title="MinecraftLauncher">
+        Title="{x:Static resources:Localization.Title}">
     <Grid ColumnDefinitions="Auto, *">
         <Grid Grid.Column="0" RowDefinitions="Auto, Auto, Auto, *, Auto" Background="lightgray">
             <Button
                 Grid.Row="0"
                 HorizontalAlignment="Stretch"
                 HorizontalContentAlignment="Center"
-                Content="New profile"
+                Content="{x:Static resources:Localization.NewProfile}"
                 Command="{Binding NewProfileCommand}"/>
             <Button 
                 Grid.Row="1"
                 HorizontalAlignment="Stretch"
                 HorizontalContentAlignment="Center"
-                Content="Edit profile"
+                Content="{x:Static resources:Localization.EditProfile}"
                 Command="{Binding EditProfileCommand}"/>
             <Button 
                 Grid.Row="2"
                 HorizontalAlignment="Stretch"
                 HorizontalContentAlignment="Center"
-                Content="Delete profile"
+                Content="{x:Static resources:Localization.DeleteProfile}"
                 Command="{Binding DeleteProfileCommand}"/>
             <Button 
                 Grid.Row="4"
                 HorizontalAlignment="Stretch"
                 HorizontalContentAlignment="Center"
-                Content="Settings"
+                Content="{x:Static resources:Localization.Settings}"
                 Command="{Binding OpenSettingsCommand}"/>
         </Grid>
         <Grid Grid.Column="1" RowDefinitions="Auto, *, Auto">
@@ -57,6 +58,7 @@
                                 Grid.Column="1"
                                 BorderThickness="1"
                                 BorderBrush="Black"
+                                IsVisible="{Binding SelectedVersion, Converter={x:Static ObjectConverters.IsNotNull}}"
                                 Margin="0, 0, 5, 0">
                                 <TextBlock
                                     Margin="5, 0, 5, 0"
@@ -78,7 +80,7 @@
                 Content="{Binding MainContent}" />
             <Button
                 Grid.Row="2"
-                Content="Play" 
+                Content="{x:Static resources:Localization.StartGame}" 
                 MinWidth="150"
                 MinHeight="50"
                 HorizontalAlignment="Center"
@@ -89,7 +91,7 @@
                 Command="{Binding StartGameCommand}"/>
             <Button
                 Grid.Row="2"
-                Content="Stop game" 
+                Content="{x:Static resources:Localization.StopGame}" 
                 MinWidth="150"
                 MinHeight="50"
                 HorizontalAlignment="Center"

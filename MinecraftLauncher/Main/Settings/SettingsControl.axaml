@@ -3,6 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:settings="clr-namespace:MinecraftLauncher.Main.Settings"
+             xmlns:resources="clr-namespace:MinecraftLauncher.Resources"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:DataType="settings:SettingsViewModel"
              x:CompileBindings="True"
@@ -10,15 +11,14 @@
     <StackPanel>
         <TextBox 
             Margin="5"
-            Watermark="Default player name"
+            Watermark="{x:Static resources:Localization.DefaultPlayerName}"
             Text="{Binding DefaultPlayerName}" />
         <TextBox 
             Margin="5"
-            Watermark="Directory"
+            Watermark="{x:Static resources:Localization.Directory}"
             Text="{Binding Directory}" />
         <ComboBox
             Margin="5"
-            PlaceholderText="Minecraft version"
             PlaceholderForeground="gray"
             HorizontalAlignment="Stretch"
             VirtualizationMode="Simple"
@@ -30,14 +30,14 @@
                 Margin="5"
                 HorizontalAlignment="Stretch"
                 HorizontalContentAlignment="Center"
-                Content="Save"
+                Content="{x:Static resources:Localization.Save}"
                 Command="{Binding SaveCommand}"/>
             <Button
                 Grid.Column="1"
                 Margin="5"
                 HorizontalAlignment="Stretch"
                 HorizontalContentAlignment="Center"
-                Content="Cancel"
+                Content="{x:Static resources:Localization.Cancel}"
                 Command="{Binding CloseCommand}"/>
         </Grid>
     </StackPanel>
