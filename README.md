@@ -19,15 +19,19 @@ Screenshot
 Todo:
 ------------
 
-- add settings field checking
+- add unit tests
+- add launch tests (test all versions)
 - add "pick directory" button
-- add "pick Java file" button
+- add java detection
 - add java argument setup window
-- add retry download (3 times)
+- add Forge support
+- add launcher_profiles.json support
+- fix old versions running
+- fix fields validation style
 
 Useful links:
 ------------
 
-- [Minecraft game files](https://wiki.vg/Game_files)
+- [Minecraft game files](https://wiki.vg/Game_files/)
+- [Launching the game](https://wiki.vg/Launching_the_game/)
 - [Inside a Minecraft launcher](https://ryanccn.dev/posts/inside-a-minecraft-launcher/)
-- [Launching the game](https://wiki.vg/Launching_the_game)
