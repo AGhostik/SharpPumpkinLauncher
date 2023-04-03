@@ -9,6 +9,7 @@ using Launcher.PublicData;
 using MinecraftLauncher.Main.Profile;
 using MinecraftLauncher.Main.Progress;
 using MinecraftLauncher.Main.Settings;
+using MinecraftLauncher.Resources;
 using ReactiveUI;
 
 namespace MinecraftLauncher.Main;
@@ -36,7 +37,7 @@ public sealed class MainWindowViewModel : ReactiveObject
         mainWindowModel.VersionsLoaded += OnVersionsLoaded;
         mainWindowModel.AllProfilesLoaded += UpdateCanStartGame;
         
-        _progressViewModel = new ProgressViewModel();
+        _progressViewModel = new ProgressViewModel(mainWindowModel);
         _progressControl = new ProgressControl() { DataContext = _progressViewModel };
 
         var settingsViewModel = new SettingsViewModel(SettingsSaved, SetDefaultMainContent);
@@ -166,11 +167,8 @@ public sealed class MainWindowViewModel : ReactiveObject
         IsStartGameVisible = false;
         
         MainContent = _progressControl;
-        _mainWindowModel.StartGameProgress += OnStartGameProgress;
         
         await _mainWindowModel.StartGame(SelectedProfile, () => Dispatcher.UIThread.InvokeAsync(GameExited));
-        
-        _mainWindowModel.StartGameProgress -= OnStartGameProgress;
     }
 
     private void AbortStartGame()
@@ -186,24 +184,6 @@ public sealed class MainWindowViewModel : ReactiveObject
     {
         IsGameStarted = false;
         IsStartGameVisible = true;
-
-        //_progressViewModel.Text = string.Empty;
-        _progressViewModel.ProgressValue = 0;
-    }
-    
-    private void OnStartGameProgress(LaunchProgress status, float progress01)
-    {
-        //todo: 
-        _progressViewModel.Text = status switch
-        {
-            LaunchProgress.Prepare => "Prepare",
-            LaunchProgress.DownloadFiles => "DownloadFiles",
-            LaunchProgress.StartGame => "StartGame",
-            LaunchProgress.End => "End",
-            _ => throw new ArgumentOutOfRangeException(nameof(status), status, null)
-        };
-            
-        _progressViewModel.ProgressValue = 100f * progress01;
     }
 
     private void OpenSettings()

@@ -177,6 +177,78 @@ namespace MinecraftLauncher.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Download game files.
+        /// </summary>
+        public static string ProgressDownloadFiles {
+            get {
+                return ResourceManager.GetString("ProgressDownloadFiles", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Game exited.
+        /// </summary>
+        public static string ProgressEnd {
+            get {
+                return ResourceManager.GetString("ProgressEnd", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Fail to start game.
+        /// </summary>
+        public static string ProgressFailToStartGame {
+            get {
+                return ResourceManager.GetString("ProgressFailToStartGame", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid profile, check parameters.
+        /// </summary>
+        public static string ProgressInvalidProfile {
+            get {
+                return ResourceManager.GetString("ProgressInvalidProfile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Loading available minecraft versions.
+        /// </summary>
+        public static string ProgressLoading {
+            get {
+                return ResourceManager.GetString("ProgressLoading", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Prepare to start game.
+        /// </summary>
+        public static string ProgressPrepare {
+            get {
+                return ResourceManager.GetString("ProgressPrepare", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Ready to launch!.
+        /// </summary>
+        public static string ProgressReady {
+            get {
+                return ResourceManager.GetString("ProgressReady", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Game start.
+        /// </summary>
+        public static string ProgressStartGame {
+            get {
+                return ResourceManager.GetString("ProgressStartGame", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Release.
         /// </summary>
         public static string Release {

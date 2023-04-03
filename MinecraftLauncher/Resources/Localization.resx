@@ -81,4 +81,28 @@
     <data name="Save" xml:space="preserve">
         <value>Save</value>
     </data>
+    <data name="ProgressPrepare" xml:space="preserve">
+        <value>Prepare to start game</value>
+    </data>
+    <data name="ProgressDownloadFiles" xml:space="preserve">
+        <value>Download game files</value>
+    </data>
+    <data name="ProgressStartGame" xml:space="preserve">
+        <value>Game start</value>
+    </data>
+    <data name="ProgressEnd" xml:space="preserve">
+        <value>Game exited</value>
+    </data>
+    <data name="ProgressInvalidProfile" xml:space="preserve">
+        <value>Invalid profile, check parameters</value>
+    </data>
+    <data name="ProgressFailToStartGame" xml:space="preserve">
+        <value>Fail to start game</value>
+    </data>
+    <data name="ProgressLoading" xml:space="preserve">
+        <value>Loading available minecraft versions</value>
+    </data>
+    <data name="ProgressReady" xml:space="preserve">
+        <value>Ready to launch!</value>
+    </data>
 </root>

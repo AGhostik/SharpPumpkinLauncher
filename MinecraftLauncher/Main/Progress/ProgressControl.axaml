@@ -10,18 +10,19 @@
     <Grid RowDefinitions="*, Auto">
         <TextBlock
             Grid.Row="0"
-            Margin="5,5,5,0"
+            Margin="5"
             VerticalAlignment="Bottom"
             TextWrapping="Wrap"
             TextAlignment="Center"
             Text="{Binding Text}"/>
         <ProgressBar
             Grid.Row="1"
-            Margin="5"
+            Margin="5,0,5,5"
             Height="25"
             Minimum="0"
             Maximum="100"
             ShowProgressText="True"
+            IsVisible="{Binding IsProgressVisible}"
             Value="{Binding ProgressValue}" />
     </Grid>
 </UserControl>

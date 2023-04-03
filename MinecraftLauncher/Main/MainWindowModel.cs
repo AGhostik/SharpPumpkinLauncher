@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Launcher.PublicData;
 using MinecraftLauncher.Main.Profile;
+using MinecraftLauncher.Main.Progress;
 using MinecraftLauncher.Main.Settings;
 using MinecraftLauncher.Main.Validation;
 using UserSettings;
@@ -37,7 +38,7 @@ public sealed class MainWindowModel
         remove => _versionsLoaded -= value;
     }
 
-    public event Action<LaunchProgress, float>? StartGameProgress;
+    public event Action<ProgressLocalizationKeys, float>? UpdateProgressValues;
     public event Action? AllProfilesLoaded;
 
     private event Action SettingsDirectorySet;
@@ -45,8 +46,7 @@ public sealed class MainWindowModel
     public MainWindowModel()
     {
         _minecraftLauncher = new MinecraftLauncher();
-        _minecraftLauncher.LaunchMinecraftProgress +=
-            (status, progress01) => StartGameProgress?.Invoke(status, progress01);
+        _minecraftLauncher.LaunchMinecraftProgress += UpdateProgress;
 
         SettingsDirectorySet += LoadAvailableVersions;
 
@@ -78,7 +78,10 @@ public sealed class MainWindowModel
         if (string.IsNullOrEmpty(profileViewModel.PlayerName) ||
             string.IsNullOrEmpty(CurrentSettings.Directory) ||
             profileViewModel.SelectedVersion == null)
+        {
+            UpdateProgressValues?.Invoke(ProgressLocalizationKeys.InvalidProfile, 0);
             return;
+        }
         
         var launchData = new LaunchData(
             profileViewModel.PlayerName,
@@ -92,6 +95,7 @@ public sealed class MainWindowModel
         if (result != ErrorCode.NoError)
         {
             gameExited.Invoke();
+            UpdateProgressValues?.Invoke(ProgressLocalizationKeys.FailToStartGame, 0);
             Debug.WriteLine(result);
         }
         
@@ -156,9 +160,11 @@ public sealed class MainWindowModel
     
     private async void LoadAvailableVersions()
     {
+        UpdateProgressValues?.Invoke(ProgressLocalizationKeys.Loading, 0);
         var availableVersions = await _minecraftLauncher.GetAvailableVersions(CurrentSettings.Directory);
         _availableVersions = availableVersions;
         _versionsLoaded?.Invoke(availableVersions);
+        UpdateProgressValues?.Invoke(ProgressLocalizationKeys.Ready, 0);
     }
     
     private bool LoadSettings(out IReadOnlyList<ProfileViewModel> allProfiles, out ProfileViewModel? lastSelectedProfile,
@@ -215,5 +221,19 @@ public sealed class MainWindowModel
         profileViewModel = ProfileViewModel.CreateDefault(SaveProfile);
         profileViewModel.PlayerName = settingsData.DefaultPlayerName;
         VersionsLoaded += profileViewModel.SetVersions;
+    }
+    
+    private void UpdateProgress(LaunchProgress launchProgress, float progress01)
+    {
+        var key = launchProgress switch
+        {
+            LaunchProgress.Prepare => ProgressLocalizationKeys.Prepare,
+            LaunchProgress.DownloadFiles => ProgressLocalizationKeys.DownloadFiles,
+            LaunchProgress.StartGame => ProgressLocalizationKeys.StartGame,
+            LaunchProgress.End => ProgressLocalizationKeys.End,
+            _ => throw new ArgumentOutOfRangeException(nameof(launchProgress), launchProgress, null)
+        };
+        
+        UpdateProgressValues?.Invoke(key, progress01);
     }
 }
