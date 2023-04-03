@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using JsonReader.InternalData.Assets;
 using JsonReader.InternalData.Game;
@@ -249,11 +250,11 @@ public sealed class JsonManager
         return null;
     }
     
-    private static bool TryGetDownloadFile(DownloadData downloadData, out DownloadFile downloadFile)
+    private static bool TryGetDownloadFile(DownloadData downloadData, [NotNullWhen(true)] out DownloadFile? downloadFile)
     {
         if (string.IsNullOrEmpty(downloadData.Sha1) || string.IsNullOrEmpty(downloadData.Url))
         {
-            downloadFile = new DownloadFile(string.Empty, 0, string.Empty);
+            downloadFile = null;
             return false;
         }
         
@@ -261,7 +262,7 @@ public sealed class JsonManager
         return true;
     }
 
-    private static bool TryGetArguments(MinecraftVersionData minecraftVersionData, out Arguments arguments)
+    private static bool TryGetArguments(MinecraftVersionData minecraftVersionData, [NotNullWhen(true)] out Arguments? arguments)
     {
         if (minecraftVersionData.Arguments != null)
         {
@@ -281,7 +282,7 @@ public sealed class JsonManager
             return true;
         }
 
-        arguments = new Arguments(Array.Empty<ArgumentItem>(), Array.Empty<ArgumentItem>());
+        arguments = null;
         return false;
     }
 
@@ -336,12 +337,12 @@ public sealed class JsonManager
         return gameArguments;
     }
 
-    private static bool TryGetRule(RulesData ruledData, out Rule rule)
+    private static bool TryGetRule(RulesData ruledData, [NotNullWhen(true)] out Rule? rule)
     {
         var action = ruledData.Action;
         if (string.IsNullOrEmpty(action))
         {
-            rule = new Rule(string.Empty);
+            rule = null;
             return false;
         }
 

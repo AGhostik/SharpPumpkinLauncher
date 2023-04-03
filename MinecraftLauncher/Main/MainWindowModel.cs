@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -50,7 +51,7 @@ public sealed class MainWindowModel
 
         SettingsDirectorySet += LoadAvailableVersions;
 
-        if (LoadSettings(out var allProfiles, out var lastSelectedProfile, out var settingsData) && settingsData != null)
+        if (LoadSettings(out var allProfiles, out var lastSelectedProfile, out var settingsData))
         {
             Profiles = allProfiles;
             LastSelectedProfile = lastSelectedProfile;
@@ -192,7 +193,7 @@ public sealed class MainWindowModel
     }
     
     private bool LoadSettings(out IReadOnlyList<ProfileViewModel> allProfiles, out ProfileViewModel? lastSelectedProfile,
-        out SettingsData? settingsData)
+        [NotNullWhen(true)] out SettingsData? settingsData)
     {
         var profiles = new List<ProfileViewModel>();
         
