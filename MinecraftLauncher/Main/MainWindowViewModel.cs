@@ -79,6 +79,7 @@ public sealed class MainWindowViewModel : ReactiveObject
             UpdateCanEditProfile();
             UpdateCanDeleteProfile();
             UpdateCanStartGame();
+            SetDefaultMainContent();
         }
     }
 
