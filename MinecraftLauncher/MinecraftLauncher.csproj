@@ -8,6 +8,10 @@
         <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
         <ApplicationIcon>Resources\icon.ico</ApplicationIcon>
         <PublishSingleFile>true</PublishSingleFile>
+        <Version>v0.2.0-beta</Version>
+        <Authors>AGhostik</Authors>
+        <PackageProjectUrl>https://github.com/AGhostik/MCLauncher</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/AGhostik/MCLauncher</RepositoryUrl>
     </PropertyGroup>
     <ItemGroup>
         <None Remove=".gitignore" />
