@@ -158,6 +158,30 @@ public sealed class MainWindowModel
         LauncherSettings.Save();
     }
     
+    public void ReplaceProfile(string originalProfileName, ProfileViewModel profileViewModel)
+    {
+        if (LauncherSettings.Instance.Data.Profiles == null)
+        {
+            SaveProfile(profileViewModel);
+            return;
+        }
+
+        var editedProfileData = LauncherSettings.Instance.Data.Profiles.Find(p => p.Name == originalProfileName);
+        if (editedProfileData == null)
+            return;
+        
+        editedProfileData.Name = profileViewModel.ProfileName;
+        editedProfileData.PlayerNickname = profileViewModel.PlayerName;
+        editedProfileData.MinecraftVersion = profileViewModel.SelectedVersion?.Id;
+        editedProfileData.Alpha = profileViewModel.Alpha;
+        editedProfileData.Beta = profileViewModel.Beta;
+        editedProfileData.Custom = profileViewModel.Custom;
+        editedProfileData.Release = profileViewModel.Release;
+        editedProfileData.Snapshot = profileViewModel.Snapshot;
+        
+        LauncherSettings.Save();
+    }
+    
     private async void LoadAvailableVersions()
     {
         UpdateProgressValues?.Invoke(ProgressLocalizationKeys.Loading, 0);

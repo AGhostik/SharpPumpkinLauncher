@@ -1,4 +1,3 @@
-using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive;
@@ -9,7 +8,6 @@ using Launcher.PublicData;
 using MinecraftLauncher.Main.Profile;
 using MinecraftLauncher.Main.Progress;
 using MinecraftLauncher.Main.Settings;
-using MinecraftLauncher.Resources;
 using ReactiveUI;
 
 namespace MinecraftLauncher.Main;
@@ -17,7 +15,6 @@ namespace MinecraftLauncher.Main;
 public sealed class MainWindowViewModel : ReactiveObject
 {
     private readonly MainWindowModel _mainWindowModel;
-    private readonly ProgressViewModel _progressViewModel;
     private readonly ProgressControl _progressControl;
     private readonly SettingsControl _settingsControl;
     
@@ -37,8 +34,8 @@ public sealed class MainWindowViewModel : ReactiveObject
         mainWindowModel.VersionsLoaded += OnVersionsLoaded;
         mainWindowModel.AllProfilesLoaded += UpdateCanStartGame;
         
-        _progressViewModel = new ProgressViewModel(mainWindowModel);
-        _progressControl = new ProgressControl() { DataContext = _progressViewModel };
+        var progressViewModel = new ProgressViewModel(mainWindowModel);
+        _progressControl = new ProgressControl() { DataContext = progressViewModel };
 
         var settingsViewModel = new SettingsViewModel(SettingsSaved, SetDefaultMainContent);
         _settingsControl = new SettingsControl() { DataContext = settingsViewModel };
@@ -221,7 +218,7 @@ public sealed class MainWindowViewModel : ReactiveObject
     private void NewProfileSaved(ProfileViewModel newProfileViewModel)
     {
         Profiles.Add(newProfileViewModel);
-        SelectedProfile ??= newProfileViewModel;
+        SelectedProfile = newProfileViewModel;
 
         SetDefaultMainContent();
         UpdateProfilesComboboxEnabled();
@@ -244,9 +241,15 @@ public sealed class MainWindowViewModel : ReactiveObject
         };
     }
 
-    private void ProfileEdited(ProfileViewModel editedProfileViewModel)
+    private void ProfileEdited(string? originalProfileName, ProfileViewModel editedProfileViewModel)
     {
         SetDefaultMainContent();
+        
+        if (string.IsNullOrEmpty(originalProfileName))
+            return;
+        
+        _mainWindowModel.ReplaceProfile(originalProfileName, editedProfileViewModel);
+        _mainWindowModel.SaveSelectedProfile(originalProfileName);
     }
     
     private void DeleteProfile()

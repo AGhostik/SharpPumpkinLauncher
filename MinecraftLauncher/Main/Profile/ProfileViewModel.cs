@@ -66,9 +66,10 @@ public sealed class ProfileViewModel : ReactiveObject
     }
 
     public static ProfileViewModel Edit(ProfileViewModel profileViewModel, IEnumerable<string?> restrictedNames,
-        Action<ProfileViewModel> save, Action cancel)
+        Action<string?, ProfileViewModel> save, Action cancel)
     {
-        profileViewModel._save = save;
+        var profileName = profileViewModel.ProfileName;
+        profileViewModel._save = profile => save.Invoke(profileName, profile);
         profileViewModel._cancel = cancel;
         profileViewModel._restrictedNames = new List<string?>(restrictedNames);
         
