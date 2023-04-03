@@ -33,7 +33,6 @@ internal static class FileManager
             process.Exited += (_, _) =>
             {
                 exitedAction?.Invoke();
-                Debug.WriteLine($"Exit code: {process.ExitCode}");
             };
 
             var result = process.Start();
@@ -42,13 +41,15 @@ internal static class FileManager
             var errors = await process.StandardError.ReadToEndAsync();
             await process.WaitForExitAsync(); // need to avoid game stuck at loading screen
 
+            Debug.WriteLine($"Exit code: {process.ExitCode}");
+            
             Debug.WriteLine("Output:");
             Debug.WriteLine(output);
 
             Debug.WriteLine("Errors:");
             Debug.WriteLine(errors);
 
-            return result;
+            return result && process.ExitCode == 0;
         }
         catch (Exception e)
         {
