@@ -21,21 +21,21 @@ public class LauncherSettings
 
     public static bool Load()
     {
-        if (!File.Exists(FileName))
-            return false;
-        
-        using var stream = new FileStream(FileName, FileMode.OpenOrCreate);
-        var xmlSerializer = new XmlSerializer(typeof(SettingsData));
-
         try
         {
+            if (!File.Exists(FileName))
+                return false;
+            
+            using var stream = new FileStream(FileName, FileMode.OpenOrCreate);
+            var xmlSerializer = new XmlSerializer(typeof(SettingsData));
+
             var data = xmlSerializer.Deserialize(stream);
             if (data is SettingsData userSettingsData)
                 Instance.Data = userSettingsData;
 
             return true;
         }
-        catch (InvalidOperationException e)
+        catch (Exception e)
         {
             Console.WriteLine(e);
             return false;
