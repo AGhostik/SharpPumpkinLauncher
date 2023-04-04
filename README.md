@@ -1,6 +1,8 @@
 ﻿Minecraft Launcher
 =====================
 
+This is a free and open source minecraft launcher.
+
 
 Download
 ------------
@@ -27,7 +29,6 @@ Todo:
 - add Forge support
 - add launcher_profiles.json support
 - fix old versions running
-- fix fields validation style
 
 Useful links:
 ------------
