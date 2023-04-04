@@ -51,9 +51,6 @@
       <ProjectReference Include="..\Core\UserSettings\UserSettings.csproj" />
     </ItemGroup>
     <ItemGroup>
-      <Folder Include="Styles" />
-    </ItemGroup>
-    <ItemGroup>
       <EmbeddedResource Update="Resources\Localization.resx">
         <Generator>PublicResXFileCodeGenerator</Generator>
         <LastGenOutput>Localization.Designer.cs</LastGenOutput>
