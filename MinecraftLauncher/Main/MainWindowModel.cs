@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
@@ -10,6 +9,7 @@ using MinecraftLauncher.Main.Profile;
 using MinecraftLauncher.Main.Progress;
 using MinecraftLauncher.Main.Settings;
 using MinecraftLauncher.Main.Validation;
+using SimpleLogger;
 using UserSettings;
 using SettingsData = MinecraftLauncher.Main.Settings.SettingsData;
 
@@ -97,7 +97,7 @@ public sealed class MainWindowModel
         {
             gameExited.Invoke();
             UpdateProgressValues?.Invoke(ProgressLocalizationKeys.FailToStartGame, 0);
-            Debug.WriteLine(result);
+            Logger.Log(result);
         }
         
         _cancellationTokenSource.Dispose();

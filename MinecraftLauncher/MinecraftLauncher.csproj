@@ -48,6 +48,7 @@
     </ItemGroup>
     <ItemGroup>
       <ProjectReference Include="..\Core\Launcher\Launcher.csproj" />
+      <ProjectReference Include="..\Core\SimpleLogger\SimpleLogger.csproj" />
       <ProjectReference Include="..\Core\UserSettings\UserSettings.csproj" />
     </ItemGroup>
     <ItemGroup>

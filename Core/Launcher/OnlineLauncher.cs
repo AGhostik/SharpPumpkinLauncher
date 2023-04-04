@@ -1,9 +1,9 @@
-using System.Diagnostics;
 using JsonReader;
 using JsonReader.PublicData.Manifest;
 using Launcher.Data;
 using Launcher.PublicData;
 using Launcher.Tools;
+using SimpleLogger;
 using Versions = Launcher.PublicData.Versions;
 
 namespace Launcher;
@@ -100,7 +100,7 @@ internal sealed class OnlineLauncher : ILauncher
             
             var launchArguments = LaunchArgumentsBuilder.GetLaunchArguments(minecraftData, launchArgumentsData);
             
-            Debug.WriteLine(launchArguments.Replace(" ", Environment.NewLine));
+            Logger.Log(launchArguments.Replace(" ", Environment.NewLine));
 
             var missingInfoError = GetMissingInfo(fileList, minecraftPaths, out var minecraftMissedInfo);
             if (missingInfoError != ErrorCode.NoError)
@@ -249,7 +249,6 @@ internal sealed class OnlineLauncher : ILauncher
     {
         if (!FileManager.FileExist(minecraftFile.FileName))
         {
-            Debug.WriteLine($"File not exist: {minecraftFile.FileName}");
             missedInfo.DownloadQueue.Add((new Uri(minecraftFile.Url), minecraftFile.FileName));
             missedInfo.TotalDownloadSize += minecraftFile.Size;
         }
@@ -258,11 +257,11 @@ internal sealed class OnlineLauncher : ILauncher
             var sha1 = FileManager.ComputeSha1(minecraftFile.FileName);
             if (string.IsNullOrEmpty(sha1))
             {
-                Debug.WriteLine($"Cant compute sha1 for file: {minecraftFile.FileName}");
+                Logger.Log($"Cant compute sha1 for file: {minecraftFile.FileName}");
             }
             else if (sha1 != minecraftFile.Sha1)
             {
-                Debug.WriteLine($"File {minecraftFile.FileName} corrupted ({sha1} != {minecraftFile.Sha1})");
+                Logger.Log($"File {minecraftFile.FileName} corrupted ({sha1} != {minecraftFile.Sha1})");
                 missedInfo.CorruptedFiles.Add(minecraftFile.FileName);
                 
                 missedInfo.DownloadQueue.Add((new Uri(minecraftFile.Url), minecraftFile.FileName));
@@ -298,7 +297,7 @@ internal sealed class OnlineLauncher : ILauncher
             }
             catch (ArgumentOutOfRangeException e)
             {
-                Debug.WriteLine(e);
+                Logger.Log(e);
             }
         }
 

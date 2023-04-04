@@ -1,8 +1,8 @@
-﻿using System.Diagnostics;
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using System.Text;
 using JsonReader.PublicData.Game;
 using Launcher.Data;
+using SimpleLogger;
 
 namespace Launcher.Tools;
 
@@ -131,7 +131,7 @@ internal sealed class LaunchArgumentsData
         }
         catch (Exception e)
         {
-            Debug.WriteLine(e);
+            Logger.Log(e);
             return null;
         }
     }

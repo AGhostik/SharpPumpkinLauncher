@@ -1,7 +1,7 @@
-using System.Diagnostics;
 using JsonReader;
 using Launcher.PublicData;
 using Launcher.Tools;
+using SimpleLogger;
 using Version = Launcher.PublicData.Version;
 
 namespace Launcher;
@@ -55,14 +55,14 @@ internal sealed class OfflineLauncher : ILauncher
                 var json = await FileManager.ReadFile(jsonPath, cancellationToken);
                 if (string.IsNullOrEmpty(json))
                 {
-                    Debug.WriteLine($"Cant read file: {jsonPath}");
+                    Logger.Log($"Cant read file: {jsonPath}");
                     continue;
                 }
                     
                 var minecraftData = _jsonManager.GetMinecraftData(json);
                 if (minecraftData == null)
                 {
-                    Debug.WriteLine($"Cant read json: {jsonPath}");
+                    Logger.Log($"Cant read json: {jsonPath}");
                     continue;
                 }
                 
@@ -86,13 +86,13 @@ internal sealed class OfflineLauncher : ILauncher
                     case VersionType.Custom:
                         break;
                     default:
-                        Debug.WriteLine($"Unknown minecraft type: {type}");
+                        Logger.Log($"Unknown minecraft type: {type}");
                         break;
                 }
             }
             catch (ArgumentOutOfRangeException e)
             {
-                Debug.WriteLine(e);
+                Logger.Log(e);
             }
         }
 

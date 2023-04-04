@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using JsonReader.InternalData.Assets;
 using JsonReader.InternalData.Game;
@@ -7,6 +6,7 @@ using JsonReader.InternalData.Manifest;
 using JsonReader.PublicData.Assets;
 using JsonReader.PublicData.Game;
 using JsonReader.PublicData.Manifest;
+using SimpleLogger;
 
 namespace JsonReader;
 
@@ -42,7 +42,7 @@ public sealed class JsonManager
         }
         catch (Exception e)
         {
-            Debug.WriteLine(e);
+            Logger.Log(e);
             return null;
         }
     }
@@ -82,7 +82,7 @@ public sealed class JsonManager
         }
         catch (Exception e)
         {
-            Debug.WriteLine(e);
+            Logger.Log(e);
             return null;
         }
     }
@@ -151,7 +151,7 @@ public sealed class JsonManager
         }
         catch (Exception e)
         {
-            Debug.WriteLine(e);
+            Logger.Log(e);
             return null;
         }
     }

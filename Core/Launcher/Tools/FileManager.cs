@@ -5,6 +5,7 @@ using System.IO.Compression;
 using JsonReader.PublicData.Assets;
 using JsonReader.PublicData.Game;
 using Launcher.Data;
+using SimpleLogger;
 
 namespace Launcher.Tools;
 
@@ -41,19 +42,15 @@ internal static class FileManager
             var errors = await process.StandardError.ReadToEndAsync();
             await process.WaitForExitAsync(); // need to avoid game stuck at loading screen
 
-            Debug.WriteLine($"Exit code: {process.ExitCode}");
-            
-            Debug.WriteLine("Output:");
-            Debug.WriteLine(output);
-
-            Debug.WriteLine("Errors:");
-            Debug.WriteLine(errors);
+            Logger.Log($"Exit code: {process.ExitCode}");
+            Logger.Log($"Output: {output}");
+            Logger.Log($"Errors: {errors}");
 
             return result && process.ExitCode == 0;
         }
         catch (Exception e)
         {
-            Debug.WriteLine(e);
+            Logger.Log(e);
             return false;
         }
     }
@@ -69,7 +66,7 @@ internal static class FileManager
         }
         catch (Exception e)
         {
-            Debug.WriteLine(e);
+            Logger.Log(e);
             return null;
         }
     }
@@ -85,7 +82,7 @@ internal static class FileManager
         }
         catch (Exception e)
         {
-            Debug.WriteLine(e);
+            Logger.Log(e);
             return null;
         }
     }
@@ -102,7 +99,7 @@ internal static class FileManager
         }
         catch (Exception e)
         {
-            Debug.WriteLine(e);
+            Logger.Log(e);
             return false;
         }
     }
@@ -128,7 +125,7 @@ internal static class FileManager
         }
         catch (Exception e)
         {
-            Debug.WriteLine(e);
+            Logger.Log(e);
             return Array.Empty<DirectoryInfo>();
         }
     }
@@ -144,7 +141,7 @@ internal static class FileManager
         }
         catch (Exception e)
         {
-            Debug.WriteLine(e);
+            Logger.Log(e);
             return Array.Empty<FileInfo>();
         }
     }
@@ -166,7 +163,7 @@ internal static class FileManager
         }
         catch (Exception e)
         {
-            Debug.WriteLine(e);
+            Logger.Log(e);
             return false;
         }
     }
@@ -183,7 +180,7 @@ internal static class FileManager
         }
         catch (Exception e)
         {
-            Debug.WriteLine(e);
+            Logger.Log(e);
             return false;
         }
     }
@@ -208,7 +205,7 @@ internal static class FileManager
         }
         catch (Exception e)
         {
-            Debug.WriteLine(e);
+            Logger.Log(e);
             return null;
         }
     }
@@ -228,7 +225,7 @@ internal static class FileManager
         }
         catch (Exception e)
         {
-            Debug.WriteLine(e);
+            Logger.Log(e);
             return null;
         }
     }
@@ -348,7 +345,7 @@ internal static class FileManager
 
             if (hashString.Length < 2)
             {
-                Debug.WriteLine($"Invalid asset hash; name: '{asset.Name}', hash: '{asset.Hash}'");
+                Logger.Log($"Invalid asset hash; name: '{asset.Name}', hash: '{asset.Hash}'");
                 continue;
             }
             
@@ -374,7 +371,7 @@ internal static class FileManager
 
             if (hashString.Length < 2)
             {
-                Debug.WriteLine($"Invalid asset hash; name: '{asset.Name}', hash: '{asset.Hash}'");
+                Logger.Log($"Invalid asset hash; name: '{asset.Name}', hash: '{asset.Hash}'");
                 continue;
             }
             

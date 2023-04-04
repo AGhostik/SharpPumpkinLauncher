@@ -1,5 +1,5 @@
-using System.Diagnostics;
 using System.Net;
+using SimpleLogger;
 
 namespace Launcher.Tools;
 
@@ -17,7 +17,7 @@ public static class DownloadManager
         }
         catch (Exception e)
         {
-            Debug.WriteLine(e);
+            Logger.Log(e);
             return false;
         }
     }
@@ -36,7 +36,7 @@ public static class DownloadManager
             }
             catch (Exception e)
             {
-                Debug.WriteLine(e);
+                Logger.Log(e);
                 currentAttempt++;
                 await Task.Delay(1000 * currentAttempt, cancellationToken);
             }
@@ -68,7 +68,7 @@ public static class DownloadManager
             var localRead = 0L;
             var isMoreToRead = true;
             
-            Debug.WriteLine($"Download file: {data.filename}");
+            Logger.Log($"Download file: {data.filename}");
 
             do
             {
@@ -104,7 +104,7 @@ public static class DownloadManager
                 }
                 catch (Exception e)
                 {
-                    Debug.WriteLine(e);
+                    Logger.Log(e);
 
                     if (isMoreToRead)
                     {
