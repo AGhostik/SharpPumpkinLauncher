@@ -1,7 +1,6 @@
 using System;
 using System.Reactive;
 using System.Reactive.Subjects;
-using Avalonia.Data;
 using MinecraftLauncher.Main.Validation;
 using ReactiveUI;
 
@@ -24,22 +23,25 @@ public sealed class SettingsViewModel : ReactiveObject
         CloseCommand = ReactiveCommand.Create(Close);
     }
 
+    [PlayerNameValidation]
     public string? DefaultPlayerName
     {
         get => _defaultPlayerName;
-        set => this.RaiseAndSetIfChanged(ref _defaultPlayerName, value);
+        set
+        {
+            this.RaiseAndSetIfChanged(ref _defaultPlayerName, value);
+            UpdateCanSave();
+        }
     }
 
+    [DirectoryValidation]
     public string? Directory
     {
         get => _directory;
         set
         {
-            if (!DirectoryValidation.IsDirectoryValid(value, out var errorKey))
-                throw new DataValidationException(errorKey);
-            
             this.RaiseAndSetIfChanged(ref _directory, value);
-            CanSave.OnNext(!string.IsNullOrEmpty(_directory));
+            UpdateCanSave();
         }
     }
 
@@ -71,5 +73,12 @@ public sealed class SettingsViewModel : ReactiveObject
     private void Close()
     {
         _closeAction.Invoke();
+    }
+
+    private void UpdateCanSave()
+    {
+        var isValid = DirectoryValidation.IsDirectoryValid(Directory) &&
+                      PlayerNameValidation.IsPlayerNameValid(DefaultPlayerName);
+        CanSave.OnNext(isValid);
     }
 }

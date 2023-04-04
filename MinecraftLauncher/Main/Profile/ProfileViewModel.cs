@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Reactive;
 using System.Reactive.Subjects;
-using Avalonia.Data;
 using Launcher.PublicData;
 using MinecraftLauncher.Main.Validation;
 using ReactiveUI;
@@ -28,7 +27,6 @@ public sealed class ProfileViewModel : ReactiveObject
     private bool _alpha;
 
     private string? _loadedSelectedVersion;
-    private List<string?>? _restrictedNames;
     private Action<ProfileViewModel>? _versionLoaded;
     private Action<ProfileViewModel>? _save;
     private Action? _cancel;
@@ -41,11 +39,12 @@ public sealed class ProfileViewModel : ReactiveObject
 
     public static ProfileViewModel CreateDefault(Action<ProfileViewModel> versionLoaded)
     {
+        ProfileNameValidationAttribute.RestrictedName = null;
+        
         return new ProfileViewModel() 
         { 
             Latest = true,
             ProfileName = "Minecraft game",
-            _restrictedNames = new List<string?>(),
             _save = null,
             _cancel = null,
             _loadedSelectedVersion = SetLastVersion,
@@ -56,10 +55,11 @@ public sealed class ProfileViewModel : ReactiveObject
     public static ProfileViewModel CreateNew(IEnumerable<string?> restrictedNames, Action<ProfileViewModel> save,
         Action cancel)
     {
+        ProfileNameValidationAttribute.RestrictedName = new List<string?>(restrictedNames);
+        
         return new ProfileViewModel() 
         { 
             Latest = true,
-            _restrictedNames = new List<string?>(restrictedNames),
             _save = save,
             _cancel = cancel
         };
@@ -71,7 +71,8 @@ public sealed class ProfileViewModel : ReactiveObject
         var profileName = profileViewModel.ProfileName;
         profileViewModel._save = profile => save.Invoke(profileName, profile);
         profileViewModel._cancel = cancel;
-        profileViewModel._restrictedNames = new List<string?>(restrictedNames);
+        
+        ProfileNameValidationAttribute.RestrictedName = new List<string?>(restrictedNames);
         
         return profileViewModel;
     }
@@ -112,27 +113,23 @@ public sealed class ProfileViewModel : ReactiveObject
         UpdateVisibleVersions();
     }
     
+    [ProfileNameValidation]
     public string? ProfileName
     {
         get => _profileName;
         set
         {
-            if (!ProfileNameValidation.IsProfileNameValid(value, _restrictedNames, out var errorKey))
-                throw new DataValidationException(errorKey);
-
             this.RaiseAndSetIfChanged(ref _profileName, value);
             UpdateCanSaveProfile();
         }
     }
 
+    [PlayerNameValidation]
     public string? PlayerName
     {
         get => _playerName;
         set
         {
-            if (!PlayerNameValidation.IsPlayerNameValid(value, out var errorKey))
-                throw new DataValidationException(errorKey);
-            
             this.RaiseAndSetIfChanged(ref _playerName, value);
             UpdateCanSaveProfile();
         }
@@ -226,7 +223,7 @@ public sealed class ProfileViewModel : ReactiveObject
     
     private void UpdateCanSaveProfile()
     {
-        var value = ProfileNameValidation.IsProfileNameValid(ProfileName, _restrictedNames) &&
+        var value = ProfileNameValidation.IsProfileNameValid(ProfileName, ProfileNameValidationAttribute.RestrictedName) &&
                     PlayerNameValidation.IsPlayerNameValid(PlayerName) &&
                     SelectedVersion != null && !string.IsNullOrEmpty(SelectedVersion.Id);
         

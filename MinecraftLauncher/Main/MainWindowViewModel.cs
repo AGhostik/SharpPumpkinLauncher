@@ -8,6 +8,7 @@ using Launcher.PublicData;
 using MinecraftLauncher.Main.Profile;
 using MinecraftLauncher.Main.Progress;
 using MinecraftLauncher.Main.Settings;
+using MinecraftLauncher.Main.Validation;
 using ReactiveUI;
 
 namespace MinecraftLauncher.Main;
@@ -270,11 +271,11 @@ public sealed class MainWindowViewModel : ReactiveObject
     {
         var canStartGame = 
             !IsGameStarted &&
+            IsVersionsLoaded &&
             SelectedProfile?.SelectedVersion != null &&
-            !string.IsNullOrEmpty(SelectedProfile.PlayerName) &&
             !string.IsNullOrEmpty(SelectedProfile.SelectedVersion.Id) &&
-            !string.IsNullOrEmpty(_mainWindowModel.CurrentSettings.Directory) &&
-            IsVersionsLoaded;
+            !PlayerNameValidation.IsPlayerNameValid(SelectedProfile.PlayerName) &&
+            !DirectoryValidation.IsDirectoryValid(_mainWindowModel.CurrentSettings.Directory);
         
         CanStartGame.OnNext(canStartGame);
     }
