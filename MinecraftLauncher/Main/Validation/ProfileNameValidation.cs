@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using MinecraftLauncher.Resources;
+using MinecraftLauncher.Properties;
 
 namespace MinecraftLauncher.Main.Validation;
 

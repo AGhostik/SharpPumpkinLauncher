@@ -40,7 +40,7 @@
         <DependentUpon>ProfileControl.axaml</DependentUpon>
         <SubType>Code</SubType>
       </Compile>
-      <Compile Update="Resources\Localization.Designer.cs">
+      <Compile Update="Properties\Localization.Designer.cs">
         <DesignTime>True</DesignTime>
         <AutoGen>True</AutoGen>
         <DependentUpon>Localization.resx</DependentUpon>
@@ -55,7 +55,7 @@
         <AvaloniaResource Include="Resources\**" />
     </ItemGroup>
     <ItemGroup>
-      <EmbeddedResource Update="Resources\Localization.resx">
+      <EmbeddedResource Update="Properties\Localization.resx">
         <Generator>PublicResXFileCodeGenerator</Generator>
         <LastGenOutput>Localization.Designer.cs</LastGenOutput>
       </EmbeddedResource>

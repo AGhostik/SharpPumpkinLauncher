@@ -7,7 +7,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace MinecraftLauncher.Resources {
+namespace MinecraftLauncher.Properties {
     using System;
     
     
@@ -38,7 +38,7 @@ namespace MinecraftLauncher.Resources {
         public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("MinecraftLauncher.Resources.Localization", typeof(Localization).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("MinecraftLauncher.Properties.Localization", typeof(Localization).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -317,6 +317,15 @@ namespace MinecraftLauncher.Resources {
         public static string Title {
             get {
                 return ResourceManager.GetString("Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        public static string ValidationDirectory {
+            get {
+                return ResourceManager.GetString("ValidationDirectory", resourceCulture);
             }
         }
         

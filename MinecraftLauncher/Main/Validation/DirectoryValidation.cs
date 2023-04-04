@@ -1,7 +1,6 @@
-using System;
 using System.IO;
 using System.Linq;
-using MinecraftLauncher.Resources;
+using MinecraftLauncher.Properties;
 
 namespace MinecraftLauncher.Main.Validation;
 

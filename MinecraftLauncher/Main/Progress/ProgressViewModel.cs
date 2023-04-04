@@ -1,5 +1,5 @@
 using System;
-using MinecraftLauncher.Resources;
+using MinecraftLauncher.Properties;
 using ReactiveUI;
 
 namespace MinecraftLauncher.Main.Progress;

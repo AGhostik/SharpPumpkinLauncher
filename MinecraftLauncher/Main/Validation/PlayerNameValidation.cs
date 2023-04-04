@@ -1,4 +1,4 @@
-using MinecraftLauncher.Resources;
+using MinecraftLauncher.Properties;
 
 namespace MinecraftLauncher.Main.Validation;
 

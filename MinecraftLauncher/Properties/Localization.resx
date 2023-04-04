@@ -120,4 +120,7 @@
     <data name="ValidationPlayerNameRestrictedChar" xml:space="preserve">
         <value>Player name can contain only letters, digit and underscore symbol</value>
     </data>
+    <data name="ValidationDirectory" xml:space="preserve">
+        <value />
+    </data>
 </root>

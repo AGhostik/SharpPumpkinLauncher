@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:profile="clr-namespace:MinecraftLauncher.Main.Profile"
              xmlns:publicData="clr-namespace:Launcher.PublicData;assembly=Launcher"
-             xmlns:resources="clr-namespace:MinecraftLauncher.Resources"
+             xmlns:properties="clr-namespace:MinecraftLauncher.Properties"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:DataType="profile:ProfileViewModel"
              x:CompileBindings="True"
@@ -12,15 +12,15 @@
     <StackPanel>
         <TextBox 
             Margin="5" 
-            Watermark="{x:Static resources:Localization.ProfileName}"
+            Watermark="{x:Static properties:Localization.ProfileName}"
             Text="{Binding ProfileName}" />
         <TextBox 
             Margin="5" 
-            Watermark="{x:Static resources:Localization.PlayerName}" 
+            Watermark="{x:Static properties:Localization.PlayerName}" 
             Text="{Binding PlayerName}" />
         <ComboBox
             Margin="5"
-            PlaceholderText="{x:Static resources:Localization.MinecraftVersion}"
+            PlaceholderText="{x:Static properties:Localization.MinecraftVersion}"
             PlaceholderForeground="gray"
             HorizontalAlignment="Stretch"
             VirtualizationMode="Simple"
@@ -53,7 +53,7 @@
                     Grid.Column="0" 
                     VerticalAlignment="Center"
                     Margin="5"
-                    Text="{x:Static resources:Localization.Custom}" />
+                    Text="{x:Static properties:Localization.Custom}" />
                 <CheckBox Grid.Column="1" IsChecked="{Binding Custom}" />
             </Grid>
             <Grid ColumnDefinitions="Auto, Auto">
@@ -61,7 +61,7 @@
                     Grid.Column="0" 
                     VerticalAlignment="Center"
                     Margin="5"
-                    Text="{x:Static resources:Localization.Latest}" />
+                    Text="{x:Static properties:Localization.Latest}" />
                 <CheckBox Grid.Column="1" IsChecked="{Binding Latest}" />
             </Grid>
             <Grid ColumnDefinitions="Auto, Auto">
@@ -69,7 +69,7 @@
                     Grid.Column="0" 
                     VerticalAlignment="Center"
                     Margin="5"
-                    Text="{x:Static resources:Localization.Release}" />
+                    Text="{x:Static properties:Localization.Release}" />
                 <CheckBox Grid.Column="1" IsChecked="{Binding Release}" />
             </Grid>
             <Grid ColumnDefinitions="Auto, Auto">
@@ -77,7 +77,7 @@
                     Grid.Column="0" 
                     VerticalAlignment="Center"
                     Margin="5"
-                    Text="{x:Static resources:Localization.Snapshot}" />
+                    Text="{x:Static properties:Localization.Snapshot}" />
                 <CheckBox Grid.Column="1" IsChecked="{Binding Snapshot}" />
             </Grid>
             <Grid ColumnDefinitions="Auto, Auto">
@@ -85,7 +85,7 @@
                     Grid.Column="0" 
                     VerticalAlignment="Center"
                     Margin="5"
-                    Text="{x:Static resources:Localization.Beta}" />
+                    Text="{x:Static properties:Localization.Beta}" />
                 <CheckBox Grid.Column="1" IsChecked="{Binding Beta}" />
             </Grid>
             <Grid ColumnDefinitions="Auto, Auto">
@@ -93,7 +93,7 @@
                     Grid.Column="0" 
                     VerticalAlignment="Center"
                     Margin="5"
-                    Text="{x:Static resources:Localization.Alpha}" />
+                    Text="{x:Static properties:Localization.Alpha}" />
                 <CheckBox Grid.Column="1" IsChecked="{Binding Alpha}" />
             </Grid>
         </StackPanel>
@@ -103,14 +103,14 @@
                 Margin="5"
                 HorizontalAlignment="Stretch"
                 HorizontalContentAlignment="Center"
-                Content="{x:Static resources:Localization.SaveProfile}"
+                Content="{x:Static properties:Localization.SaveProfile}"
                 Command="{Binding SaveProfileCommand}"/>
             <Button
                 Grid.Column="1"
                 Margin="5"
                 HorizontalAlignment="Stretch"
                 HorizontalContentAlignment="Center"
-                Content="{x:Static resources:Localization.Cancel}"
+                Content="{x:Static properties:Localization.Cancel}"
                 Command="{Binding CloseProfileControlCommand}"/>
         </Grid>
     </StackPanel>
