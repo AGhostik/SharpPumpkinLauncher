@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 
 <root>
     <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
@@ -21,17 +21,83 @@
     <data name="Title" xml:space="preserve">
         <value>Minecraft Launcher</value>
     </data>
-    <data name="NewProfile" xml:space="preserve">
-        <value>New profile</value>
+    <data name="Alpha" xml:space="preserve">
+        <value>Alpha</value>
     </data>
-    <data name="EditProfile" xml:space="preserve">
-        <value>Edit profile</value>
+    <data name="Beta" xml:space="preserve">
+        <value>Beta</value>
+    </data>
+    <data name="Cancel" xml:space="preserve">
+        <value>Cancel</value>
+    </data>
+    <data name="Custom" xml:space="preserve">
+        <value>Custom</value>
+    </data>
+    <data name="DefaultPlayerName" xml:space="preserve">
+        <value>Default player name</value>
     </data>
     <data name="DeleteProfile" xml:space="preserve">
         <value>Delete profile</value>
     </data>
+    <data name="Directory" xml:space="preserve">
+        <value>Directory</value>
+    </data>
+    <data name="EditProfile" xml:space="preserve">
+        <value>Edit profile</value>
+    </data>
+    <data name="Latest" xml:space="preserve">
+        <value>Latest</value>
+    </data>
+    <data name="MinecraftVersion" xml:space="preserve">
+        <value>Minecraft version</value>
+    </data>
+    <data name="NewProfile" xml:space="preserve">
+        <value>New profile</value>
+    </data>
+    <data name="PlayerName" xml:space="preserve">
+        <value>Player name</value>
+    </data>
+    <data name="ProfileName" xml:space="preserve">
+        <value>Profile name</value>
+    </data>
+    <data name="ProgressDownloadFiles" xml:space="preserve">
+        <value>Download game files</value>
+    </data>
+    <data name="ProgressEnd" xml:space="preserve">
+        <value>Game exited</value>
+    </data>
+    <data name="ProgressFailToStartGame" xml:space="preserve">
+        <value>Fail to start game</value>
+    </data>
+    <data name="ProgressInvalidProfile" xml:space="preserve">
+        <value>Invalid profile, check parameters</value>
+    </data>
+    <data name="ProgressLoading" xml:space="preserve">
+        <value>Loading available minecraft versions</value>
+    </data>
+    <data name="ProgressPrepare" xml:space="preserve">
+        <value>Prepare to start game</value>
+    </data>
+    <data name="ProgressReady" xml:space="preserve">
+        <value>Ready to launch!</value>
+    </data>
+    <data name="ProgressStartGame" xml:space="preserve">
+        <value>Game start</value>
+    </data>
+    <data name="Release" xml:space="preserve">
+        <value>Release</value>
+    </data>
+    <data name="Save" xml:space="preserve">
+        <value>Save</value>
+    </data>
+    <data name="SaveProfile" xml:space="preserve">
+        <value>Save profile</value>
+    </data>
     <data name="Settings" xml:space="preserve">
         <value>Settings</value>
+    </data>
+    <data name="Snapshot" xml:space="preserve">
+        <value>Snapshot</value>
     </data>
     <data name="StartGame" xml:space="preserve">
         <value>Play</value>
@@ -39,70 +105,19 @@
     <data name="StopGame" xml:space="preserve">
         <value>Stop game</value>
     </data>
-    <data name="ProfileName" xml:space="preserve">
-        <value>Profile name</value>
+    <data name="ValidationRestrictedProfileName" xml:space="preserve">
+        <value>This name is already taken</value>
     </data>
-    <data name="PlayerName" xml:space="preserve">
-        <value>Player name</value>
+    <data name="ValidationEmpty" xml:space="preserve">
+        <value>Value cannot be empty</value>
     </data>
-    <data name="MinecraftVersion" xml:space="preserve">
-        <value>Minecraft version</value>
+    <data name="ValidationPlayerNameTooShort" xml:space="preserve">
+        <value>Player name must be longer</value>
     </data>
-    <data name="Custom" xml:space="preserve">
-        <value>Custom</value>
+    <data name="ValidationPlayerNameTooLong" xml:space="preserve">
+        <value>Player name must be shorter</value>
     </data>
-    <data name="Latest" xml:space="preserve">
-        <value>Latest</value>
-    </data>
-    <data name="Release" xml:space="preserve">
-        <value>Release</value>
-    </data>
-    <data name="Snapshot" xml:space="preserve">
-        <value>Snapshot</value>
-    </data>
-    <data name="Beta" xml:space="preserve">
-        <value>Beta</value>
-    </data>
-    <data name="Alpha" xml:space="preserve">
-        <value>Alpha</value>
-    </data>
-    <data name="SaveProfile" xml:space="preserve">
-        <value>Save profile</value>
-    </data>
-    <data name="Cancel" xml:space="preserve">
-        <value>Cancel</value>
-    </data>
-    <data name="DefaultPlayerName" xml:space="preserve">
-        <value>Default player name</value>
-    </data>
-    <data name="Directory" xml:space="preserve">
-        <value>Directory</value>
-    </data>
-    <data name="Save" xml:space="preserve">
-        <value>Save</value>
-    </data>
-    <data name="ProgressPrepare" xml:space="preserve">
-        <value>Prepare to start game</value>
-    </data>
-    <data name="ProgressDownloadFiles" xml:space="preserve">
-        <value>Download game files</value>
-    </data>
-    <data name="ProgressStartGame" xml:space="preserve">
-        <value>Game start</value>
-    </data>
-    <data name="ProgressEnd" xml:space="preserve">
-        <value>Game exited</value>
-    </data>
-    <data name="ProgressInvalidProfile" xml:space="preserve">
-        <value>Invalid profile, check parameters</value>
-    </data>
-    <data name="ProgressFailToStartGame" xml:space="preserve">
-        <value>Fail to start game</value>
-    </data>
-    <data name="ProgressLoading" xml:space="preserve">
-        <value>Loading available minecraft versions</value>
-    </data>
-    <data name="ProgressReady" xml:space="preserve">
-        <value>Ready to launch!</value>
+    <data name="ValidationPlayerNameRestrictedChar" xml:space="preserve">
+        <value>Player name can contain only letters, digit and underscore symbol</value>
     </data>
 </root>

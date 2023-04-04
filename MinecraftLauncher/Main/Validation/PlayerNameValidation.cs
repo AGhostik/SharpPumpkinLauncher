@@ -1,3 +1,5 @@
+using MinecraftLauncher.Resources;
+
 namespace MinecraftLauncher.Main.Validation;
 
 public static class PlayerNameValidation
@@ -11,19 +13,19 @@ public static class PlayerNameValidation
     {
         if (string.IsNullOrEmpty(playerName))
         {
-            errorKey = "Empty";
+            errorKey = Localization.ValidationEmpty;
             return false;
         }
 
         if (playerName.Length < 3)
         {
-            errorKey = "Short";
+            errorKey = Localization.ValidationPlayerNameTooShort;
             return false;
         }
         
         if (playerName.Length > 16)
         {
-            errorKey = "Long";
+            errorKey = Localization.ValidationPlayerNameTooLong;
             return false;
         }
         
@@ -34,7 +36,7 @@ public static class PlayerNameValidation
             if (char.IsLetterOrDigit(c) || c == '_')
                 continue;
 
-            errorKey = "RestrictedChar";
+            errorKey = Localization.ValidationPlayerNameRestrictedChar;
             return false;
         }
 

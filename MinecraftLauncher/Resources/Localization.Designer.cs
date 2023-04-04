@@ -319,5 +319,50 @@ namespace MinecraftLauncher.Resources {
                 return ResourceManager.GetString("Title", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Value cannot be empty.
+        /// </summary>
+        public static string ValidationEmpty {
+            get {
+                return ResourceManager.GetString("ValidationEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Player name can contain only letters, digit and underscore symbol.
+        /// </summary>
+        public static string ValidationPlayerNameRestrictedChar {
+            get {
+                return ResourceManager.GetString("ValidationPlayerNameRestrictedChar", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Player name must be shorter.
+        /// </summary>
+        public static string ValidationPlayerNameTooLong {
+            get {
+                return ResourceManager.GetString("ValidationPlayerNameTooLong", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Player name must be longer.
+        /// </summary>
+        public static string ValidationPlayerNameTooShort {
+            get {
+                return ResourceManager.GetString("ValidationPlayerNameTooShort", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This name is already taken.
+        /// </summary>
+        public static string ValidationRestrictedProfileName {
+            get {
+                return ResourceManager.GetString("ValidationRestrictedProfileName", resourceCulture);
+            }
+        }
     }
 }

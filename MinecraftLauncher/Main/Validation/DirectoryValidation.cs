@@ -1,3 +1,5 @@
+using MinecraftLauncher.Resources;
+
 namespace MinecraftLauncher.Main.Validation;
 
 public static class DirectoryValidation
@@ -11,7 +13,7 @@ public static class DirectoryValidation
     {
         if (string.IsNullOrEmpty(path))
         {
-            errorKey = "Empty";
+            errorKey = Localization.ValidationEmpty;
             return false;
         }
         

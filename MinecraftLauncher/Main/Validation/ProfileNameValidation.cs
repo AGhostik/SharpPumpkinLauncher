@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using MinecraftLauncher.Resources;
 
 namespace MinecraftLauncher.Main.Validation;
 
@@ -13,13 +14,13 @@ public static class ProfileNameValidation
     {
         if (string.IsNullOrEmpty(profileName))
         {
-            errorKey = "Empty";
+            errorKey = Localization.ValidationEmpty;
             return false;
         }
 
         if (restrictedNames != null && restrictedNames.Contains(profileName))
         {
-            errorKey = "Restricted";
+            errorKey = Localization.ValidationRestrictedProfileName;
             return false;
         }
 
