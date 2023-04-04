@@ -228,16 +228,17 @@ public sealed class MainWindowModel
             launcherVisibility = (LauncherVisibility)LauncherSettings.Instance.Data.LauncherVisibility;
         }
 
-        var gameDirectory  = string.Empty;
         if (!string.IsNullOrEmpty(LauncherSettings.Instance.Data.GameDirectory) &&
             DirectoryValidation.IsDirectoryValid(LauncherSettings.Instance.Data.GameDirectory))
         {
-            gameDirectory = LauncherSettings.Instance.Data.GameDirectory;
+            var gameDirectory = LauncherSettings.Instance.Data.GameDirectory;
+            settingsData = new SettingsData(LauncherSettings.Instance.Data.DefaultPlayerName, gameDirectory,
+                launcherVisibility);
+            
+            return true;
         }
 
-        settingsData = new SettingsData(LauncherSettings.Instance.Data.DefaultPlayerName, gameDirectory, launcherVisibility);
-        
-        return true;
+        return false;
     }
     
     private void CreateDefaultSettings(out ProfileViewModel profileViewModel, out SettingsData settingsData)
