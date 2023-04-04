@@ -26,11 +26,16 @@ public static class DirectoryValidation
         {
             var c = path[i];
 
-            if (i == 2 && c == '\\' && previousChar == ':' && char.IsLetter(previousPreviousChar))
+            if (i == 2 && previousChar == ':' && char.IsLetter(previousPreviousChar))
             {
-                //is absolute path
+                if (c != '\\')
+                {
+                    errorKey = Localization.ValidationDirectoryInvalidPath;
+                    return false;
+                }
+                
                 var drivers = Directory.GetLogicalDrives();
-                if (!drivers.Contains($"{previousPreviousChar}:\\"))
+                if (!drivers.Contains($"{char.ToUpper(previousPreviousChar)}:\\"))
                 {
                     errorKey = Localization.ValidationDirectoryDriveNotExist;
                     return false;

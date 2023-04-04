@@ -19,9 +19,23 @@ public class DirectoryValidationTests
     }
     
     [Test]
-    public void DirectoryValidation_True_AbsolutePath()
+    public void DirectoryValidation_True_AbsolutePath_Short()
+    {
+        var result = DirectoryValidation.IsDirectoryValid("C:\\SomeFolder");
+        Assert.IsTrue(result);
+    }
+    
+    [Test]
+    public void DirectoryValidation_True_AbsolutePath_DriveLetterIsUpper()
     {
         var result = DirectoryValidation.IsDirectoryValid("C:\\SomeFolder\\Minecraft");
+        Assert.IsTrue(result);
+    }
+    
+    [Test]
+    public void DirectoryValidation_True_AbsolutePath_DriveLetterIsLower()
+    {
+        var result = DirectoryValidation.IsDirectoryValid("c:\\SomeFolder\\Minecraft");
         Assert.IsTrue(result);
     }
     
@@ -50,6 +64,13 @@ public class DirectoryValidationTests
     public void DirectoryValidation_False_IsFileRelativePath()
     {
         var result = DirectoryValidation.IsDirectoryValid("Minecraft\\Text.txt");
+        Assert.IsFalse(result);
+    }
+    
+    [Test]
+    public void DirectoryValidation_False_AbsolutePathMissingBackSlash()
+    {
+        var result = DirectoryValidation.IsDirectoryValid("C:Minecraft");
         Assert.IsFalse(result);
     }
     

@@ -339,6 +339,15 @@ namespace MinecraftLauncher.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid path.
+        /// </summary>
+        public static string ValidationDirectoryInvalidPath {
+            get {
+                return ResourceManager.GetString("ValidationDirectoryInvalidPath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to DIrectory path cannot contain \ / : * ?  &quot; &lt; &gt; |.
         /// </summary>
         public static string ValidationDirectoryRestrictedChar {

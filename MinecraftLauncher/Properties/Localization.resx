@@ -129,4 +129,7 @@
     <data name="ValidationDirectoryEmptyFolderInPath" xml:space="preserve">
         <value>Empty folder in path is restricted</value>
     </data>
+    <data name="ValidationDirectoryInvalidPath" xml:space="preserve">
+        <value>Invalid path</value>
+    </data>
 </root>
