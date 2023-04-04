@@ -15,6 +15,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MinecraftLauncher", "Minecr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleLogger", "Core\SimpleLogger\SimpleLogger.csproj", "{E36EBD08-47C9-42F3-838F-2EA198649757}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{3F8DBC6E-83F8-47BA-8614-DB27774D4039}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MinecraftLauncherUnitTests", "Tests\MinecraftLauncherUnitTests\MinecraftLauncherUnitTests.csproj", "{CEFFAFBF-3AE8-40DA-A42C-90175CE33F89}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -41,6 +45,10 @@ Global
 		{E36EBD08-47C9-42F3-838F-2EA198649757}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E36EBD08-47C9-42F3-838F-2EA198649757}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E36EBD08-47C9-42F3-838F-2EA198649757}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CEFFAFBF-3AE8-40DA-A42C-90175CE33F89}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CEFFAFBF-3AE8-40DA-A42C-90175CE33F89}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CEFFAFBF-3AE8-40DA-A42C-90175CE33F89}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CEFFAFBF-3AE8-40DA-A42C-90175CE33F89}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -53,5 +61,6 @@ Global
 		{0E21ED52-253C-4342-91ED-5CCFDB4A4C68} = {4F9CE04B-9399-4AB8-8736-977822E4B266}
 		{C0FF6949-3609-4874-A3F7-7897E905D02D} = {4F9CE04B-9399-4AB8-8736-977822E4B266}
 		{E36EBD08-47C9-42F3-838F-2EA198649757} = {4F9CE04B-9399-4AB8-8736-977822E4B266}
+		{CEFFAFBF-3AE8-40DA-A42C-90175CE33F89} = {3F8DBC6E-83F8-47BA-8614-DB27774D4039}
 	EndGlobalSection
 EndGlobal
