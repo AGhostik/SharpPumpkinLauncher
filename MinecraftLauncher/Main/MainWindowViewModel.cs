@@ -274,8 +274,8 @@ public sealed class MainWindowViewModel : ReactiveObject
             IsVersionsLoaded &&
             SelectedProfile?.SelectedVersion != null &&
             !string.IsNullOrEmpty(SelectedProfile.SelectedVersion.Id) &&
-            !PlayerNameValidation.IsPlayerNameValid(SelectedProfile.PlayerName) &&
-            !DirectoryValidation.IsDirectoryValid(_mainWindowModel.CurrentSettings.Directory);
+            PlayerNameValidation.IsPlayerNameValid(SelectedProfile.PlayerName) &&
+            DirectoryValidation.IsDirectoryValid(_mainWindowModel.CurrentSettings.Directory);
         
         CanStartGame.OnNext(canStartGame);
     }
