@@ -32,20 +32,20 @@ public static class DirectoryValidation
                 var drivers = Directory.GetLogicalDrives();
                 if (!drivers.Contains($"{previousPreviousChar}:\\"))
                 {
-                    errorKey = "Drive not exist";
+                    errorKey = Localization.ValidationDirectoryDriveNotExist;
                     return false;
                 }
             }
 
             if (previousChar is '\\' or '/' and not '\0' && previousPreviousChar is '\\' or '/' and not '\0')
             {
-                errorKey = "Empte directory in path";
+                errorKey = Localization.ValidationDirectoryEmptyFolderInPath;
                 return false;
             }
 
             if (invalidPathChars.Contains(c) || c is '?' or '<' or '>' or '\"' or '*' or '.' || (i != 1 && c == ':'))
             {
-                errorKey = "Invalid character";
+                errorKey = Localization.ValidationDirectoryRestrictedChar;
                 return false;
             }
 

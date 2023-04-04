@@ -321,11 +321,29 @@ namespace MinecraftLauncher.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to .
+        ///   Looks up a localized string similar to This drive not exist.
         /// </summary>
-        public static string ValidationDirectory {
+        public static string ValidationDirectoryDriveNotExist {
             get {
-                return ResourceManager.GetString("ValidationDirectory", resourceCulture);
+                return ResourceManager.GetString("ValidationDirectoryDriveNotExist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Empty folder in path is restricted.
+        /// </summary>
+        public static string ValidationDirectoryEmptyFolderInPath {
+            get {
+                return ResourceManager.GetString("ValidationDirectoryEmptyFolderInPath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DIrectory path cannot contain \ / : * ?  &quot; &lt; &gt; |.
+        /// </summary>
+        public static string ValidationDirectoryRestrictedChar {
+            get {
+                return ResourceManager.GetString("ValidationDirectoryRestrictedChar", resourceCulture);
             }
         }
         

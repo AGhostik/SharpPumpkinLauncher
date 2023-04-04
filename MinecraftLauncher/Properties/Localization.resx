@@ -120,7 +120,13 @@
     <data name="ValidationPlayerNameRestrictedChar" xml:space="preserve">
         <value>Player name can contain only letters, digit and underscore symbol</value>
     </data>
-    <data name="ValidationDirectory" xml:space="preserve">
-        <value />
+    <data name="ValidationDirectoryDriveNotExist" xml:space="preserve">
+        <value>This drive not exist</value>
+    </data>
+    <data name="ValidationDirectoryRestrictedChar" xml:space="preserve">
+        <value>DIrectory path cannot contain \ / : * ?  " &lt; &gt; |</value>
+    </data>
+    <data name="ValidationDirectoryEmptyFolderInPath" xml:space="preserve">
+        <value>Empty folder in path is restricted</value>
     </data>
 </root>
