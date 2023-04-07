@@ -15,10 +15,11 @@ public sealed class MinecraftLauncher : ILauncher
         return await launcher.GetAvailableVersions(directory, cancellationToken);
     }
 
-    public async Task<ErrorCode> LaunchMinecraft(LaunchData launchData, CancellationToken cancellationToken, Action? exitedAction = null)
+    public async Task<ErrorCode> LaunchMinecraft(LaunchData launchData, CancellationToken cancellationToken, 
+        Action? startedAction = null, Action? exitedAction = null)
     {
         var launcher = await GetLauncher();
-        return await launcher.LaunchMinecraft(launchData, cancellationToken, exitedAction);
+        return await launcher.LaunchMinecraft(launchData, cancellationToken, startedAction, exitedAction);
     }
 
     private async Task<ILauncher> GetLauncher()

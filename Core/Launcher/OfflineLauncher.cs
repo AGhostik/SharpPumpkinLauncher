@@ -100,7 +100,7 @@ internal sealed class OfflineLauncher : ILauncher
     }
 
     public async Task<ErrorCode> LaunchMinecraft(LaunchData launchData, CancellationToken cancellationToken,
-        Action? exitedAction = null)
+        Action? startedAction = null, Action? exitedAction = null)
     {
         try
         {
@@ -144,7 +144,7 @@ internal sealed class OfflineLauncher : ILauncher
 
             LaunchMinecraftProgress?.Invoke(LaunchProgress.StartGame, 0f);
             
-            var startGame = await FileManager.StartProcess("java", launchArguments, exitedAction);
+            var startGame = await FileManager.StartProcess("java", launchArguments, startedAction, exitedAction);
             if (!startGame)
                 return ErrorCode.StartProcess;
             

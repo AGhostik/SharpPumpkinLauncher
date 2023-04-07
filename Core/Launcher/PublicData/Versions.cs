@@ -58,4 +58,23 @@ public sealed class Versions
     public IReadOnlyList<Version> Alpha => _alpha;
 
     public IReadOnlyDictionary<string, Version> AllVersions => _versions;
+
+    public override bool Equals(object? obj)
+    {
+        if (obj is Versions versions)
+            return Equals(versions);
+        return false;
+    }
+
+    private bool Equals(Versions other)
+    {
+        return _release.Equals(other._release) && _snapshot.Equals(other._snapshot) && _beta.Equals(other._beta) &&
+               _alpha.Equals(other._alpha) && _versions.Equals(other._versions) && Equals(Latest, other.Latest) &&
+               Equals(LatestSnapshot, other.LatestSnapshot);
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(_release, _snapshot, _beta, _alpha, _versions, Latest, LatestSnapshot);
+    }
 }

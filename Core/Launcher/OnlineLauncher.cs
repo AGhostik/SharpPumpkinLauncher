@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using JsonReader;
 using JsonReader.PublicData.Manifest;
 using Launcher.Data;
@@ -6,6 +7,7 @@ using Launcher.Tools;
 using SimpleLogger;
 using Versions = Launcher.PublicData.Versions;
 
+[assembly: InternalsVisibleTo("LauncherTests")]
 namespace Launcher;
 
 internal sealed class OnlineLauncher : ILauncher
@@ -36,7 +38,7 @@ internal sealed class OnlineLauncher : ILauncher
     }
     
     public async Task<ErrorCode> LaunchMinecraft(LaunchData launchData, CancellationToken cancellationToken,
-        Action? exitedAction = null)
+        Action? startedAction = null, Action? exitedAction = null)
     {
         try
         {
@@ -115,7 +117,7 @@ internal sealed class OnlineLauncher : ILauncher
 
             LaunchMinecraftProgress?.Invoke(LaunchProgress.StartGame, 0f);
 
-            var startGame = await FileManager.StartProcess("java", launchArguments, exitedAction);
+            var startGame = await FileManager.StartProcess("java", launchArguments, startedAction, exitedAction);
             if (!startGame)
                 return ErrorCode.StartProcess;
             

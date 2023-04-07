@@ -11,7 +11,8 @@ namespace Launcher.Tools;
 
 internal static class FileManager
 {
-    public static async Task<bool> StartProcess(string fileName, string? args, Action? exitedAction = null)
+    public static async Task<bool> StartProcess(string fileName, string? args, Action? started = null,
+        Action? exitedAction = null)
     {
         try
         {
@@ -37,6 +38,8 @@ internal static class FileManager
             };
 
             var result = process.Start();
+            
+            started?.Invoke();
 
             var output = await process.StandardOutput.ReadToEndAsync();
             var errors = await process.StandardError.ReadToEndAsync();
