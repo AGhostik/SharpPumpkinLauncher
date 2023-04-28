@@ -132,6 +132,15 @@ namespace MinecraftLauncher.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Installed.
+        /// </summary>
+        public static string Installed {
+            get {
+                return ResourceManager.GetString("Installed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Latest.
         /// </summary>
         public static string Latest {

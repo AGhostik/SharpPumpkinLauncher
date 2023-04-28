@@ -1,4 +1,6 @@
-﻿namespace Launcher.PublicData;
+﻿using SimpleLogger;
+
+namespace Launcher.PublicData;
 
 public sealed class Versions
 {
@@ -45,9 +47,9 @@ public sealed class Versions
         }
     }
     
-    public Version? Latest { get; }
+    public Version? Latest { get; private set; }
     
-    public Version? LatestSnapshot { get; }
+    public Version? LatestSnapshot { get; private set; }
 
     public IReadOnlyList<Version> Release => _release;
 
@@ -58,6 +60,36 @@ public sealed class Versions
     public IReadOnlyList<Version> Alpha => _alpha;
 
     public IReadOnlyDictionary<string, Version> AllVersions => _versions;
+
+    public void Merge(Versions versions)
+    {
+        MergeTwoList(versions._release, _release);
+        MergeTwoList(versions._snapshot, _snapshot);
+        MergeTwoList(versions._beta, _beta);
+        MergeTwoList(versions._alpha, _alpha);
+
+        if (Latest == null)
+            Latest = versions.Latest;
+        
+        if (LatestSnapshot == null)
+            LatestSnapshot = versions.LatestSnapshot;
+        
+        void MergeTwoList(IList<Version> from, IList<Version> to)
+        {
+            for (var i = 0; i < to.Count; i++)
+            {
+                for (var j = 0; j < from.Count; j++)
+                {
+                    if (to[i].Id != from[j].Id)
+                        continue;
+                    
+                    var result = to[i].Merge(from[j]);
+                    if (!result)
+                        Logger.Log($"Error on merge two version of {to[i].Id} id");
+                }
+            }
+        }
+    }
 
     public override bool Equals(object? obj)
     {

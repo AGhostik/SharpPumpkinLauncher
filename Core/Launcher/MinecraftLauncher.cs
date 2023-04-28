@@ -6,13 +6,22 @@ namespace Launcher;
 
 public sealed class MinecraftLauncher : ILauncher
 {
+    private readonly OfflineLauncher _offlineLauncher = new();
+    private readonly OnlineLauncher _onlineLauncher = new();
+    
     private ILauncher? _launcher;
     public event Action<LaunchProgress, float>? LaunchMinecraftProgress;
     
     public async Task<Versions> GetAvailableVersions(string directory, CancellationToken cancellationToken = default)
     {
-        var launcher = await GetLauncher();
-        return await launcher.GetAvailableVersions(directory, cancellationToken);
+        var offlineVersions = await _offlineLauncher.GetAvailableVersions(directory, cancellationToken);
+
+        if (!await DownloadManager.CheckConnection(cancellationToken))
+            return offlineVersions;
+        
+        var onlineVersions = await _onlineLauncher.GetAvailableVersions(directory, cancellationToken);
+        onlineVersions.Merge(offlineVersions);
+        return onlineVersions;
     }
 
     public async Task<ErrorCode> LaunchMinecraft(LaunchData launchData, CancellationToken cancellationToken, 

@@ -132,4 +132,7 @@
     <data name="ValidationDirectoryInvalidPath" xml:space="preserve">
         <value>Invalid path</value>
     </data>
+    <data name="Installed" xml:space="preserve">
+        <value>Installed</value>
+    </data>
 </root>

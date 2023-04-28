@@ -7,12 +7,12 @@ public static class DownloadManager
 {
     private const int MaxAttemptCount = 3;
     
-    public static async Task<bool> CheckConnection()
+    public static async Task<bool> CheckConnection(CancellationToken cancellationToken = default)
     {
         try
         {
             using var client = new HttpClient();
-            var response = await client.GetAsync("https://google.com");
+            var response = await client.GetAsync("https://google.com", cancellationToken);
             return response.StatusCode == HttpStatusCode.OK;
         }
         catch (Exception e)
