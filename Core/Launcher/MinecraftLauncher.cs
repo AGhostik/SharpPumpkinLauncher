@@ -8,8 +8,6 @@ public sealed class MinecraftLauncher : ILauncher
 {
     private readonly OfflineLauncher _offlineLauncher = new();
     private readonly OnlineLauncher _onlineLauncher = new();
-    
-    private ILauncher? _launcher;
     public event Action<LaunchProgress, float>? LaunchMinecraftProgress;
     
     public async Task<Versions> GetAvailableVersions(string directory, CancellationToken cancellationToken = default)
@@ -27,21 +25,30 @@ public sealed class MinecraftLauncher : ILauncher
     public async Task<ErrorCode> LaunchMinecraft(LaunchData launchData, CancellationToken cancellationToken, 
         Action? startedAction = null, Action? exitedAction = null)
     {
-        var launcher = await GetLauncher();
-        return await launcher.LaunchMinecraft(launchData, cancellationToken, startedAction, exitedAction);
+        if (launchData.Version.IsInstalled)
+        {
+            _offlineLauncher.LaunchMinecraftProgress += OnLaunchMinecraftProgress;
+            var offlineLaunchResult =
+                await _offlineLauncher.LaunchMinecraft(launchData, cancellationToken, startedAction, exitedAction);
+            
+            _offlineLauncher.LaunchMinecraftProgress -= OnLaunchMinecraftProgress;
+            
+            if (offlineLaunchResult is ErrorCode.NoError or ErrorCode.GameAborted or ErrorCode.StartProcess)
+                return offlineLaunchResult;
+        }
+
+        if (!await DownloadManager.CheckConnection(cancellationToken))
+            return ErrorCode.Connection;
+        
+        _onlineLauncher.LaunchMinecraftProgress += OnLaunchMinecraftProgress;
+        var result = await _onlineLauncher.LaunchMinecraft(launchData, cancellationToken, startedAction, exitedAction);
+        _onlineLauncher.LaunchMinecraftProgress -= OnLaunchMinecraftProgress;
+        
+        return result;
     }
 
-    private async Task<ILauncher> GetLauncher()
+    private void OnLaunchMinecraftProgress(LaunchProgress progress, float f)
     {
-        if (_launcher != null)
-            return _launcher;
-        
-        if (await DownloadManager.CheckConnection())
-            _launcher = new OnlineLauncher();
-        else
-            _launcher = new OfflineLauncher();
-
-        _launcher.LaunchMinecraftProgress += (progress, f) => LaunchMinecraftProgress?.Invoke(progress, f);
-        return _launcher;
+        LaunchMinecraftProgress?.Invoke(progress, f);
     }
 }

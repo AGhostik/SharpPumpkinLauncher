@@ -17,4 +17,5 @@ public enum ErrorCode
     LaunchArgument,
     StartProcess,
     GameAborted,
+    Connection,
 }
