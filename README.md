@@ -33,6 +33,6 @@ Todo:
 Useful links:
 ------------
 
-- [Minecraft game files](https://wiki.vg/Game_files/)
-- [Launching the game](https://wiki.vg/Launching_the_game/)
+- [Minecraft game files](https://wiki.vg/Game_files)
+- [Launching the game](https://wiki.vg/Launching_the_game)
 - [Inside a Minecraft launcher](https://ryanccn.dev/posts/inside-a-minecraft-launcher/)
