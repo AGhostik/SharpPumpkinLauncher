@@ -43,7 +43,7 @@ public sealed class MainWindowViewModel : ReactiveObject
         var settingsViewModel = new SettingsViewModel(SettingsSaved, SetDefaultMainContent);
         _settingsControl = new SettingsControl() { DataContext = settingsViewModel };
 
-        var jreViewModel = new JreViewModel(CloseJavaPage);
+        var jreViewModel = new JreViewModel(SetDefaultMainContent);
         _jreControl = new JreControl() { DataContext = jreViewModel };
         
         StartGameCommand = ReactiveCommand.Create(StartGame, CanStartGame);
@@ -202,11 +202,6 @@ public sealed class MainWindowViewModel : ReactiveObject
         MainContent = _jreControl;
     }
 
-    private void CloseJavaPage()
-    {
-        SetDefaultMainContent();
-    }
-
     private void OpenSettings()
     {
         MainContent = _settingsControl;
@@ -216,6 +211,7 @@ public sealed class MainWindowViewModel : ReactiveObject
     {
         _mainWindowModel.SetSettingsData(settingsData);
         UpdateCanStartGame();
+        SetDefaultMainContent();
     }
     
     private void OnVersionsLoaded(Versions versions)
