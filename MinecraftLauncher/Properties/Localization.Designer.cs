@@ -87,6 +87,33 @@ namespace MinecraftLauncher.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Close.
+        /// </summary>
+        public static string Close {
+            get {
+                return ResourceManager.GetString("Close", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Copied to clipboard.
+        /// </summary>
+        public static string CopiedToClipboard {
+            get {
+                return ResourceManager.GetString("CopiedToClipboard", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Copy to clipboard.
+        /// </summary>
+        public static string CopyToClipboard {
+            get {
+                return ResourceManager.GetString("CopyToClipboard", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Custom.
         /// </summary>
         public static string Custom {
@@ -123,6 +150,15 @@ namespace MinecraftLauncher.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Download Java for Minecraft:.
+        /// </summary>
+        public static string DownloadJavaText {
+            get {
+                return ResourceManager.GetString("DownloadJavaText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Edit profile.
         /// </summary>
         public static string EditProfile {
@@ -137,6 +173,15 @@ namespace MinecraftLauncher.Properties {
         public static string Installed {
             get {
                 return ResourceManager.GetString("Installed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Java.
+        /// </summary>
+        public static string Java {
+            get {
+                return ResourceManager.GetString("Java", resourceCulture);
             }
         }
         
@@ -164,6 +209,15 @@ namespace MinecraftLauncher.Properties {
         public static string NewProfile {
             get {
                 return ResourceManager.GetString("NewProfile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Open link.
+        /// </summary>
+        public static string OpenLink {
+            get {
+                return ResourceManager.GetString("OpenLink", resourceCulture);
             }
         }
         
@@ -213,11 +267,29 @@ namespace MinecraftLauncher.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Fail to start game. You must install Java before starting the game.
+        /// </summary>
+        public static string ProgressFailToStartGameWithoutJava {
+            get {
+                return ResourceManager.GetString("ProgressFailToStartGameWithoutJava", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid profile, check parameters.
         /// </summary>
         public static string ProgressInvalidProfile {
             get {
                 return ResourceManager.GetString("ProgressInvalidProfile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You must install Java before starting the game.
+        /// </summary>
+        public static string ProgressJavaNotFound {
+            get {
+                return ResourceManager.GetString("ProgressJavaNotFound", resourceCulture);
             }
         }
         

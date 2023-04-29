@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Launcher.PublicData;
+using MinecraftLauncher.Main.Jre;
 using MinecraftLauncher.Main.Profile;
 using MinecraftLauncher.Main.Progress;
 using MinecraftLauncher.Main.Settings;
@@ -26,6 +27,7 @@ public sealed class MainWindowModel
     private Action<Versions>? _versionsLoaded;
     private int _profilesToLoadCount;
     private int _currentLoadedProfilesCount;
+    private bool _isJavaInstalled;
 
     public event Action<Versions>? VersionsLoaded
     {
@@ -51,11 +53,13 @@ public sealed class MainWindowModel
 
         SettingsDirectorySet += LoadAvailableVersions;
 
-        if (LoadSettings(out var allProfiles, out var lastSelectedProfile, out var settingsData))
+        if (LoadSettings(out var allProfiles, out var lastSelectedProfile, out var settingsData, out var isJavaInstalled))
         {
             Profiles = allProfiles;
             LastSelectedProfile = lastSelectedProfile;
             CurrentSettings = settingsData;
+
+            _isJavaInstalled = isJavaInstalled || JreCheck.IsJavaInstalled();
         }
         else
         {
@@ -63,6 +67,9 @@ public sealed class MainWindowModel
             Profiles = new []{ profileViewModel };
             LastSelectedProfile = profileViewModel;
             CurrentSettings = defaultSettingsData;
+            
+            _isJavaInstalled = JreCheck.IsJavaInstalled();
+            SetSettingsData(CurrentSettings);
         }
         
         SettingsDirectorySet.Invoke();
@@ -82,6 +89,16 @@ public sealed class MainWindowModel
         {
             UpdateProgressValues?.Invoke(ProgressLocalizationKeys.InvalidProfile, 0);
             return;
+        }
+
+        if (!_isJavaInstalled)
+        {
+            _isJavaInstalled = JreCheck.IsJavaInstalled();
+            if (!_isJavaInstalled)
+            {
+                UpdateProgressValues?.Invoke(ProgressLocalizationKeys.FailToStartGameWithoutJava, 0);
+                return;
+            }
         }
         
         var launchData = new LaunchData(
@@ -114,6 +131,7 @@ public sealed class MainWindowModel
         var needInvokeEvent = CurrentSettings.Directory != settingsData.Directory;
         CurrentSettings = settingsData;
 
+        LauncherSettings.Instance.Data.IsJavaInstalled = _isJavaInstalled;
         LauncherSettings.Instance.Data.LauncherVisibility = (int)settingsData.LauncherVisibility;
         LauncherSettings.Instance.Data.GameDirectory = settingsData.Directory;
         LauncherSettings.Instance.Data.DefaultPlayerName = settingsData.DefaultPlayerName;
@@ -189,20 +207,27 @@ public sealed class MainWindowModel
         var availableVersions = await _minecraftLauncher.GetAvailableVersions(CurrentSettings.Directory);
         _availableVersions = availableVersions;
         _versionsLoaded?.Invoke(availableVersions);
-        UpdateProgressValues?.Invoke(ProgressLocalizationKeys.Ready, 0);
+        
+        if (_isJavaInstalled)
+            UpdateProgressValues?.Invoke(ProgressLocalizationKeys.Ready, 0);
+        else
+            UpdateProgressValues?.Invoke(ProgressLocalizationKeys.JavaNotFound, 0);
     }
     
     private bool LoadSettings(out IReadOnlyList<ProfileViewModel> allProfiles, out ProfileViewModel? lastSelectedProfile,
-        [NotNullWhen(true)] out SettingsData? settingsData)
+        [NotNullWhen(true)] out SettingsData? settingsData, out bool isJavaInstalled)
     {
         var profiles = new List<ProfileViewModel>();
         
         allProfiles = profiles;
         lastSelectedProfile = null;
         settingsData = null;
+        isJavaInstalled = false;
 
         if (!LauncherSettings.Load())
             return false;
+
+        isJavaInstalled = LauncherSettings.Instance.Data.IsJavaInstalled;
 
         if (LauncherSettings.Instance.Data.Profiles != null)
         {

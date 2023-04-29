@@ -10,4 +10,6 @@ public enum ProgressLocalizationKeys
     Ready,
     InvalidProfile,
     FailToStartGame,
+    JavaNotFound,
+    FailToStartGameWithoutJava,
 }

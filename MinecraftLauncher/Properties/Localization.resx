@@ -135,4 +135,28 @@
     <data name="Installed" xml:space="preserve">
         <value>Installed</value>
     </data>
+    <data name="Java" xml:space="preserve">
+        <value>Java</value>
+    </data>
+    <data name="DownloadJavaText" xml:space="preserve">
+        <value>Download Java for Minecraft:</value>
+    </data>
+    <data name="CopyToClipboard" xml:space="preserve">
+        <value>Copy to clipboard</value>
+    </data>
+    <data name="CopiedToClipboard" xml:space="preserve">
+        <value>Copied to clipboard</value>
+    </data>
+    <data name="OpenLink" xml:space="preserve">
+        <value>Open link</value>
+    </data>
+    <data name="Close" xml:space="preserve">
+        <value>Close</value>
+    </data>
+    <data name="ProgressJavaNotFound" xml:space="preserve">
+        <value>You must install Java before starting the game</value>
+    </data>
+    <data name="ProgressFailToStartGameWithoutJava" xml:space="preserve">
+        <value>Fail to start game. You must install Java before starting the game</value>
+    </data>
 </root>
