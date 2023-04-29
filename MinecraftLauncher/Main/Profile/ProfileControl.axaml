@@ -9,17 +9,36 @@
              x:DataType="profile:ProfileViewModel"
              x:CompileBindings="True"
              x:Class="MinecraftLauncher.Main.Profile.ProfileControl">
-    <StackPanel>
+    <Grid 
+        ColumnDefinitions="Auto, 5, *"
+        RowDefinitions="Auto, 5, Auto, 5, Auto, 5, Auto, 5, Auto"
+        Margin="5">
+        <TextBlock 
+            Grid.Column="0"
+            Grid.Row="0"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Right"
+            Text="{x:Static properties:Localization.ProfileName}"/>
         <TextBox 
-            Margin="5" 
-            Watermark="{x:Static properties:Localization.ProfileName}"
+            Grid.Column="2"
+            Grid.Row="0"
             Text="{Binding ProfileName}" />
+        
+        <TextBlock 
+            Grid.Column="0"
+            Grid.Row="2"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Right"
+            Text="{x:Static properties:Localization.PlayerName}"/>
         <TextBox 
-            Margin="5" 
-            Watermark="{x:Static properties:Localization.PlayerName}" 
+            Grid.Column="2"
+            Grid.Row="2"
             Text="{Binding PlayerName}" />
+        
         <ComboBox
-            Margin="5"
+            Grid.Column="0"
+            Grid.ColumnSpan="3"
+            Grid.Row="4"
             PlaceholderText="{x:Static properties:Localization.MinecraftVersion}"
             PlaceholderForeground="gray"
             HorizontalAlignment="Stretch"
@@ -59,7 +78,13 @@
                 </DataTemplate>
             </ComboBox.ItemTemplate>
         </ComboBox>
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+        
+        <StackPanel 
+            Grid.Column="0"
+            Grid.ColumnSpan="3"
+            Grid.Row="6"
+            Orientation="Horizontal" 
+            HorizontalAlignment="Center">
             <Grid ColumnDefinitions="Auto, Auto">
                 <TextBlock 
                     Grid.Column="0" 
@@ -109,7 +134,12 @@
                 <CheckBox Grid.Column="1" IsChecked="{Binding Alpha}" />
             </Grid>
         </StackPanel>
-        <Grid ColumnDefinitions="*, *">
+        
+        <Grid
+            Grid.Column="0"
+            Grid.ColumnSpan="3"
+            Grid.Row="8"
+            ColumnDefinitions="*, *">
             <Button
                 Grid.Column="0"
                 Margin="5"
@@ -125,5 +155,5 @@
                 Content="{x:Static properties:Localization.Cancel}"
                 Command="{Binding CloseProfileControlCommand}"/>
         </Grid>
-    </StackPanel>
+    </Grid>
 </UserControl>

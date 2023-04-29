@@ -8,23 +8,52 @@
              x:DataType="settings:SettingsViewModel"
              x:CompileBindings="True"
              x:Class="MinecraftLauncher.Main.Settings.SettingsControl">
-    <StackPanel>
-        <TextBox 
-            Margin="5"
-            Watermark="{x:Static properties:Localization.DefaultPlayerName}"
+    <Grid 
+        ColumnDefinitions="Auto, 5, *"
+        RowDefinitions="Auto, 5, Auto, 5, Auto, 5, Auto"
+        Margin="5">
+        <TextBlock 
+            Grid.Column="0"
+            Grid.Row="0"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Right"
+            Text="{x:Static properties:Localization.DefaultPlayerName}"/>
+        <TextBox
+            Grid.Column="2"
+            Grid.Row="0"
             Text="{Binding DefaultPlayerName}" />
-        <TextBox 
-            Margin="5"
-            Watermark="{x:Static properties:Localization.Directory}"
+        
+        <TextBlock 
+            Grid.Column="0"
+            Grid.Row="2"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Right"
+            Text="{x:Static properties:Localization.Directory}"/>
+        <TextBox
+            Grid.Column="2"
+            Grid.Row="2"
             Text="{Binding Directory}" />
+        
+        <TextBlock 
+            Grid.Column="0"
+            Grid.Row="4"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Right"
+            Text="{x:Static properties:Localization.LauncherVisibility}"/>
         <ComboBox
-            Margin="5"
+            Grid.Column="2"
+            Grid.Row="4"
             PlaceholderForeground="gray"
             HorizontalAlignment="Stretch"
             VirtualizationMode="Simple"
             Items="{Binding Visibilities}"
             SelectedItem="{Binding LauncherVisibility}" />
-        <Grid ColumnDefinitions="*, *">
+        
+        <Grid
+            Grid.Column="0"
+            Grid.ColumnSpan="3"
+            Grid.Row="6"
+            ColumnDefinitions="*, *">
             <Button
                 Grid.Column="0"
                 Margin="5"
@@ -40,5 +69,5 @@
                 Content="{x:Static properties:Localization.Cancel}"
                 Command="{Binding CloseCommand}"/>
         </Grid>
-    </StackPanel>
+    </Grid>
 </UserControl>

@@ -40,7 +40,7 @@
         <value>Delete profile</value>
     </data>
     <data name="Directory" xml:space="preserve">
-        <value>Directory</value>
+        <value>Game directory</value>
     </data>
     <data name="EditProfile" xml:space="preserve">
         <value>Edit profile</value>
@@ -158,5 +158,8 @@
     </data>
     <data name="ProgressFailToStartGameWithoutJava" xml:space="preserve">
         <value>Fail to start game. You must install Java before starting the game</value>
+    </data>
+    <data name="LauncherVisibility" xml:space="preserve">
+        <value>Launcher visibility</value>
     </data>
 </root>

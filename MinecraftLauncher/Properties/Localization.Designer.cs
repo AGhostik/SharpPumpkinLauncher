@@ -141,7 +141,7 @@ namespace MinecraftLauncher.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Directory.
+        ///   Looks up a localized string similar to Game directory.
         /// </summary>
         public static string Directory {
             get {
@@ -191,6 +191,15 @@ namespace MinecraftLauncher.Properties {
         public static string Latest {
             get {
                 return ResourceManager.GetString("Latest", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Launcher visibility.
+        /// </summary>
+        public static string LauncherVisibility {
+            get {
+                return ResourceManager.GetString("LauncherVisibility", resourceCulture);
             }
         }
         
