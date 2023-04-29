@@ -162,4 +162,7 @@
     <data name="LauncherVisibility" xml:space="preserve">
         <value>Launcher visibility</value>
     </data>
+    <data name="PickDirectory" xml:space="preserve">
+        <value>Pick directory</value>
+    </data>
 </root>

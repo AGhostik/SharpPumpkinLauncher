@@ -48,7 +48,7 @@ public static class DirectoryValidation
                 return false;
             }
 
-            if (invalidPathChars.Contains(c) || c is '?' or '<' or '>' or '\"' or '*' or '.' || (i != 1 && c == ':'))
+            if (invalidPathChars.Contains(c) || c is '?' or '<' or '>' or '\"' or '*' || (i != 1 && c == ':'))
             {
                 errorKey = Localization.ValidationDirectoryRestrictedChar;
                 return false;

@@ -1,8 +1,13 @@
 using System;
+using System.IO;
 using System.Reactive;
 using System.Reactive.Subjects;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using MinecraftLauncher.Main.Validation;
 using ReactiveUI;
+using SimpleLogger;
 
 namespace MinecraftLauncher.Main.Settings;
 
@@ -21,6 +26,7 @@ public sealed class SettingsViewModel : ReactiveObject
         _closeAction = closeAction;
         SaveCommand = ReactiveCommand.Create(Save, CanSave);
         CloseCommand = ReactiveCommand.Create(Close);
+        PickFolderCommand = ReactiveCommand.Create(PickFolder);
     }
 
     [PlayerNameValidation]
@@ -60,6 +66,7 @@ public sealed class SettingsViewModel : ReactiveObject
     public ReactiveCommand<Unit, Unit> SaveCommand { get; }
     private Subject<bool> CanSave { get; } = new();
     public ReactiveCommand<Unit, Unit> CloseCommand { get; }
+    public ReactiveCommand<Unit, Unit> PickFolderCommand { get; }
 
     private void Save()
     {
@@ -80,5 +87,25 @@ public sealed class SettingsViewModel : ReactiveObject
         var isValid = DirectoryValidation.IsDirectoryValid(Directory) &&
                       PlayerNameValidation.IsPlayerNameValid(DefaultPlayerName);
         CanSave.OnNext(isValid);
+    }
+    
+    private async void PickFolder()
+    {
+        if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop)
+        {
+            Logger.Log("Current application is not IClassicDesktopStyleApplicationLifetime");
+            return;
+        }
+        
+        var openFolder = new OpenFolderDialog
+        {
+            Directory = AppContext.BaseDirectory
+        };
+        
+        var path = await openFolder.ShowAsync(desktop.MainWindow);
+        if (string.IsNullOrEmpty(path))
+            return;
+        
+        Directory = Path.GetRelativePath(AppContext.BaseDirectory, path) + '\\';
     }
 }

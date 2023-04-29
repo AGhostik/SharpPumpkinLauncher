@@ -26,6 +26,16 @@ public class DirectoryValidationTests
     }
     
     [Test]
+    public void DirectoryValidation_True_AbsolutePath_Long()
+    {
+        var result =
+            DirectoryValidation.IsDirectoryValid(
+                "C:\\SomeFolder\\McLauncher\\MinecraftLauncher\\bin\\Debug\\net7.0\\Minecraft");
+        
+        Assert.IsTrue(result);
+    }
+
+    [Test]
     public void DirectoryValidation_True_AbsolutePath_DriveLetterIsUpper()
     {
         var result = DirectoryValidation.IsDirectoryValid("C:\\SomeFolder\\Minecraft");

@@ -10,7 +10,7 @@
              x:Class="MinecraftLauncher.Main.Settings.SettingsControl">
     <Grid 
         ColumnDefinitions="Auto, 5, *"
-        RowDefinitions="Auto, 5, Auto, 5, Auto, 5, Auto"
+        RowDefinitions="Auto, 5, Auto, 5, Auto, 5 Auto, 5, Auto"
         Margin="5">
         <TextBlock 
             Grid.Column="0"
@@ -34,15 +34,25 @@
             Grid.Row="2"
             Text="{Binding Directory}" />
         
+        <Grid
+            Grid.Column="2"
+            Grid.Row="4">
+            <Button
+                HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Center"
+                Content="{x:Static properties:Localization.PickDirectory}"
+                Command="{Binding PickFolderCommand}"/>
+        </Grid>
+
         <TextBlock 
             Grid.Column="0"
-            Grid.Row="4"
+            Grid.Row="6"
             VerticalAlignment="Center"
             HorizontalAlignment="Right"
             Text="{x:Static properties:Localization.LauncherVisibility}"/>
         <ComboBox
             Grid.Column="2"
-            Grid.Row="4"
+            Grid.Row="6"
             PlaceholderForeground="gray"
             HorizontalAlignment="Stretch"
             VirtualizationMode="Simple"
@@ -52,7 +62,7 @@
         <Grid
             Grid.Column="0"
             Grid.ColumnSpan="3"
-            Grid.Row="6"
+            Grid.Row="8"
             ColumnDefinitions="*, *">
             <Button
                 Grid.Column="0"

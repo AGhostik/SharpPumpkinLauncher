@@ -231,6 +231,15 @@ namespace MinecraftLauncher.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Pick directory.
+        /// </summary>
+        public static string PickDirectory {
+            get {
+                return ResourceManager.GetString("PickDirectory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Player name.
         /// </summary>
         public static string PlayerName {
