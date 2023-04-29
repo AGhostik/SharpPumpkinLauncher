@@ -8,7 +8,7 @@ public sealed class SettingsData
     {
         var random = new Random();
         DefaultPlayerName = $"Steve{random.Next(0, 99999):D5}";
-        Directory = "Minecraft";
+        Directory = "Minecraft/";
         LauncherVisibility = LauncherVisibility.KeepOpen;
     }
     
