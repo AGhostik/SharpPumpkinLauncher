@@ -71,6 +71,7 @@ public sealed class ProfileViewModel : ReactiveObject
         var profileName = profileViewModel.ProfileName;
         profileViewModel._save = profile => save.Invoke(profileName, profile);
         profileViewModel._cancel = cancel;
+        profileViewModel.Latest = true;
         
         ProfileNameValidationAttribute.RestrictedName = new List<string?>(restrictedNames);
         
