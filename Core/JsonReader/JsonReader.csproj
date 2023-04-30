@@ -7,10 +7,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Folder Include="InternalData" />
-    </ItemGroup>
-
-    <ItemGroup>
       <ProjectReference Include="..\SimpleLogger\SimpleLogger.csproj" />
     </ItemGroup>
 

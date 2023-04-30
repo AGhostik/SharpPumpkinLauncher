@@ -1,6 +1,7 @@
 using System.Runtime.CompilerServices;
 using JsonReader;
 using JsonReader.PublicData.Manifest;
+using JsonReader.PublicData.Runtime;
 using Launcher.Data;
 using Launcher.PublicData;
 using Launcher.Tools;
@@ -91,8 +92,63 @@ internal sealed class OnlineLauncher : ILauncher
             var assetsData = _jsonManager.GetAssets(assetsJson);
             if (assetsData == null)
                 return ErrorCode.AssetsData;
+            
+            var allRuntimesJson = await DownloadManager.DownloadJsonAsync(WellKnownUrls.JavaRuntimesUrl,
+                cancellationToken);
+            if (string.IsNullOrEmpty(allRuntimesJson))
+                return ErrorCode.Download;
 
-            var fileList = FileManager.GetFileList(minecraftData, assetsData, minecraftPaths, minecraftData.Id);
+            var runtimes = _jsonManager.GetAllRuntimes(allRuntimesJson);
+
+            if (runtimes == null)
+                return ErrorCode.RuntimeData;
+
+            var osRuntime = OsRuleManager.GetOsRuntime(runtimes);
+            
+            if (osRuntime == null)
+                return ErrorCode.RuntimeData;
+
+            var runtimeType = minecraftData.JavaVersion.Component;
+            Runtime currentRuntime;
+            switch (runtimeType)
+            {
+                case WellKnownRuntimeTypes.JavaRuntimeAlpha:
+                    if (osRuntime.JavaRuntimeAlpha == null)
+                        return ErrorCode.RuntimeDataNotFound;
+                    currentRuntime = osRuntime.JavaRuntimeAlpha;
+                    break;
+                case WellKnownRuntimeTypes.JavaRuntimeBeta:
+                    if (osRuntime.JavaRuntimeBeta == null)
+                        return ErrorCode.RuntimeDataNotFound;
+                    currentRuntime = osRuntime.JavaRuntimeBeta;
+                    break;
+                case WellKnownRuntimeTypes.JavaRuntimeGamma:
+                    if (osRuntime.JavaRuntimeGamma == null)
+                        return ErrorCode.RuntimeDataNotFound;
+                    currentRuntime = osRuntime.JavaRuntimeGamma;
+                    break;
+                case WellKnownRuntimeTypes.JreLegacy:
+                    if (osRuntime.JreLegacy == null)
+                        return ErrorCode.RuntimeDataNotFound;
+                    currentRuntime = osRuntime.JreLegacy;
+                    break;
+                case WellKnownRuntimeTypes.MinecraftJavaExe:
+                    if (osRuntime.MinecraftJavaExe == null)
+                        return ErrorCode.RuntimeDataNotFound;
+                    currentRuntime = osRuntime.MinecraftJavaExe;
+                    break;
+                default:
+                    return ErrorCode.UnknownRuntimeVersion;
+            }
+            
+            var currentRuntimeJson = await DownloadManager.DownloadJsonAsync(currentRuntime.Url,
+                cancellationToken);
+
+            var runtimeFiles = _jsonManager.GetRuntileFiles(currentRuntimeJson);
+            if (runtimeFiles == null)
+                return ErrorCode.RuntimeData;
+
+            var fileList = FileManager.GetFileList(runtimeFiles, runtimeType, minecraftData, assetsData, minecraftPaths);
 
             var launchArgumentsData =
                 new LaunchArgumentsData(minecraftData, fileList, minecraftPaths, launchData.PlayerName);
@@ -117,7 +173,9 @@ internal sealed class OnlineLauncher : ILauncher
 
             LaunchMinecraftProgress?.Invoke(LaunchProgress.StartGame, 0f);
 
-            var startGame = await FileManager.StartProcess("java", launchArguments, startedAction, exitedAction);
+            var startGame = await FileManager.StartProcess(launchArgumentsData.JavaFile, launchArguments, startedAction,
+                exitedAction);
+            
             if (!startGame)
                 return ErrorCode.StartProcess;
             
@@ -242,6 +300,14 @@ internal sealed class OnlineLauncher : ILauncher
             var assetFileError = CheckFileAndDirectoryMissed(ref minecraftMissedInfo, minecraftFileList.AssetFiles[i]);
             if (assetFileError != ErrorCode.NoError)
                 return assetFileError;
+        }
+
+        for (var i = 0; i < minecraftFileList.JavaRuntimeFiles.Count; i++)
+        {
+            var javaRuntimeFileError =
+                CheckFileAndDirectoryMissed(ref minecraftMissedInfo, minecraftFileList.JavaRuntimeFiles[i]);
+            if (javaRuntimeFileError != ErrorCode.NoError)
+                return javaRuntimeFileError;
         }
 
         return ErrorCode.NoError;

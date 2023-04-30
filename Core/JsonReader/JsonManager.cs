@@ -3,15 +3,130 @@ using System.Text.Json;
 using JsonReader.InternalData.Assets;
 using JsonReader.InternalData.Game;
 using JsonReader.InternalData.Manifest;
+using JsonReader.InternalData.Runtime;
 using JsonReader.PublicData.Assets;
 using JsonReader.PublicData.Game;
 using JsonReader.PublicData.Manifest;
+using JsonReader.PublicData.Runtime;
 using SimpleLogger;
 
 namespace JsonReader;
 
 public sealed class JsonManager
 {
+    public RuntimeFiles? GetRuntileFiles(string? json)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(json))
+                return null;
+
+            var allRuntimesData = JsonSerializer.Deserialize<RuntimeFilesData>(json);
+
+            if (allRuntimesData?.Files == null)
+                return null;
+
+            var files = new List<RuntimeFile>();
+
+            foreach (var (path, data) in allRuntimesData.Files)
+            {
+                if (data.Type == "directory")
+                    continue;
+                
+                if (data.Downloads == null)
+                    continue;
+
+                var lzma = data.Downloads.Lzma;
+                var raw = data.Downloads.Raw;
+
+                RuntimeFile runtimeFile;
+                if (raw != null && !string.IsNullOrEmpty(raw.Sha1) && !string.IsNullOrEmpty(raw.Url))
+                {
+                    runtimeFile = new RuntimeFile(path, raw.Sha1, raw.Size, raw.Url);
+                }
+                else
+                {
+                    if (lzma == null || string.IsNullOrEmpty(lzma.Sha1) || string.IsNullOrEmpty(lzma.Url))
+                        continue;
+
+                    runtimeFile = new RuntimeFile(path, lzma.Sha1, lzma.Size, lzma.Url);
+                }
+
+                files.Add(runtimeFile);
+            }
+
+            return new RuntimeFiles(files);
+        }
+        catch (Exception e)
+        {
+            Logger.Log(e);
+            return null;
+        }
+    }
+    
+    public OsRuntimes? GetAllRuntimes(string? json)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(json))
+                return null;
+
+            var allRuntimesData = JsonSerializer.Deserialize<AllRuntimesData>(json);
+
+            if (allRuntimesData == null ||
+                allRuntimesData.Linux == null || allRuntimesData.LinuxI386 == null ||
+                allRuntimesData.MacOs == null || allRuntimesData.MacOsArm64 == null ||
+                allRuntimesData.WindowsArm64 == null ||
+                allRuntimesData.Windows64 == null || allRuntimesData.Windows86 == null)
+                return null;
+
+            var linux = GetOsRuntime(allRuntimesData.Linux);
+            var linuxI386 = GetOsRuntime(allRuntimesData.LinuxI386);
+            var macOs = GetOsRuntime(allRuntimesData.MacOs);
+            var macOsArm64 = GetOsRuntime(allRuntimesData.MacOsArm64);
+            var windowsArm64 = GetOsRuntime(allRuntimesData.WindowsArm64);
+            var windows64 = GetOsRuntime(allRuntimesData.Windows64);
+            var windows86 = GetOsRuntime(allRuntimesData.Windows86);
+            var result = new OsRuntimes(linux, linuxI386, macOs, macOsArm64, windowsArm64, windows64, windows86);
+
+            return result;
+        }
+        catch (Exception e)
+        {
+            Logger.Log(e);
+            return null;
+        }
+    }
+
+    private static OsRuntime GetOsRuntime(RuntimesData? runtimesData)
+    {
+        var javaRuntimeAlpha = GetRuntime(runtimesData?.JavaRuntimeAlpha);
+        var javaRuntimeBeta = GetRuntime(runtimesData?.JavaRuntimeBeta);
+        var javaRuntimeGamma = GetRuntime(runtimesData?.JavaRuntimeGamma);
+        var jreLegacy = GetRuntime(runtimesData?.JreLegacy);
+        var minecraftJavaExe = GetRuntime(runtimesData?.MinecraftJavaExe);
+
+        return new OsRuntime(javaRuntimeAlpha, javaRuntimeBeta, javaRuntimeGamma, jreLegacy, minecraftJavaExe);
+    }
+
+    private static Runtime? GetRuntime(IReadOnlyList<RuntimeData>? runtimeData)
+    {
+        if (runtimeData == null || runtimeData.Count <= 0)
+            return null;
+        
+        var javaRuntime = runtimeData[0];
+
+        if (javaRuntime.Version != null && !string.IsNullOrEmpty(javaRuntime.Version.Name) &&
+            javaRuntime.Manifest != null && !string.IsNullOrEmpty(javaRuntime.Manifest.Sha1) &&
+            !string.IsNullOrEmpty(javaRuntime.Manifest.Url))
+        {
+            return new Runtime(javaRuntime.Version.Name, javaRuntime.Version.Released,
+                javaRuntime.Manifest.Sha1, javaRuntime.Manifest.Size, javaRuntime.Manifest.Url);
+        }
+
+        return null;
+    }
+    
     public IReadOnlyList<Asset>? GetAssets(string? json)
     {
         try
@@ -132,6 +247,13 @@ public sealed class JsonManager
             if (!TryGetArguments(minecraftVersionData, out var arguments))
                 return null;
 
+            if (minecraftVersionData.JavaVersion == null ||
+                string.IsNullOrEmpty(minecraftVersionData.JavaVersion.Component))
+                return null;
+
+            var javaVersion = new JavaVersion(minecraftVersionData.JavaVersion.Component,
+                minecraftVersionData.JavaVersion.MajorVersion);
+
             var libraries = GetLibraries(minecraftVersionData);
 
             return new MinecraftData(
@@ -147,6 +269,7 @@ public sealed class JsonManager
                 assetsIndex,
                 loggingData,
                 arguments,
+                javaVersion,
                 libraries);
         }
         catch (Exception e)

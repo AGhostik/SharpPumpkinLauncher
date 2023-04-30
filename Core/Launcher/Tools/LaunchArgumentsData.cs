@@ -75,6 +75,35 @@ internal sealed class LaunchArgumentsData
 
         Libraries = lib;
 
+        var javaExecutableName = OsRuleManager.GetJavaExecutableName();
+        if (string.IsNullOrEmpty(javaExecutableName))
+        {
+            isValid = false;
+            JavaFile = string.Empty;
+        }
+        else
+        {
+            string? javaFile = null;
+            for (var i = 0; i < fileList.JavaRuntimeFiles.Count; i++)
+            {
+                if (!fileList.JavaRuntimeFiles[i].FileName.Contains(javaExecutableName))
+                    continue;
+                
+                javaFile = FileManager.GetFullPath(fileList.JavaRuntimeFiles[i].FileName);
+                break;
+            }
+            
+            if (string.IsNullOrEmpty(javaFile))
+            {
+                isValid = false;
+                JavaFile = string.Empty;
+            }
+            else
+            {
+                JavaFile = javaFile;
+            }
+        }
+
         LauncherName = "\"mclauncher\"";
         AuthAccessToken = "null";
         ClientId = "null";
@@ -89,6 +118,8 @@ internal sealed class LaunchArgumentsData
     }
     
     public bool IsValid { get; }
+    
+    public string JavaFile { get; }
     
     public string Width { get; }
     public string Height { get; }

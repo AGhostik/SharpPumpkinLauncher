@@ -4,6 +4,7 @@ using System.Text;
 using System.IO.Compression;
 using JsonReader.PublicData.Assets;
 using JsonReader.PublicData.Game;
+using JsonReader.PublicData.Runtime;
 using Launcher.Data;
 using SimpleLogger;
 
@@ -242,9 +243,11 @@ internal static class FileManager
         return true;
     }
     
-    public static MinecraftFileList GetFileList(MinecraftData data, IReadOnlyList<Asset> assets,
-        MinecraftPaths minecraftPaths, string minecraftVersionId)
+    public static MinecraftFileList GetFileList(RuntimeFiles runtimeFiles, string runtimeType, MinecraftData data,
+        IReadOnlyList<Asset> assets, MinecraftPaths minecraftPaths)
     {
+        var minecraftVersionId = data.Id;
+        
         var client = new MinecraftFile(data.Client.Url, data.Client.Size, data.Client.Sha1,
             $"{minecraftPaths.VersionDirectory}\\{minecraftVersionId}.jar");
 
@@ -260,8 +263,10 @@ internal static class FileManager
         var assetsFiles = data.IsLegacyAssets()
             ? GetLegacyAssetsFiles(assets, minecraftPaths)
             : GetAssetsFiles(assets, minecraftPaths);
+
+        var javaRuntimeFiles = GetRuntimeFiles(runtimeFiles, runtimeType, minecraftPaths);
         
-        var minecraftFileList = new MinecraftFileList(client, server, librariesFiles, assetsFiles);
+        var minecraftFileList = new MinecraftFileList(client, server, librariesFiles, assetsFiles, javaRuntimeFiles);
 
         if (data.LoggingData != null)
         {
@@ -270,6 +275,21 @@ internal static class FileManager
         }
 
         return minecraftFileList;
+    }
+
+    private static IReadOnlyList<MinecraftFile> GetRuntimeFiles(RuntimeFiles runtimeFiles, string runtimeType,
+        MinecraftPaths minecraftPaths)
+    {
+        var files = new List<MinecraftFile>();
+        for (var i = 0; i < runtimeFiles.Files.Count; i++)
+        {
+            var file = runtimeFiles.Files[i];
+            var fileName =
+                $"{minecraftPaths.RuntimeDirectory}\\{runtimeType}\\{OsRuleManager.CurrentOsName}\\{file.Path}";
+            files.Add(new MinecraftFile(file.Url, file.Size, file.Sha1, fileName));
+        }
+
+        return files;
     }
 
     private static IReadOnlyList<MinecraftLibraryFile> GetLibrariesFiles(IReadOnlyList<Library> libraries,

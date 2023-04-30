@@ -131,8 +131,12 @@ internal sealed class OfflineLauncher : ILauncher
 
             if (assetsData == null)
                 return ErrorCode.AssetsData;
+            
+            var runtimeType = minecraftData.JavaVersion.Component;
+            
+            //todo: runtimeFiles
 
-            var fileList = FileManager.GetFileList(minecraftData, assetsData, minecraftPaths, minecraftData.Id);
+            var fileList = FileManager.GetFileList(null, runtimeType, minecraftData, assetsData, minecraftPaths);
 
             var launchArgumentsData =
                 new LaunchArgumentsData(minecraftData, fileList, minecraftPaths, launchData.PlayerName);

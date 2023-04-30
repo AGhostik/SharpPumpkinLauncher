@@ -1,4 +1,5 @@
 ﻿using JsonReader.PublicData.Game;
+using JsonReader.PublicData.Runtime;
 
 namespace Launcher.Tools;
 
@@ -39,6 +40,8 @@ internal sealed class OsRuleManager
         //osx version: "^10\\.5\\.\\d$"
         _currentOsVersion = $"^{Environment.OSVersion.Version.Major}\\.";
     }
+
+    public static string CurrentOsName => _currentOsName;
 
     public static bool IsAllowed(IReadOnlyList<Rule>? rules)
     {
@@ -92,5 +95,45 @@ internal sealed class OsRuleManager
         }
 
         return isAllowed;
+    }
+
+    public static OsRuntime? GetOsRuntime(OsRuntimes osRuntimes)
+    {
+        switch (_currentOsName)
+        {
+            case OsWindows:
+                switch (_currentOsArchitecture)
+                {
+                    case OsArchitecture64:
+                        return osRuntimes.Windows64;
+                    case OsArchitecture86:
+                        return osRuntimes.Windows86;
+                    default:
+                        return null;
+                }
+
+            case OsOsx:
+                return osRuntimes.MacOs;
+            
+            case OsLinux:
+                return osRuntimes.Linux;
+            
+            default:
+                return null;
+        }
+    }
+
+    public static string? GetJavaExecutableName()
+    {
+        switch (_currentOsName)
+        {
+            case OsWindows:
+                return "javaw.exe";
+
+            case OsOsx:
+            case OsLinux:
+            default:
+                return null;
+        }
     }
 }

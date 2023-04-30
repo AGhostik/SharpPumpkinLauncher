@@ -79,8 +79,14 @@ public class OnlineLauncherTests
 
         if (minecraftProces != null)
         {
-            await Task.Delay(7000);
-            minecraftProces.CloseMainWindow();
+            do
+            {
+                minecraftProces.Refresh();
+                if (minecraftProces.Responding)
+                    minecraftProces.CloseMainWindow();
+                else
+                    await Task.Delay(1000);
+            } while (!minecraftProces.Responding);
         }
     }
 }

@@ -8,7 +8,7 @@ public sealed class MinecraftData
     /// <exception cref="ArgumentOutOfRangeException">Unknown type value</exception>
     public MinecraftData(string id, string type, string assetsVersion, string mainClass, int minimumLauncherVersion,
         DateTime releaseTime, DateTime time, DownloadFile client, DownloadFile? server, DownloadFile assetsIndex,
-        Logging? loggingData, Arguments arguments, IReadOnlyList<Library> libraries)
+        Logging? loggingData, Arguments arguments, JavaVersion javaVersion, IReadOnlyList<Library> libraries)
     {
         Id = id;
         Type = type;
@@ -19,6 +19,7 @@ public sealed class MinecraftData
         ReleaseTime = releaseTime;
         Time = time;
         Arguments = arguments;
+        JavaVersion = javaVersion;
         Libraries = libraries;
         Client = client;
         Server = server;
@@ -39,5 +40,6 @@ public sealed class MinecraftData
     public DownloadFile AssetsIndex { get; }
     public Logging? LoggingData { get; }
     public Arguments Arguments { get; }
+    public JavaVersion JavaVersion { get; }
     public IReadOnlyList<Library> Libraries { get; }
 }

@@ -25,17 +25,17 @@ public sealed class MinecraftLauncher : ILauncher
     public async Task<ErrorCode> LaunchMinecraft(LaunchData launchData, CancellationToken cancellationToken, 
         Action? startedAction = null, Action? exitedAction = null)
     {
-        if (launchData.Version.IsInstalled)
-        {
-            _offlineLauncher.LaunchMinecraftProgress += OnLaunchMinecraftProgress;
-            var offlineLaunchResult =
-                await _offlineLauncher.LaunchMinecraft(launchData, cancellationToken, startedAction, exitedAction);
-            
-            _offlineLauncher.LaunchMinecraftProgress -= OnLaunchMinecraftProgress;
-            
-            if (offlineLaunchResult is ErrorCode.NoError or ErrorCode.GameAborted or ErrorCode.StartProcess)
-                return offlineLaunchResult;
-        }
+        // if (launchData.Version.IsInstalled)
+        // {
+        //     _offlineLauncher.LaunchMinecraftProgress += OnLaunchMinecraftProgress;
+        //     var offlineLaunchResult =
+        //         await _offlineLauncher.LaunchMinecraft(launchData, cancellationToken, startedAction, exitedAction);
+        //     
+        //     _offlineLauncher.LaunchMinecraftProgress -= OnLaunchMinecraftProgress;
+        //     
+        //     if (offlineLaunchResult is ErrorCode.NoError or ErrorCode.GameAborted or ErrorCode.StartProcess)
+        //         return offlineLaunchResult;
+        // }
 
         if (!await DownloadManager.CheckConnection(cancellationToken))
             return ErrorCode.Connection;
