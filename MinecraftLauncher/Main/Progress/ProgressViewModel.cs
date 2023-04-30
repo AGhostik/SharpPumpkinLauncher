@@ -46,8 +46,6 @@ public sealed class ProgressViewModel : ReactiveObject
             ProgressLocalizationKeys.FailToStartGame => Localization.ProgressFailToStartGame,
             ProgressLocalizationKeys.Loading => Localization.ProgressLoading,
             ProgressLocalizationKeys.Ready => Localization.ProgressReady,
-            ProgressLocalizationKeys.JavaNotFound => Localization.ProgressJavaNotFound,
-            ProgressLocalizationKeys.FailToStartGameWithoutJava => Localization.ProgressFailToStartGameWithoutJava,
             _ => throw new ArgumentOutOfRangeException(nameof(localizationKey), localizationKey, null)
         };
 

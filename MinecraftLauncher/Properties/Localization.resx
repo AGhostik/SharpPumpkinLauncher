@@ -135,9 +135,6 @@
     <data name="Installed" xml:space="preserve">
         <value>Installed</value>
     </data>
-    <data name="Java" xml:space="preserve">
-        <value>Java</value>
-    </data>
     <data name="DownloadJavaText" xml:space="preserve">
         <value>Download Java for Minecraft:</value>
     </data>
@@ -152,12 +149,6 @@
     </data>
     <data name="Close" xml:space="preserve">
         <value>Close</value>
-    </data>
-    <data name="ProgressJavaNotFound" xml:space="preserve">
-        <value>You must install Java before starting the game</value>
-    </data>
-    <data name="ProgressFailToStartGameWithoutJava" xml:space="preserve">
-        <value>Fail to start game. You must install Java before starting the game</value>
     </data>
     <data name="LauncherVisibility" xml:space="preserve">
         <value>Launcher visibility</value>

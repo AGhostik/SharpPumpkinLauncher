@@ -5,7 +5,6 @@ using System.Reactive.Subjects;
 using Avalonia.Threading;
 using DynamicData;
 using Launcher.PublicData;
-using MinecraftLauncher.Main.Jre;
 using MinecraftLauncher.Main.Profile;
 using MinecraftLauncher.Main.Progress;
 using MinecraftLauncher.Main.Settings;
@@ -19,7 +18,6 @@ public sealed class MainWindowViewModel : ReactiveObject
     private readonly MainWindowModel _mainWindowModel;
     private readonly ProgressControl _progressControl;
     private readonly SettingsControl _settingsControl;
-    private readonly JreControl _jreControl;
     
     private readonly bool _dontSaveSelectedProfile;
     
@@ -42,9 +40,6 @@ public sealed class MainWindowViewModel : ReactiveObject
 
         var settingsViewModel = new SettingsViewModel(SettingsSaved, SetDefaultMainContent);
         _settingsControl = new SettingsControl() { DataContext = settingsViewModel };
-
-        var jreViewModel = new JreViewModel(SetDefaultMainContent);
-        _jreControl = new JreControl() { DataContext = jreViewModel };
         
         StartGameCommand = ReactiveCommand.Create(StartGame, CanStartGame);
         AbortGameCommand = ReactiveCommand.Create(AbortStartGame, CanAbortGame);
@@ -52,10 +47,8 @@ public sealed class MainWindowViewModel : ReactiveObject
         EditProfileCommand = ReactiveCommand.Create(EditProfile, CanEditProfile);
         DeleteProfileCommand = ReactiveCommand.Create(DeleteProfile, CanDeleteProfile);
         OpenSettingsCommand = ReactiveCommand.Create(OpenSettings, CanOpenSettings);
-        OpenJavaPageCommand = ReactiveCommand.Create(OpenJavaPage, CanOpenJavaPage);
         
         CanOpenSettings.OnNext(true);
-        CanOpenJavaPage.OnNext(true);
         IsStartGameVisible = true;
         
         settingsViewModel.Directory = _mainWindowModel.CurrentSettings.Directory;
@@ -121,10 +114,6 @@ public sealed class MainWindowViewModel : ReactiveObject
     
     private Subject<bool> CanOpenSettings { get; } = new();
     
-    public ReactiveCommand<Unit, Unit> OpenJavaPageCommand { get; }
-    
-    private Subject<bool> CanOpenJavaPage { get; } = new();
-    
     public ReactiveCommand<Unit, Unit> StartGameCommand { get; }
     
     private Subject<bool> CanStartGame { get; } = new();
@@ -164,7 +153,6 @@ public sealed class MainWindowViewModel : ReactiveObject
             UpdateCanDeleteProfile();
             UpdateProfilesComboboxEnabled();
             UpdateCanOpenSettings();
-            UpdateCanOpenJavaPage();
             UpdateCanAbortGame();
         }
     }
@@ -195,11 +183,6 @@ public sealed class MainWindowViewModel : ReactiveObject
     {
         IsGameStarted = false;
         IsStartGameVisible = true;
-    }
-    
-    private void OpenJavaPage()
-    {
-        MainContent = _jreControl;
     }
 
     private void OpenSettings()
@@ -323,11 +306,6 @@ public sealed class MainWindowViewModel : ReactiveObject
         CanOpenSettings.OnNext(!IsGameStarted);
     }
     
-    private void UpdateCanOpenJavaPage()
-    {
-        CanOpenJavaPage.OnNext(!IsGameStarted);
-    }
-
     private void UpdateCanAbortGame()
     {
         CanAbortGame.OnNext(IsGameStarted);

@@ -14,7 +14,7 @@
         Icon="/Resources/icon.ico"
         Title="{x:Static properties:Localization.Title}">
     <Grid ColumnDefinitions="Auto, *">
-        <Grid Grid.Column="0" RowDefinitions="Auto, Auto, Auto, *, Auto, Auto" Background="lightgray">
+        <Grid Grid.Column="0" RowDefinitions="Auto, Auto, Auto, *, Auto" Background="lightgray">
             <Button
                 Grid.Row="0"
                 HorizontalAlignment="Stretch"
@@ -35,12 +35,6 @@
                 Command="{Binding DeleteProfileCommand}"/>
             <Button 
                 Grid.Row="4"
-                HorizontalAlignment="Stretch"
-                HorizontalContentAlignment="Center"
-                Content="{x:Static properties:Localization.Java}"
-                Command="{Binding OpenJavaPageCommand}"/>
-            <Button 
-                Grid.Row="5"
                 HorizontalAlignment="Stretch"
                 HorizontalContentAlignment="Center"
                 Content="{x:Static properties:Localization.Settings}"

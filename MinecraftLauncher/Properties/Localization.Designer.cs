@@ -177,15 +177,6 @@ namespace MinecraftLauncher.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Java.
-        /// </summary>
-        public static string Java {
-            get {
-                return ResourceManager.GetString("Java", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Latest.
         /// </summary>
         public static string Latest {
@@ -285,29 +276,11 @@ namespace MinecraftLauncher.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Fail to start game. You must install Java before starting the game.
-        /// </summary>
-        public static string ProgressFailToStartGameWithoutJava {
-            get {
-                return ResourceManager.GetString("ProgressFailToStartGameWithoutJava", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Invalid profile, check parameters.
         /// </summary>
         public static string ProgressInvalidProfile {
             get {
                 return ResourceManager.GetString("ProgressInvalidProfile", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to You must install Java before starting the game.
-        /// </summary>
-        public static string ProgressJavaNotFound {
-            get {
-                return ResourceManager.GetString("ProgressJavaNotFound", resourceCulture);
             }
         }
         

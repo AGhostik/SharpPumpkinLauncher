@@ -7,5 +7,4 @@ public sealed class SettingsData
     public int LauncherVisibility { get; set; }
     public string? GameDirectory { get; set; }
     public string? DefaultPlayerName { get; set; }
-    public bool IsJavaInstalled { get; set; }
 }
