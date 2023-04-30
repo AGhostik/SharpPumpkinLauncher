@@ -21,14 +21,12 @@ Screenshot
 Todo:
 ------------
 
-- add unit tests
+- add more unit tests
 - add launch tests (test all versions)
-- add "pick directory" button
-- add java detection
-- add java argument setup window
 - add Forge support
 - add launcher_profiles.json support
-- fix old versions running
+- add java argument setup window
+- add backup system
 
 Useful links:
 ------------
