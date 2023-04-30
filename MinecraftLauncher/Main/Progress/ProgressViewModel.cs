@@ -34,7 +34,8 @@ public sealed class ProgressViewModel : ReactiveObject
         set => this.RaiseAndSetIfChanged(ref _isProgressVisible, value);
     }
 
-    private void OnUpdateProgressValues(ProgressLocalizationKeys localizationKey, float progress01)
+    private void OnUpdateProgressValues(ProgressLocalizationKeys localizationKey, float progress01,
+        string? additionalInfo)
     {
         Text = localizationKey switch
         {
@@ -48,6 +49,9 @@ public sealed class ProgressViewModel : ReactiveObject
             ProgressLocalizationKeys.Ready => Localization.ProgressReady,
             _ => throw new ArgumentOutOfRangeException(nameof(localizationKey), localizationKey, null)
         };
+
+        if (!string.IsNullOrEmpty(additionalInfo))
+            Text += additionalInfo;
 
         IsProgressVisible = progress01 > 0;
         ProgressValue = 100f * progress01;

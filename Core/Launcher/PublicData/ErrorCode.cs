@@ -16,6 +16,8 @@ public enum ErrorCode
     DeleteFileOrDirectory,
     Check,
     Download,
+    Install,
+    JavaNotInstalled,
     ExtractArchive,
     LaunchArgument,
     StartProcess,

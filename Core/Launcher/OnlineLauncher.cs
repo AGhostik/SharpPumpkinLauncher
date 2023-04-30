@@ -144,7 +144,7 @@ internal sealed class OnlineLauncher : ILauncher
             var currentRuntimeJson = await DownloadManager.DownloadJsonAsync(currentRuntime.Url,
                 cancellationToken);
 
-            var runtimeFiles = _jsonManager.GetRuntileFiles(currentRuntimeJson);
+            var runtimeFiles = _jsonManager.GetRuntimeFiles(currentRuntimeJson);
             if (runtimeFiles == null)
                 return ErrorCode.RuntimeData;
 

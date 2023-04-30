@@ -39,7 +39,7 @@ public sealed class MainWindowModel
         remove => _versionsLoaded -= value;
     }
 
-    public event Action<ProgressLocalizationKeys, float>? UpdateProgressValues;
+    public event Action<ProgressLocalizationKeys, float, string?>? UpdateProgressValues;
     public event Action? AllProfilesLoaded;
 
     private event Action SettingsDirectorySet;
@@ -81,7 +81,7 @@ public sealed class MainWindowModel
             string.IsNullOrEmpty(CurrentSettings.Directory) ||
             profileViewModel.SelectedVersion == null)
         {
-            UpdateProgressValues?.Invoke(ProgressLocalizationKeys.InvalidProfile, 0);
+            UpdateProgressValues?.Invoke(ProgressLocalizationKeys.InvalidProfile, 0, null);
             return;
         }
         
@@ -97,7 +97,7 @@ public sealed class MainWindowModel
         if (result != ErrorCode.NoError)
         {
             gameExited.Invoke();
-            UpdateProgressValues?.Invoke(ProgressLocalizationKeys.FailToStartGame, 0);
+            UpdateProgressValues?.Invoke(ProgressLocalizationKeys.FailToStartGame, 0, null);
             Logger.Log(result);
         }
         
@@ -186,11 +186,11 @@ public sealed class MainWindowModel
     
     private async void LoadAvailableVersions()
     {
-        UpdateProgressValues?.Invoke(ProgressLocalizationKeys.Loading, 0);
+        UpdateProgressValues?.Invoke(ProgressLocalizationKeys.Loading, 0, null);
         var availableVersions = await _minecraftLauncher.GetAvailableVersions(CurrentSettings.Directory);
         _availableVersions = availableVersions;
         _versionsLoaded?.Invoke(availableVersions);
-        UpdateProgressValues?.Invoke(ProgressLocalizationKeys.Ready, 0);
+        UpdateProgressValues?.Invoke(ProgressLocalizationKeys.Ready, 0, null);
     }
     
     private bool LoadSettings(out IReadOnlyList<ProfileViewModel> allProfiles, out ProfileViewModel? lastSelectedProfile,
@@ -250,7 +250,7 @@ public sealed class MainWindowModel
         VersionsLoaded += profileViewModel.SetVersions;
     }
     
-    private void UpdateProgress(LaunchProgress launchProgress, float progress01)
+    private void UpdateProgress(LaunchProgress launchProgress, float progress01, string? additionalInfo)
     {
         var key = launchProgress switch
         {
@@ -261,6 +261,6 @@ public sealed class MainWindowModel
             _ => throw new ArgumentOutOfRangeException(nameof(launchProgress), launchProgress, null)
         };
         
-        UpdateProgressValues?.Invoke(key, progress01);
+        UpdateProgressValues?.Invoke(key, progress01, additionalInfo);
     }
 }

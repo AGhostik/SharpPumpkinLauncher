@@ -14,7 +14,7 @@ namespace JsonReader;
 
 public sealed class JsonManager
 {
-    public RuntimeFiles? GetRuntileFiles(string? json)
+    public RuntimeFiles? GetRuntimeFiles(string? json)
     {
         try
         {

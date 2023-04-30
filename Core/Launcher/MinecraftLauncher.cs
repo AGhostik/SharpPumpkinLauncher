@@ -1,23 +1,35 @@
-﻿using Launcher.PublicData;
+﻿using JsonReader;
+using Launcher.PublicData;
 using Launcher.Tools;
 using Versions = Launcher.PublicData.Versions;
 
 namespace Launcher;
 
-public sealed class MinecraftLauncher : ILauncher
+public sealed class MinecraftLauncher
 {
-    private readonly OfflineLauncher _offlineLauncher = new();
-    private readonly OnlineLauncher _onlineLauncher = new();
-    public event Action<LaunchProgress, float>? LaunchMinecraftProgress;
+    private readonly VersionsLoader _versionsLoader;
+    private readonly Installer _installer;
+    private readonly GameLauncher _gameLauncher;
+
+    public MinecraftLauncher()
+    {
+        var jsonManager = new JsonManager();
+        _versionsLoader = new VersionsLoader(jsonManager);
+        _installer = new Installer(jsonManager);
+        _gameLauncher = new GameLauncher(jsonManager);
+    }
+
+    public event Action<LaunchProgress, float, string?>? LaunchMinecraftProgress;
     
     public async Task<Versions> GetAvailableVersions(string directory, CancellationToken cancellationToken = default)
     {
-        var offlineVersions = await _offlineLauncher.GetAvailableVersions(directory, cancellationToken);
+        var offlineVersions = await _versionsLoader.GetInstalledVersions(directory, cancellationToken);
 
         if (!await DownloadManager.CheckConnection(cancellationToken))
             return offlineVersions;
         
-        var onlineVersions = await _onlineLauncher.GetAvailableVersions(directory, cancellationToken);
+        var onlineVersions = await _versionsLoader.GetOnlineAvailableVersions(cancellationToken);
+        
         onlineVersions.Merge(offlineVersions);
         return onlineVersions;
     }
@@ -25,30 +37,51 @@ public sealed class MinecraftLauncher : ILauncher
     public async Task<ErrorCode> LaunchMinecraft(LaunchData launchData, CancellationToken cancellationToken, 
         Action? startedAction = null, Action? exitedAction = null)
     {
-        // if (launchData.Version.IsInstalled)
-        // {
-        //     _offlineLauncher.LaunchMinecraftProgress += OnLaunchMinecraftProgress;
-        //     var offlineLaunchResult =
-        //         await _offlineLauncher.LaunchMinecraft(launchData, cancellationToken, startedAction, exitedAction);
-        //     
-        //     _offlineLauncher.LaunchMinecraftProgress -= OnLaunchMinecraftProgress;
-        //     
-        //     if (offlineLaunchResult is ErrorCode.NoError or ErrorCode.GameAborted or ErrorCode.StartProcess)
-        //         return offlineLaunchResult;
-        // }
+        if (!launchData.Version.IsInstalled)
+        {
+            _installer.DownloadingProgress += InstallerOnDownloadingProgress;
+            var installResult = await _installer.DownloadAndInstall(launchData, cancellationToken);
+            _installer.DownloadingProgress -= InstallerOnDownloadingProgress;
+            
+            if (installResult is not ErrorCode.NoError)
+                return installResult;
+        }
 
-        if (!await DownloadManager.CheckConnection(cancellationToken))
-            return ErrorCode.Connection;
+        _gameLauncher.LaunchMinecraftProgress += OnLaunchMinecraftProgress;
+        var firstLaunchResult =
+            await _gameLauncher.LaunchMinecraft(launchData, cancellationToken, startedAction, exitedAction);
+        _gameLauncher.LaunchMinecraftProgress -= OnLaunchMinecraftProgress;
+
+        if (firstLaunchResult is ErrorCode.NoError)
+            return ErrorCode.NoError;
+
+        if (firstLaunchResult is ErrorCode.GameAborted or ErrorCode.StartProcess)
+            return firstLaunchResult;
+
+        _installer.DownloadingProgress += InstallerOnDownloadingProgress;
+        var installAfterLaunchFailResult = await _installer.DownloadAndInstall(launchData, cancellationToken);
+        _installer.DownloadingProgress -= InstallerOnDownloadingProgress;
         
-        _onlineLauncher.LaunchMinecraftProgress += OnLaunchMinecraftProgress;
-        var result = await _onlineLauncher.LaunchMinecraft(launchData, cancellationToken, startedAction, exitedAction);
-        _onlineLauncher.LaunchMinecraftProgress -= OnLaunchMinecraftProgress;
-        
-        return result;
+        if (installAfterLaunchFailResult is not ErrorCode.NoError)
+            return installAfterLaunchFailResult;
+
+        _gameLauncher.LaunchMinecraftProgress += OnLaunchMinecraftProgress;
+        var secondLaunchResult =
+            await _gameLauncher.LaunchMinecraft(launchData, cancellationToken, startedAction, exitedAction);
+        _gameLauncher.LaunchMinecraftProgress -= OnLaunchMinecraftProgress;
+
+        return secondLaunchResult;
     }
 
-    private void OnLaunchMinecraftProgress(LaunchProgress progress, float f)
+    private void InstallerOnDownloadingProgress(DownloadProgress downloadProgress)
     {
-        LaunchMinecraftProgress?.Invoke(progress, f);
+        var progress = (float)downloadProgress.BytesReceived / downloadProgress.TotalSizeInBytes;
+        var additionalInfo = $"({downloadProgress.FilesDownloaded}/{downloadProgress.TotalFilesCount})";
+        LaunchMinecraftProgress?.Invoke(LaunchProgress.DownloadFiles, progress, additionalInfo);
+    }
+
+    private void OnLaunchMinecraftProgress(LaunchProgress progress)
+    {
+        LaunchMinecraftProgress?.Invoke(progress, 0f, null);
     }
 }
