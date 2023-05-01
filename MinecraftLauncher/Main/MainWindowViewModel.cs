@@ -51,9 +51,7 @@ public sealed class MainWindowViewModel : ReactiveObject
         CanOpenSettings.OnNext(true);
         IsStartGameVisible = true;
         
-        settingsViewModel.Directory = _mainWindowModel.CurrentSettings.Directory;
-        settingsViewModel.DefaultPlayerName = _mainWindowModel.CurrentSettings.DefaultPlayerName;
-        settingsViewModel.LauncherVisibility = _mainWindowModel.CurrentSettings.LauncherVisibility;
+        settingsViewModel.SetUp(_mainWindowModel.CurrentSettings);
         
         Profiles.AddRange(_mainWindowModel.Profiles);
         _dontSaveSelectedProfile = true;

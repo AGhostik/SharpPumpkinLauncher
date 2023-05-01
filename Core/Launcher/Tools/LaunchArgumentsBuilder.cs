@@ -21,7 +21,7 @@ internal sealed class LaunchArgumentsBuilder
         string mainClass, int launcherVersion)
     {
         var jvmArguments = BuildArguments(arguments.Jvm);
-        var gameArguments = BuildArguments(arguments.Game);
+        var gameArguments = BuildArguments(arguments.Game, launchArgumentsData.Features);
 
         var jvmFilledArguments = FillJmvParameters(jvmArguments, launchArgumentsData, launcherVersion);
         var gameFilledArguments = FillGameArguments(gameArguments, launchArgumentsData);
@@ -29,7 +29,7 @@ internal sealed class LaunchArgumentsBuilder
         return $"{jvmFilledArguments} {mainClass} {gameFilledArguments}";
     }
 
-    private static string? BuildArguments(IReadOnlyList<ArgumentItem>? arguments)
+    private static string? BuildArguments(IReadOnlyList<ArgumentItem>? arguments, Features? features = default)
     {
         if (arguments == null)
             return null;
@@ -39,7 +39,7 @@ internal sealed class LaunchArgumentsBuilder
         {
             var argument = arguments[i];
 
-            if (!OsRuleManager.IsAllowed(argument.Rules))
+            if (!OsRuleManager.IsAllowed(argument.Rules, features))
                 continue;
             
             for (var j = 0; j < argument.Values.Count; j++)

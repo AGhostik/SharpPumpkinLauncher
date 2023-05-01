@@ -10,7 +10,7 @@
              x:Class="MinecraftLauncher.Main.Settings.SettingsControl">
     <Grid 
         ColumnDefinitions="Auto, 5, *"
-        RowDefinitions="Auto, 5, Auto, 5, Auto, 5 Auto, 5, Auto"
+        RowDefinitions="Auto, 5, Auto, 5, Auto, 5 Auto, 5, Auto, 5, Auto"
         Margin="5">
         <TextBlock 
             Grid.Column="0"
@@ -59,10 +59,38 @@
             Items="{Binding Visibilities}"
             SelectedItem="{Binding LauncherVisibility}" />
         
+        <Grid Grid.Column="0" Grid.Row="8" ColumnDefinitions="*, 5, Auto">
+            <TextBlock
+                Grid.Column="0"
+                VerticalAlignment="Center"
+                HorizontalAlignment="Right"
+                Text="Window resolution"/>
+            <CheckBox
+                Name="CustomResolutionCheckBox"
+                Grid.Column="2"
+                VerticalAlignment="Center"
+                HorizontalAlignment="Right"
+                IsChecked="{Binding UseCustomResolution}"/>
+        </Grid>
+        <Grid Grid.Column="2" Grid.Row="8" ColumnDefinitions="*, 5, *">
+            <NumericUpDown 
+                Grid.Column="0"
+                ShowButtonSpinner="False"
+                VerticalAlignment="Center"
+                IsEnabled="{Binding ElementName=CustomResolutionCheckBox, Path=IsChecked}"
+                Value="{Binding ScreenWidth}"/>
+            <NumericUpDown
+                Grid.Column="2"
+                ShowButtonSpinner="False"
+                VerticalAlignment="Center"
+                IsEnabled="{Binding ElementName=CustomResolutionCheckBox, Path=IsChecked}"
+                Value="{Binding ScreenHeight}"/>
+        </Grid>
+        
         <Grid
             Grid.Column="0"
             Grid.ColumnSpan="3"
-            Grid.Row="8"
+            Grid.Row="10"
             ColumnDefinitions="*, *">
             <Button
                 Grid.Column="0"

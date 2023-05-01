@@ -2,18 +2,24 @@
 using System.Text;
 using JsonReader.PublicData.Game;
 using Launcher.Data;
+using Launcher.PublicData;
 using SimpleLogger;
 
 namespace Launcher.Tools;
 
 internal sealed class LaunchArgumentsData
 {
-    public LaunchArgumentsData(MinecraftData minecraftData, MinecraftLaunchFiles launchFiles,
-        MinecraftPaths minecraftPaths, string playerName)
+    public LaunchArgumentsData(LaunchData launchData, MinecraftData minecraftData, MinecraftLaunchFiles launchFiles,
+        MinecraftPaths minecraftPaths)
     {
         var isValid = true;
         
-        PlayerName = playerName;
+        PlayerName = launchData.PlayerName;
+        
+        Width = launchData.ScreenWidth.ToString();
+        Height = launchData.ScreenHeight.ToString();
+
+        Features = new Features(launchData.UseCustomResolution);
         
         VersionId = minecraftData.Id;
         VersionType = minecraftData.Type;
@@ -51,9 +57,6 @@ internal sealed class LaunchArgumentsData
         AuthXuid = "null";
         AuthUuid = GetUuid(PlayerName) ?? "null";
         UserType = "mojang";
-        
-        Width = "1200";
-        Height = "720";
 
         IsValid = isValid;
     }
@@ -87,6 +90,8 @@ internal sealed class LaunchArgumentsData
     public string AuthUuid { get; }
     public string UserType { get; }
     public string LauncherName { get; }
+    
+    public Features Features { get; }
     
     public IReadOnlyList<string> Libraries { get; }
     

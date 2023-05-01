@@ -1,7 +1,5 @@
 ﻿using JsonReader;
-using JsonReader.PublicData.Assets;
 using JsonReader.PublicData.Game;
-using JsonReader.PublicData.Runtime;
 using Launcher.PublicData;
 
 namespace Launcher.Tools;
@@ -34,8 +32,7 @@ internal sealed class GameLauncher
 
             var launchFiles = FileManager.GetLaunchFiles(minecraftData, minecraftPaths);
 
-            var launchArgumentsData =
-                new LaunchArgumentsData(minecraftData, launchFiles, minecraftPaths, launchData.PlayerName);
+            var launchArgumentsData = new LaunchArgumentsData(launchData, minecraftData, launchFiles, minecraftPaths);
             
             if (!launchArgumentsData.IsValid)
                 return ErrorCode.LaunchArgument;

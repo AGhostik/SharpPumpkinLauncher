@@ -87,12 +87,16 @@ public sealed class MainWindowModel
         
         var launchData = new LaunchData(
             profileViewModel.PlayerName,
+            profileViewModel.SelectedVersion,
             CurrentSettings.Directory,
-            profileViewModel.SelectedVersion);
+            CurrentSettings.UseCustomResolution,
+            CurrentSettings.ScreenHeight,
+            CurrentSettings.ScreenWidth);
 
         _cancellationTokenSource = new CancellationTokenSource();
         
-        var result = await _minecraftLauncher.LaunchMinecraft(launchData, _cancellationTokenSource.Token, gameExited.Invoke);
+        var result =
+            await _minecraftLauncher.LaunchMinecraft(launchData, _cancellationTokenSource.Token, gameExited.Invoke);
 
         if (result != ErrorCode.NoError)
         {
@@ -118,6 +122,9 @@ public sealed class MainWindowModel
         LauncherSettings.Instance.Data.LauncherVisibility = (int)settingsData.LauncherVisibility;
         LauncherSettings.Instance.Data.GameDirectory = settingsData.Directory;
         LauncherSettings.Instance.Data.DefaultPlayerName = settingsData.DefaultPlayerName;
+        LauncherSettings.Instance.Data.UseCustomResolution = settingsData.UseCustomResolution;
+        LauncherSettings.Instance.Data.ScreenHeight = settingsData.ScreenHeight;
+        LauncherSettings.Instance.Data.ScreenWidth = settingsData.ScreenWidth;
         LauncherSettings.Save();
         
         if (needInvokeEvent)
@@ -229,12 +236,17 @@ public sealed class MainWindowModel
             launcherVisibility = (LauncherVisibility)LauncherSettings.Instance.Data.LauncherVisibility;
         }
 
+        var useCustomResolution = LauncherSettings.Instance.Data.UseCustomResolution;
+        var screenWidth = LauncherSettings.Instance.Data.ScreenWidth;
+        var screenHeight = LauncherSettings.Instance.Data.ScreenHeight;
+
         if (!string.IsNullOrEmpty(LauncherSettings.Instance.Data.GameDirectory) &&
             DirectoryValidation.IsDirectoryValid(LauncherSettings.Instance.Data.GameDirectory))
         {
             var gameDirectory = LauncherSettings.Instance.Data.GameDirectory;
+            
             settingsData = new SettingsData(LauncherSettings.Instance.Data.DefaultPlayerName, gameDirectory,
-                launcherVisibility);
+                launcherVisibility, useCustomResolution, screenHeight, screenWidth);
             
             return true;
         }

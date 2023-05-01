@@ -19,6 +19,9 @@ public sealed class SettingsViewModel : ReactiveObject
     private string? _directory;
     private string? _defaultPlayerName;
     private LauncherVisibility _launcherVisibility;
+    private bool _useCustomResolution;
+    private int _screenHeight;
+    private int _screenWidth;
 
     public SettingsViewModel(Action<SettingsData> saveAction, Action closeAction)
     {
@@ -51,6 +54,36 @@ public sealed class SettingsViewModel : ReactiveObject
         }
     }
 
+    public bool UseCustomResolution
+    {
+        get => _useCustomResolution;
+        set
+        {
+            this.RaiseAndSetIfChanged(ref _useCustomResolution, value);
+            UpdateCanSave();
+        }
+    }
+
+    public int ScreenHeight
+    {
+        get => _screenHeight;
+        set
+        {
+            this.RaiseAndSetIfChanged(ref _screenHeight, value);
+            UpdateCanSave();
+        }
+    }
+
+    public int ScreenWidth
+    {
+        get => _screenWidth;
+        set
+        {
+            this.RaiseAndSetIfChanged(ref _screenWidth, value);
+            UpdateCanSave();
+        }
+    }
+
     public LauncherVisibility LauncherVisibility
     {
         get => _launcherVisibility;
@@ -68,12 +101,23 @@ public sealed class SettingsViewModel : ReactiveObject
     public ReactiveCommand<Unit, Unit> CloseCommand { get; }
     public ReactiveCommand<Unit, Unit> PickFolderCommand { get; }
 
+    public void SetUp(SettingsData settingsData)
+    {
+        Directory = settingsData.Directory;
+        DefaultPlayerName = settingsData.DefaultPlayerName;
+        LauncherVisibility = settingsData.LauncherVisibility;
+        UseCustomResolution = settingsData.UseCustomResolution;
+        ScreenWidth = settingsData.ScreenWidth;
+        ScreenHeight = settingsData.ScreenHeight;
+    }
+
     private void Save()
     {
         if (string.IsNullOrEmpty(Directory))
             return;
         
-        var settings = new SettingsData(DefaultPlayerName, Directory, LauncherVisibility);
+        var settings = new SettingsData(DefaultPlayerName, Directory, LauncherVisibility, UseCustomResolution,
+            ScreenHeight, ScreenWidth);
         _saveAction.Invoke(settings);
     }
 
@@ -85,7 +129,8 @@ public sealed class SettingsViewModel : ReactiveObject
     private void UpdateCanSave()
     {
         var isValid = DirectoryValidation.IsDirectoryValid(Directory) &&
-                      PlayerNameValidation.IsPlayerNameValid(DefaultPlayerName);
+                      PlayerNameValidation.IsPlayerNameValid(DefaultPlayerName) &&
+                      (!UseCustomResolution || ScreenWidth > 0 && ScreenHeight > 0);
         CanSave.OnNext(isValid);
     }
     

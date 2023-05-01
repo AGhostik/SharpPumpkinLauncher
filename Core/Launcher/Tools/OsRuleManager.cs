@@ -1,5 +1,6 @@
 ﻿using JsonReader.PublicData.Game;
 using JsonReader.PublicData.Runtime;
+using SimpleLogger;
 
 namespace Launcher.Tools;
 
@@ -15,7 +16,11 @@ internal sealed class OsRuleManager
     private const string OsArchitecture86 = "x84";
 
     private const string IsDemoUser = "is_demo_user";
-    //private const string HasCustomResolution = "has_custom_resolution";
+    private const string HasCustomResolution = "has_custom_resolution";
+    private const string HasQuickPlaysSupport = "has_quick_plays_support";
+    private const string IsQuickPlaySingleplayer = "is_quick_play_singleplayer";
+    private const string IsQuickPlayMultiplayer = "is_quick_play_multiplayer";
+    private const string IsQuickPlayRealm = "is_quick_play_realms";
 
     private static readonly string _currentOsName;
     private static readonly string _currentOsVersion;
@@ -43,7 +48,7 @@ internal sealed class OsRuleManager
 
     public static string CurrentOsName => _currentOsName;
 
-    public static bool IsAllowed(IReadOnlyList<Rule>? rules)
+    public static bool IsAllowed(IReadOnlyList<Rule>? rules, Features? features = null)
     {
         if (rules == null || rules.Count == 0)
             return true;
@@ -56,8 +61,27 @@ internal sealed class OsRuleManager
 
             if (rule.Features != null)
             {
-                if (rule.Features.TryGetValue(IsDemoUser, out var value) && value)
-                    return false;
+                foreach (var (featureName, value) in rule.Features)
+                {
+                    switch (featureName)
+                    {
+                        case IsDemoUser when value:
+                            return false;
+                        case HasCustomResolution when value:
+                            return features?.UseCustomResolution ?? false;
+                        case HasQuickPlaysSupport when value:
+                            return false;
+                        case IsQuickPlaySingleplayer when value:
+                            return false;
+                        case IsQuickPlayMultiplayer when value:
+                            return false;
+                        case IsQuickPlayRealm when value:
+                            return false;
+                        default:
+                            Logger.Log($"Unknown feature '{featureName}'");
+                            return false;
+                    }
+                }
             }
 
             if (rule.Os == null)
