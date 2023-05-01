@@ -13,28 +13,32 @@
         x:CompileBindings="True"
         Icon="/Resources/icon.ico"
         Title="{x:Static properties:Localization.Title}">
-    <Grid ColumnDefinitions="Auto, *">
-        <Grid Grid.Column="0" RowDefinitions="Auto, Auto, Auto, *, Auto" Background="lightgray">
+    <Grid ColumnDefinitions="Auto, *" Background="Gainsboro">
+        <Grid Grid.Column="0" RowDefinitions="Auto, Auto, Auto, *, Auto">
             <Button
                 Grid.Row="0"
+                Margin="5,5,5,2"
                 HorizontalAlignment="Stretch"
                 HorizontalContentAlignment="Center"
                 Content="{x:Static properties:Localization.NewProfile}"
                 Command="{Binding NewProfileCommand}"/>
             <Button 
                 Grid.Row="1"
+                Margin="5,2,5,2"
                 HorizontalAlignment="Stretch"
                 HorizontalContentAlignment="Center"
                 Content="{x:Static properties:Localization.EditProfile}"
                 Command="{Binding EditProfileCommand}"/>
             <Button 
                 Grid.Row="2"
+                Margin="5,2,5,2"
                 HorizontalAlignment="Stretch"
                 HorizontalContentAlignment="Center"
                 Content="{x:Static properties:Localization.DeleteProfile}"
                 Command="{Binding DeleteProfileCommand}"/>
             <Button 
                 Grid.Row="4"
+                Margin="5,2,5,5"
                 HorizontalAlignment="Stretch"
                 HorizontalContentAlignment="Center"
                 Content="{x:Static properties:Localization.Settings}"
@@ -43,6 +47,7 @@
         <Grid Grid.Column="1" RowDefinitions="Auto, *, Auto">
             <ComboBox
                 Grid.Row="0"
+                Margin="5"
                 HorizontalAlignment="Center"
                 MinWidth="350"
                 IsEnabled="{Binding IsProfilesComboboxEnabled}"
@@ -74,47 +79,54 @@
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
             </ComboBox>
-            <ContentControl
+            <Border 
                 Grid.Row="1"
-                VerticalAlignment="Stretch"
-                HorizontalAlignment="Stretch"
-                Content="{Binding MainContent}" />
-            <Button
-                Grid.Row="2"
-                MinWidth="150"
-                MinHeight="50"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Bottom"
-                HorizontalContentAlignment="Center"
-                VerticalContentAlignment="Center"
-                IsVisible="{Binding IsStartGameVisible}"
-                Command="{Binding StartGameCommand}">
-                <Button.Content>
-                    <Grid ColumnDefinitions="Auto, Auto">
-                        <Image
-                            Name="Image"
-                            Grid.Column="0"
-                            VerticalAlignment="Center"
-                            Source="/Resources/golden_pickaxe.png" />
-                        <TextBlock
-                            Grid.Column="1"
-                            Margin="5, 0, 5, 0"
-                            VerticalAlignment="Center"
-                            Text="{x:Static properties:Localization.StartGame}" />
-                    </Grid>
-                </Button.Content>
-            </Button>
-            <Button
-                Grid.Row="2"
-                MinWidth="150"
-                MinHeight="50"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Bottom"
-                HorizontalContentAlignment="Center"
-                VerticalContentAlignment="Center"
-                IsVisible="{Binding !IsStartGameVisible}"
-                Command="{Binding AbortGameCommand}"
-                Content="{x:Static properties:Localization.StopGame}" />
+                Background="White"
+                BorderThickness="0"
+                CornerRadius="4,0,0,4">
+                <ContentControl
+                    VerticalAlignment="Stretch"
+                    HorizontalAlignment="Stretch"
+                    Content="{Binding MainContent}" />
+            </Border>
+            <Grid Grid.Row="2">
+                <Button
+                    Margin="5"
+                    MinWidth="150"
+                    MinHeight="50"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Bottom"
+                    HorizontalContentAlignment="Center"
+                    VerticalContentAlignment="Center"
+                    IsVisible="{Binding IsStartGameVisible}"
+                    Command="{Binding StartGameCommand}">
+                    <Button.Content>
+                        <Grid ColumnDefinitions="Auto, Auto">
+                            <Image
+                                Name="Image"
+                                Grid.Column="0"
+                                VerticalAlignment="Center"
+                                Source="/Resources/golden_pickaxe.png" />
+                            <TextBlock
+                                Grid.Column="1"
+                                Margin="5, 0, 5, 0"
+                                VerticalAlignment="Center"
+                                Text="{x:Static properties:Localization.StartGame}" />
+                        </Grid>
+                    </Button.Content>
+                </Button>
+                <Button
+                    Margin="5"
+                    MinWidth="150"
+                    MinHeight="50"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Bottom"
+                    HorizontalContentAlignment="Center"
+                    VerticalContentAlignment="Center"
+                    IsVisible="{Binding !IsStartGameVisible}"
+                    Command="{Binding AbortGameCommand}"
+                    Content="{x:Static properties:Localization.StopGame}" />
+            </Grid>
         </Grid>
     </Grid>
 </Window>
