@@ -64,7 +64,7 @@
                 Grid.Column="0"
                 VerticalAlignment="Center"
                 HorizontalAlignment="Right"
-                Text="Window resolution"/>
+                Text="{x:Static properties:Localization.Resolution}"/>
             <CheckBox
                 Name="CustomResolutionCheckBox"
                 Grid.Column="2"

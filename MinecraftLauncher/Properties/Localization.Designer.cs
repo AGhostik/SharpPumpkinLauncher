@@ -330,6 +330,15 @@ namespace MinecraftLauncher.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Window resolution.
+        /// </summary>
+        public static string Resolution {
+            get {
+                return ResourceManager.GetString("Resolution", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Save.
         /// </summary>
         public static string Save {
