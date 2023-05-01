@@ -22,6 +22,13 @@ public sealed class SettingsViewModel : ReactiveObject
     private bool _useCustomResolution;
     private int _screenHeight;
     private int _screenWidth;
+    
+    private string? _previousDirectoryValue;
+    private string? _previousDefaultPlayerNameValue;
+    private LauncherVisibility _previousLauncherVisibilityValue;
+    private bool _previousUseCustomResolutionValue;
+    private int _previousScreenWidthValue;
+    private int _previousScreenHeightValue;
 
     public SettingsViewModel(Action<SettingsData> saveAction, Action closeAction)
     {
@@ -109,6 +116,8 @@ public sealed class SettingsViewModel : ReactiveObject
         UseCustomResolution = settingsData.UseCustomResolution;
         ScreenWidth = settingsData.ScreenWidth;
         ScreenHeight = settingsData.ScreenHeight;
+        
+        SavePreviousValues();
     }
 
     private void Save()
@@ -116,6 +125,8 @@ public sealed class SettingsViewModel : ReactiveObject
         if (string.IsNullOrEmpty(Directory))
             return;
         
+        SavePreviousValues();
+
         var settings = new SettingsData(DefaultPlayerName, Directory, LauncherVisibility, UseCustomResolution,
             ScreenHeight, ScreenWidth);
         _saveAction.Invoke(settings);
@@ -124,6 +135,27 @@ public sealed class SettingsViewModel : ReactiveObject
     private void Close()
     {
         _closeAction.Invoke();
+        RestorePreviousValues();
+    }
+
+    private void SavePreviousValues()
+    {
+        _previousDirectoryValue = Directory;
+        _previousDefaultPlayerNameValue = DefaultPlayerName;
+        _previousLauncherVisibilityValue = LauncherVisibility;
+        _previousUseCustomResolutionValue = UseCustomResolution;
+        _previousScreenWidthValue = ScreenWidth;
+        _previousScreenHeightValue = ScreenHeight;
+    }
+
+    private void RestorePreviousValues()
+    {
+        Directory = _previousDirectoryValue;
+        DefaultPlayerName = _previousDefaultPlayerNameValue;
+        LauncherVisibility = _previousLauncherVisibilityValue;
+        UseCustomResolution = _previousUseCustomResolutionValue;
+        ScreenWidth = _previousScreenWidthValue;
+        ScreenHeight = _previousScreenHeightValue;
     }
 
     private void UpdateCanSave()

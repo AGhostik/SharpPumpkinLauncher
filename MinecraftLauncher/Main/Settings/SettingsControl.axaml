@@ -78,13 +78,13 @@
                 ShowButtonSpinner="False"
                 VerticalAlignment="Center"
                 IsEnabled="{Binding ElementName=CustomResolutionCheckBox, Path=IsChecked}"
-                Value="{Binding ScreenWidth}"/>
+                Value="{Binding ScreenWidth, Mode=TwoWay}"/>
             <NumericUpDown
                 Grid.Column="2"
                 ShowButtonSpinner="False"
                 VerticalAlignment="Center"
                 IsEnabled="{Binding ElementName=CustomResolutionCheckBox, Path=IsChecked}"
-                Value="{Binding ScreenHeight}"/>
+                Value="{Binding ScreenHeight, Mode=TwoWay}"/>
         </Grid>
         
         <Grid
