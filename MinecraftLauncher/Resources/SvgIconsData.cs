@@ -6,10 +6,16 @@ public static class SvgIconsData
 {
     static SvgIconsData()
     {
-        InternetIcon = PathGeometry.Parse(SvgPaths.InternetIconPath);
-        CopyIcon = PathGeometry.Parse(SvgPaths.CopyIconPath);
+        DeleteProfileIcon = PathGeometry.Parse(SvgPaths.DeleteProfileIconPath);
+        AddProfileIcon = PathGeometry.Parse(SvgPaths.AddProfileIconPath);
+        EditProfileIcon = PathGeometry.Parse(SvgPaths.EditProfileIconPath);
+        SettingsIcon = PathGeometry.Parse(SvgPaths.SettingsIconPath);
+        PlayIcon = PathGeometry.Parse(SvgPaths.PlayIconPath);
     }
     
-    public static readonly Geometry InternetIcon;
-    public static readonly Geometry CopyIcon;
+    public static readonly Geometry DeleteProfileIcon;
+    public static readonly Geometry AddProfileIcon;
+    public static readonly Geometry EditProfileIcon;
+    public static readonly Geometry SettingsIcon;
+    public static readonly Geometry PlayIcon;
 }

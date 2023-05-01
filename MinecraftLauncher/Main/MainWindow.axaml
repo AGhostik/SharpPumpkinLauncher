@@ -5,6 +5,7 @@
         xmlns:main="clr-namespace:MinecraftLauncher.Main"
         xmlns:profile="clr-namespace:MinecraftLauncher.Main.Profile"
         xmlns:properties="clr-namespace:MinecraftLauncher.Properties"
+        xmlns:resources="clr-namespace:MinecraftLauncher.Resources"
         mc:Ignorable="d" 
         MinWidth="650" MinHeight="350"
         Width="650" Height="350"
@@ -20,29 +21,93 @@
                 Margin="5,5,5,2"
                 HorizontalAlignment="Stretch"
                 HorizontalContentAlignment="Center"
-                Content="{x:Static properties:Localization.NewProfile}"
-                Command="{Binding NewProfileCommand}"/>
+                Command="{Binding NewProfileCommand}">
+                <Button.Content>
+                    <Grid ColumnDefinitions="Auto, 5, Auto">
+                        <TextBlock
+                            Name="AddProfileText"
+                            Grid.Column="0"
+                            VerticalAlignment="Center"
+                            Text="{x:Static properties:Localization.NewProfile}" />
+                        <Path
+                            Grid.Column="2"
+                            Stretch="Uniform"
+                            Width="16"
+                            Fill="{Binding ElementName=AddProfileText, Path=Foreground}"
+                            VerticalAlignment="Center"
+                            Data="{x:Static resources:SvgIconsData.AddProfileIcon}"/>
+                    </Grid>
+                </Button.Content>
+            </Button>
             <Button 
                 Grid.Row="1"
                 Margin="5,2,5,2"
                 HorizontalAlignment="Stretch"
                 HorizontalContentAlignment="Center"
-                Content="{x:Static properties:Localization.EditProfile}"
-                Command="{Binding EditProfileCommand}"/>
+                Command="{Binding EditProfileCommand}">
+                <Button.Content>
+                    <Grid ColumnDefinitions="Auto, 5, Auto">
+                        <TextBlock
+                            Name="EditProfileText"
+                            Grid.Column="0"
+                            VerticalAlignment="Center"
+                            Text="{x:Static properties:Localization.EditProfile}" />
+                        <Path
+                            Grid.Column="2"
+                            Stretch="Uniform"
+                            Width="16"
+                            Fill="{Binding ElementName=EditProfileText, Path=Foreground}"
+                            VerticalAlignment="Center"
+                            Data="{x:Static resources:SvgIconsData.EditProfileIcon}"/>
+                    </Grid>
+                </Button.Content>
+            </Button>
             <Button 
                 Grid.Row="2"
                 Margin="5,2,5,2"
                 HorizontalAlignment="Stretch"
                 HorizontalContentAlignment="Center"
-                Content="{x:Static properties:Localization.DeleteProfile}"
-                Command="{Binding DeleteProfileCommand}"/>
+                Command="{Binding DeleteProfileCommand}">
+                <Button.Content>
+                    <Grid ColumnDefinitions="Auto, 5, Auto">
+                        <TextBlock
+                            Name="DeleteProfileText"
+                            Grid.Column="0"
+                            VerticalAlignment="Center"
+                            Text="{x:Static properties:Localization.DeleteProfile}" />
+                        <Path
+                            Grid.Column="2"
+                            Stretch="Uniform"
+                            Width="16"
+                            Fill="{Binding ElementName=DeleteProfileText, Path=Foreground}"
+                            VerticalAlignment="Center"
+                            Data="{x:Static resources:SvgIconsData.DeleteProfileIcon}"/>
+                    </Grid>
+                </Button.Content>
+            </Button>
             <Button 
                 Grid.Row="4"
                 Margin="5,2,5,5"
                 HorizontalAlignment="Stretch"
                 HorizontalContentAlignment="Center"
-                Content="{x:Static properties:Localization.Settings}"
-                Command="{Binding OpenSettingsCommand}"/>
+                Command="{Binding OpenSettingsCommand}">
+                <Button.Content>
+                    <Grid ColumnDefinitions="Auto, 5, Auto">
+                        <TextBlock
+                            Name="SettingsText"
+                            Grid.Column="0"
+                            VerticalAlignment="Center"
+                            Text="{x:Static properties:Localization.Settings}" />
+                        <Path
+                            Grid.Column="2"
+                            Stretch="Uniform"
+                            Width="16"
+                            Fill="{Binding ElementName=SettingsText, Path=Foreground}"
+                            VerticalAlignment="Center"
+                            Data="{x:Static resources:SvgIconsData.SettingsIcon}"/>
+                    </Grid>
+                </Button.Content>
+            </Button>
         </Grid>
         <Grid Grid.Column="1" RowDefinitions="Auto, *, Auto">
             <ComboBox
@@ -102,16 +167,21 @@
                     Command="{Binding StartGameCommand}">
                     <Button.Content>
                         <Grid ColumnDefinitions="Auto, Auto">
-                            <Image
-                                Name="Image"
-                                Grid.Column="0"
-                                VerticalAlignment="Center"
-                                Source="/Resources/golden_pickaxe.png" />
                             <TextBlock
+                                Name="PlayText"
                                 Grid.Column="1"
                                 Margin="5, 0, 5, 0"
                                 VerticalAlignment="Center"
+                                FontWeight="SemiBold"
+                                FontSize="16"
                                 Text="{x:Static properties:Localization.StartGame}" />
+                            <Path
+                                Grid.Column="0"
+                                Stretch="Uniform"
+                                Width="16"
+                                Fill="{Binding ElementName=PlayText, Path=Foreground}"
+                                VerticalAlignment="Center"
+                                Data="{x:Static resources:SvgIconsData.PlayIcon}"/>
                         </Grid>
                     </Button.Content>
                 </Button>

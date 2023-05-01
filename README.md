@@ -18,6 +18,11 @@ Screenshot
 
 ![settings screenshot](https://raw.githubusercontent.com/AGhostik/MCLauncher/master/Screenshots/SettingsView.png)
 
+Used resources
+------------
+
+SVG icons (MIT License) - [github.com/neuicons/neu](https://github.com/neuicons/neu)
+
 Todo:
 ------------
 
