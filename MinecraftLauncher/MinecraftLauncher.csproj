@@ -8,10 +8,14 @@
         <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
         <ApplicationIcon>Resources\icon.ico</ApplicationIcon>
         <PublishSingleFile>true</PublishSingleFile>
-        <Version>0.2.0</Version>
+        <Version>0.3.0</Version>
         <Authors>AGhostik</Authors>
         <PackageProjectUrl>https://github.com/AGhostik/MCLauncher</PackageProjectUrl>
         <RepositoryUrl>https://github.com/AGhostik/MCLauncher</RepositoryUrl>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+      <DebugType>none</DebugType>
+      <PlatformTarget>AnyCPU</PlatformTarget>
     </PropertyGroup>
     <ItemGroup>
         <None Remove=".gitignore" />
