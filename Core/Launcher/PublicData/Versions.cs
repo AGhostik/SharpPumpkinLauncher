@@ -107,6 +107,6 @@ public sealed class Versions
 
     public override int GetHashCode()
     {
-        return HashCode.Combine(_release, _snapshot, _beta, _alpha, _versions, Latest, LatestSnapshot);
+        return HashCode.Combine(_release, _snapshot, _beta, _alpha, _versions);
     }
 }
