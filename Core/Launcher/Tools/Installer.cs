@@ -43,8 +43,7 @@ internal sealed class Installer
             if (assetsData == null)
                 return assetsDataError;
 
-            var (runtimeFiles, runtimeFilesError) =
-                await GetAndSaveRuntimes(minecraftData, minecraftPaths, cancellationToken);
+            var (runtimeFiles, runtimeFilesError) = await GetRuntimes(minecraftData, cancellationToken);
 
             if (runtimeFiles == null)
                 return runtimeFilesError;
@@ -129,8 +128,8 @@ internal sealed class Installer
         return (assetsData, ErrorCode.NoError);
     }
 
-    private async Task<(RuntimeFiles?, ErrorCode)> GetAndSaveRuntimes(MinecraftData minecraftData, 
-        MinecraftPaths minecraftPaths, CancellationToken cancellationToken)
+    private async Task<(RuntimeFiles?, ErrorCode)> GetRuntimes(MinecraftData minecraftData,
+        CancellationToken cancellationToken)
     {
         var allRuntimesJson = await DownloadManager.DownloadJsonAsync(WellKnownUrls.JavaRuntimesUrl,
             cancellationToken);
@@ -192,13 +191,6 @@ internal sealed class Installer
         var runtimeFiles = _jsonManager.GetRuntimeFiles(currentRuntimeJson);
         if (runtimeFiles == null)
             return (null, ErrorCode.RuntimeData);
-        
-        var runtimeFilesJsonCreated = await FileManager.WriteFile(
-            $"{minecraftPaths.RuntimeDirectory}\\{minecraftData.JavaVersion.Component}-{OsRuleManager.CurrentOsName}.json",
-            currentRuntimeJson);
-        
-        if (!runtimeFilesJsonCreated)
-            return (null, ErrorCode.CreateFile);
 
         return (runtimeFiles, ErrorCode.NoError);
     }

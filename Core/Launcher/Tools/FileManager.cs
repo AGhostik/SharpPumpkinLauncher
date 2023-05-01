@@ -243,6 +243,38 @@ internal static class FileManager
         return true;
     }
     
+    public static MinecraftLaunchFiles GetLaunchFiles(MinecraftData data, MinecraftPaths minecraftPaths)
+    {
+        var minecraftVersionId = data.Id;
+
+        var client = GetFullPath($"{minecraftPaths.VersionDirectory}\\{minecraftVersionId}.jar") ?? string.Empty;
+
+        var libraries = new List<string>();
+        var librariesFiles = GetLibrariesFiles(data.Libraries, minecraftPaths);
+        for (var i = 0; i < librariesFiles.Count; i++)
+        {
+            var libraryFile = librariesFiles[i];
+            if (libraryFile.NeedUnpack)
+                continue;
+
+            var path = GetFullPath(libraryFile.FileName);
+            if (string.IsNullOrEmpty(path))
+                continue;
+            
+            libraries.Add(path);
+        }
+
+        string logging;
+        if (data.LoggingData != null)
+            logging = GetFullPath($"{minecraftPaths.VersionDirectory}\\log4j2.xml") ?? string.Empty;
+        else
+            logging = string.Empty;
+        
+        var javaFile = $"{minecraftPaths.RuntimeDirectory}\\{data.JavaVersion.Component}\\{OsRuleManager.GetJavaExecutablePath()}";
+
+        return new MinecraftLaunchFiles(client, logging, javaFile, libraries);
+    }
+    
     public static MinecraftFileList GetFileList(RuntimeFiles runtimeFiles, string runtimeType, MinecraftData data,
         IReadOnlyList<Asset> assets, MinecraftPaths minecraftPaths)
     {

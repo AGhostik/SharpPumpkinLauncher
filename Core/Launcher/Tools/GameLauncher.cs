@@ -31,23 +31,11 @@ internal sealed class GameLauncher
 
             if (minecraftData == null)
                 return minecraftDataError;
-            
-            var (assetsData, assetsDataError) = await ReadAssetsData(minecraftData, minecraftPaths, cancellationToken);
 
-            if (assetsData == null)
-                return assetsDataError;
-
-            var (runtimeFiles, runtimeFilesError) =
-                await ReadRuntimesData(minecraftData, minecraftPaths, cancellationToken);
-
-            if (runtimeFiles == null)
-                return runtimeFilesError;
-
-            var runtimeType = minecraftData.JavaVersion.Component;
-            var fileList = FileManager.GetFileList(runtimeFiles, runtimeType, minecraftData, assetsData, minecraftPaths);
+            var launchFiles = FileManager.GetLaunchFiles(minecraftData, minecraftPaths);
 
             var launchArgumentsData =
-                new LaunchArgumentsData(minecraftData, fileList, minecraftPaths, launchData.PlayerName);
+                new LaunchArgumentsData(minecraftData, launchFiles, minecraftPaths, launchData.PlayerName);
             
             if (!launchArgumentsData.IsValid)
                 return ErrorCode.LaunchArgument;
@@ -93,41 +81,5 @@ internal sealed class GameLauncher
             return (null, ErrorCode.MinecraftData);
 
         return (minecraftData, ErrorCode.NoError);
-    }
-
-    private async Task<(IReadOnlyList<Asset>?, ErrorCode)> ReadAssetsData(MinecraftData minecraftData,
-        MinecraftPaths minecraftPaths, CancellationToken cancellationToken)
-    {
-        var assetsDataJson = await FileManager.ReadFile(
-            $"{minecraftPaths.AssetsIndexesDirectory}\\{minecraftData.AssetsVersion}.json",
-            cancellationToken);
-
-        if (string.IsNullOrEmpty(assetsDataJson))
-            return (null, ErrorCode.ReadFile);
-            
-        var assetsData = _jsonManager.GetAssets(assetsDataJson);
-
-        if (assetsData == null)
-            return (null, ErrorCode.AssetsData);
-
-        return (assetsData, ErrorCode.NoError);
-    }
-    
-    private async Task<(RuntimeFiles?, ErrorCode)> ReadRuntimesData(MinecraftData minecraftData,
-        MinecraftPaths minecraftPaths, CancellationToken cancellationToken)
-    {
-        var runtimesDataJson = await FileManager.ReadFile(
-            $"{minecraftPaths.RuntimeDirectory}\\{minecraftData.JavaVersion.Component}-{OsRuleManager.CurrentOsName}.json",
-            cancellationToken);
-
-        if (string.IsNullOrEmpty(runtimesDataJson))
-            return (null, ErrorCode.ReadFile);
-            
-        var runtimeFiles = _jsonManager.GetRuntimeFiles(runtimesDataJson);
-
-        if (runtimeFiles == null)
-            return (null, ErrorCode.AssetsData);
-
-        return (runtimeFiles, ErrorCode.NoError);
     }
 }

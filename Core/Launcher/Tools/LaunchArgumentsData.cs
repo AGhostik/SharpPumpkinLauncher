@@ -8,102 +8,43 @@ namespace Launcher.Tools;
 
 internal sealed class LaunchArgumentsData
 {
-    public LaunchArgumentsData(MinecraftData minecraftData, MinecraftFileList fileList, MinecraftPaths minecraftPaths,
-        string playerName)
+    public LaunchArgumentsData(MinecraftData minecraftData, MinecraftLaunchFiles launchFiles,
+        MinecraftPaths minecraftPaths, string playerName)
     {
+        var isValid = true;
+        
+        PlayerName = playerName;
+        
         VersionId = minecraftData.Id;
         VersionType = minecraftData.Type;
-        PlayerName = playerName;
         AssetsVersion = minecraftData.AssetsVersion;
-
-        if (minecraftData.LoggingData?.Argument != null)
-            LoggingArgument = minecraftData.LoggingData.Argument;
-        else
-            LoggingArgument = string.Empty;
-
-        if (fileList.Logging != null)
-        {
-            var path = FileManager.GetFullPath(fileList.Logging.FileName);
-            LoggingFile = !string.IsNullOrEmpty(path) ? $"\"{path}\"" : string.Empty;
-        }
-        else
-            LoggingFile = string.Empty;
-
-        var isValid = true;
-
-        var clientJar = FileManager.GetFullPath(fileList.Client.FileName);
-        var gameDirectory = FileManager.GetFullPath(minecraftPaths.GameDirectory);
-        var assetsDirectory = minecraftData.IsLegacyAssets() ?
-            FileManager.GetFullPath(minecraftPaths.AssetsLegacyDirectory) :
-            FileManager.GetFullPath(minecraftPaths.AssetsDirectory);
-        var librariesDirectory = FileManager.GetFullPath(minecraftPaths.LibrariesDirectory);
-        var nativesDirectory = FileManager.GetFullPath(minecraftPaths.NativesDirectory);
-
-        if (string.IsNullOrEmpty(clientJar) || string.IsNullOrEmpty(gameDirectory) ||
-            string.IsNullOrEmpty(assetsDirectory) || string.IsNullOrEmpty(librariesDirectory) ||
-            string.IsNullOrEmpty(nativesDirectory))
-        {
-            isValid = false;
-            clientJar = string.Empty;
-            gameDirectory = string.Empty;
-            assetsDirectory = string.Empty;
-            librariesDirectory = string.Empty;
-            nativesDirectory = string.Empty;
-        }
         
-        ClientJar = clientJar;
-        GameDirectory = gameDirectory;
-        AssetsDirectory = assetsDirectory;
-        LibrariesDirectory = librariesDirectory;
-        NativesDirectory = nativesDirectory;
+        JavaFile = launchFiles.Java;
+        ClientJar = launchFiles.Client;
+        LoggingFile = launchFiles.Logging;
+        Libraries = launchFiles.LibraryFiles;
 
-        var lib = new List<string>(fileList.LibraryFiles.Count);
-        for (var i = 0; i < fileList.LibraryFiles.Count; i++)
-        {
-            if (fileList.LibraryFiles[i].NeedUnpack)
-                continue;
-            
-            var path = FileManager.GetFullPath(fileList.LibraryFiles[i].FileName);
-            if (string.IsNullOrEmpty(path))
-            {
-                isValid = false;
-                break;
-            }
-            
-            lib.Add(path);
-        }
+        LoggingArgument = minecraftData.LoggingData?.Argument ?? string.Empty;
+        
+        GameDirectory = FileManager.GetFullPath(minecraftPaths.GameDirectory) ?? string.Empty;
+        
+        AssetsDirectory = minecraftData.IsLegacyAssets() ?
+            FileManager.GetFullPath(minecraftPaths.AssetsLegacyDirectory) ?? string.Empty :
+            FileManager.GetFullPath(minecraftPaths.AssetsDirectory) ?? string.Empty;
+        
+        LibrariesDirectory = FileManager.GetFullPath(minecraftPaths.LibrariesDirectory) ?? string.Empty;
+        
+        NativesDirectory = FileManager.GetFullPath(minecraftPaths.NativesDirectory) ?? string.Empty;
 
-        Libraries = lib;
-
-        var javaExecutableName = OsRuleManager.GetJavaExecutableName();
-        if (string.IsNullOrEmpty(javaExecutableName))
+        if (string.IsNullOrEmpty(ClientJar) ||
+            string.IsNullOrEmpty(GameDirectory) ||
+            string.IsNullOrEmpty(AssetsDirectory) ||
+            string.IsNullOrEmpty(LibrariesDirectory) ||
+            string.IsNullOrEmpty(NativesDirectory))
         {
             isValid = false;
-            JavaFile = string.Empty;
         }
-        else
-        {
-            string? javaFile = null;
-            for (var i = 0; i < fileList.JavaRuntimeFiles.Count; i++)
-            {
-                if (!fileList.JavaRuntimeFiles[i].FileName.Contains(javaExecutableName))
-                    continue;
-                
-                javaFile = FileManager.GetFullPath(fileList.JavaRuntimeFiles[i].FileName);
-                break;
-            }
-            
-            if (string.IsNullOrEmpty(javaFile))
-            {
-                isValid = false;
-                JavaFile = string.Empty;
-            }
-            else
-            {
-                JavaFile = javaFile;
-            }
-        }
-
+       
         LauncherName = "\"mclauncher\"";
         AuthAccessToken = "null";
         ClientId = "null";

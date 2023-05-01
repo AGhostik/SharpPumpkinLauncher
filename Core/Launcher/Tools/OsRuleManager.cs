@@ -123,12 +123,12 @@ internal sealed class OsRuleManager
         }
     }
 
-    public static string? GetJavaExecutableName()
+    public static string? GetJavaExecutablePath()
     {
         switch (_currentOsName)
         {
             case OsWindows:
-                return "javaw.exe";
+                return $"{OsWindows}\\bin\\javaw.exe";
 
             case OsOsx:
             case OsLinux:
