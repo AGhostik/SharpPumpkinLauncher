@@ -249,6 +249,15 @@ namespace MinecraftLauncher.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Launch aborted.
+        /// </summary>
+        public static string ProgressAbort {
+            get {
+                return ResourceManager.GetString("ProgressAbort", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Download game files.
         /// </summary>
         public static string ProgressDownloadFiles {
@@ -384,7 +393,7 @@ namespace MinecraftLauncher.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Stop game.
+        ///   Looks up a localized string similar to Abort.
         /// </summary>
         public static string StopGame {
             get {

@@ -10,4 +10,5 @@ public enum ProgressLocalizationKeys
     Ready,
     InvalidProfile,
     FailToStartGame,
+    Aborted,
 }

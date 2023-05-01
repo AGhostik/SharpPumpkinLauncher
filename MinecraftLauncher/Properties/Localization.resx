@@ -103,7 +103,7 @@
         <value>Play</value>
     </data>
     <data name="StopGame" xml:space="preserve">
-        <value>Stop game</value>
+        <value>Abort</value>
     </data>
     <data name="ValidationRestrictedProfileName" xml:space="preserve">
         <value>This name is already taken</value>
@@ -158,5 +158,8 @@
     </data>
     <data name="Resolution" xml:space="preserve">
         <value>Window resolution</value>
+    </data>
+    <data name="ProgressAbort" xml:space="preserve">
+        <value>Launch aborted</value>
     </data>
 </root>

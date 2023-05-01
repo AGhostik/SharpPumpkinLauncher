@@ -194,8 +194,27 @@
                     HorizontalContentAlignment="Center"
                     VerticalContentAlignment="Center"
                     IsVisible="{Binding !IsStartGameVisible}"
-                    Command="{Binding AbortGameCommand}"
-                    Content="{x:Static properties:Localization.StopGame}" />
+                    Command="{Binding AbortGameCommand}">
+                    <Button.Content>
+                        <Grid ColumnDefinitions="Auto, Auto">
+                            <TextBlock
+                                Name="StopText"
+                                Grid.Column="0"
+                                Margin="5, 0, 5, 0"
+                                VerticalAlignment="Center"
+                                FontWeight="SemiBold"
+                                FontSize="16"
+                                Text="{x:Static properties:Localization.StopGame}" />
+                            <Path
+                                Grid.Column="1"
+                                Stretch="Uniform"
+                                Width="16"
+                                Fill="{Binding ElementName=StopText, Path=Foreground}"
+                                VerticalAlignment="Center"
+                                Data="{x:Static resources:SvgIconsData.CloseIcon}"/>
+                        </Grid>
+                    </Button.Content>
+                </Button>
             </Grid>
         </Grid>
     </Grid>

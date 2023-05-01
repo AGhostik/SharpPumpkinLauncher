@@ -98,11 +98,19 @@ public sealed class MainWindowModel
         var result =
             await _minecraftLauncher.LaunchMinecraft(launchData, _cancellationTokenSource.Token, gameExited.Invoke);
 
-        if (result != ErrorCode.NoError)
+        switch (result)
         {
-            gameExited.Invoke();
-            UpdateProgressValues?.Invoke(ProgressLocalizationKeys.FailToStartGame, 0, null);
-            Logger.Log(result);
+            case ErrorCode.NoError:
+                break;
+            case ErrorCode.GameAborted:
+                gameExited.Invoke();
+                UpdateProgressValues?.Invoke(ProgressLocalizationKeys.Aborted, 0, null);
+                break;
+            default:
+                gameExited.Invoke();
+                UpdateProgressValues?.Invoke(ProgressLocalizationKeys.FailToStartGame, 0, null);
+                Logger.Log(result);
+                break;
         }
         
         _cancellationTokenSource.Dispose();

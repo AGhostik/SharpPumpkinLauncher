@@ -11,6 +11,7 @@ public static class SvgIconsData
         EditProfileIcon = PathGeometry.Parse(SvgPaths.EditProfileIconPath);
         SettingsIcon = PathGeometry.Parse(SvgPaths.SettingsIconPath);
         PlayIcon = PathGeometry.Parse(SvgPaths.PlayIconPath);
+        CloseIcon = PathGeometry.Parse(SvgPaths.CloseIconPath);
     }
     
     public static readonly Geometry DeleteProfileIcon;
@@ -18,4 +19,5 @@ public static class SvgIconsData
     public static readonly Geometry EditProfileIcon;
     public static readonly Geometry SettingsIcon;
     public static readonly Geometry PlayIcon;
+    public static readonly Geometry CloseIcon;
 }

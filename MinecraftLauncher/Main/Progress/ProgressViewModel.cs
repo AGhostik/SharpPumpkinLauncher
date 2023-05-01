@@ -8,6 +8,7 @@ public sealed class ProgressViewModel : ReactiveObject
 {
     private double _progressValue;
     private string? _text;
+    private string? _additionalText;
     private bool _isProgressVisible;
 
     public ProgressViewModel(MainWindowModel mainWindowModel)
@@ -26,6 +27,12 @@ public sealed class ProgressViewModel : ReactiveObject
     {
         get => _text;
         set => this.RaiseAndSetIfChanged(ref _text, value);
+    }
+    
+    public string? AdditionalText
+    {
+        get => _additionalText;
+        set => this.RaiseAndSetIfChanged(ref _additionalText, value);
     }
 
     public bool IsProgressVisible
@@ -47,11 +54,11 @@ public sealed class ProgressViewModel : ReactiveObject
             ProgressLocalizationKeys.FailToStartGame => Localization.ProgressFailToStartGame,
             ProgressLocalizationKeys.Loading => Localization.ProgressLoading,
             ProgressLocalizationKeys.Ready => Localization.ProgressReady,
+            ProgressLocalizationKeys.Aborted => Localization.ProgressAbort,
             _ => throw new ArgumentOutOfRangeException(nameof(localizationKey), localizationKey, null)
         };
 
-        if (!string.IsNullOrEmpty(additionalInfo))
-            Text += additionalInfo;
+        AdditionalText = additionalInfo;
 
         IsProgressVisible = progress01 > 0;
         ProgressValue = 100f * progress01;

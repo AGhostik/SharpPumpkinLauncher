@@ -37,6 +37,8 @@ public sealed class MinecraftLauncher
     public async Task<ErrorCode> LaunchMinecraft(LaunchData launchData, CancellationToken cancellationToken, 
         Action? startedAction = null, Action? exitedAction = null)
     {
+        OnLaunchMinecraftProgress(LaunchProgress.Prepare);
+        
         if (!launchData.Version.IsInstalled)
         {
             _installer.DownloadingProgress += InstallerOnDownloadingProgress;
@@ -76,7 +78,7 @@ public sealed class MinecraftLauncher
     private void InstallerOnDownloadingProgress(DownloadProgress downloadProgress)
     {
         var progress = (float)downloadProgress.BytesReceived / downloadProgress.TotalSizeInBytes;
-        var additionalInfo = $"({downloadProgress.FilesDownloaded}/{downloadProgress.TotalFilesCount})";
+        var additionalInfo = $" ({downloadProgress.FilesDownloaded} / {downloadProgress.TotalFilesCount})";
         LaunchMinecraftProgress?.Invoke(LaunchProgress.DownloadFiles, progress, additionalInfo);
     }
 

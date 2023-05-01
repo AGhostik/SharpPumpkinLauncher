@@ -8,13 +8,22 @@
              x:CompileBindings="True"
              x:Class="MinecraftLauncher.Main.Progress.ProgressControl">
     <Grid RowDefinitions="*, Auto">
-        <TextBlock
+        <Grid 
             Grid.Row="0"
             Margin="5"
-            VerticalAlignment="Bottom"
-            TextWrapping="Wrap"
-            TextAlignment="Center"
-            Text="{Binding Text}"/>
+            HorizontalAlignment="Center"
+            ColumnDefinitions="Auto, Auto">
+            <TextBlock
+                Grid.Column="0"
+                VerticalAlignment="Bottom"
+                TextWrapping="Wrap"
+                Text="{Binding Text}"/>
+            <TextBlock
+                Grid.Column="1"
+                VerticalAlignment="Bottom"
+                TextWrapping="Wrap"
+                Text="{Binding AdditionalText}"/>
+        </Grid>
         <ProgressBar
             Grid.Row="1"
             Margin="5,0,5,5"
