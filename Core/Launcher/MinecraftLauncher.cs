@@ -23,15 +23,12 @@ public sealed class MinecraftLauncher
     
     public async Task<Versions> GetAvailableVersions(string directory, CancellationToken cancellationToken = default)
     {
-        var offlineVersions = await _versionsLoader.GetInstalledVersions(directory, cancellationToken);
-
-        if (!await DownloadManager.CheckConnection(cancellationToken))
-            return offlineVersions;
-        
-        var onlineVersions = await _versionsLoader.GetOnlineAvailableVersions(cancellationToken);
-        
-        onlineVersions.Merge(offlineVersions);
-        return onlineVersions;
+        return await _versionsLoader.ReadVersionsFromDisk(directory, cancellationToken);
+    }
+    
+    public async Task<Versions> GetOnlineAvailableVersions(CancellationToken cancellationToken = default)
+    {
+        return await _versionsLoader.GetOnlineAvailableVersions(cancellationToken);
     }
 
     public async Task<ErrorCode> LaunchMinecraft(LaunchData launchData, CancellationToken cancellationToken, 

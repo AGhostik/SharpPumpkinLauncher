@@ -7,7 +7,6 @@ public sealed class Version
         Id = id;
         Url = null;
         Type = type;
-        IsInstalled = true;
     }
     
     public Version(string id, string url, VersionType type)
@@ -19,21 +18,20 @@ public sealed class Version
 
     public string Id { get; }
     public VersionType Type { get; }
-    public string? Url { get; private set; }
-    public bool IsInstalled { get; private set; }
-
-    public bool Merge(Version from)
+    public string? Url { get; }
+    public bool IsInstalled { get; }
+    
+    public static Version? Merge(Version a, Version b)
     {
-        if (Id != from.Id || Type != from.Type)
-            return false;
+        if (a.Id != b.Id || a.Type != b.Type)
+            return null;
 
-        if (string.IsNullOrEmpty(Url))
-            Url = from.Url;
+        var url = string.IsNullOrEmpty(a.Url) ? b.Url : a.Url;
+        
+        if (string.IsNullOrEmpty(url))
+            return new Version(a.Id, a.Type);
 
-        if (!IsInstalled)
-            IsInstalled = from.IsInstalled;
-
-        return true;
+        return new Version(a.Id, url, a.Type);
     }
 
     public override bool Equals(object? obj)

@@ -14,7 +14,6 @@ public sealed class ProgressViewModel : ReactiveObject
     public ProgressViewModel(MainWindowModel mainWindowModel)
     {
         mainWindowModel.UpdateProgressValues += OnUpdateProgressValues;
-        Text = Localization.ProgressLoading;
     }
 
     public double ProgressValue

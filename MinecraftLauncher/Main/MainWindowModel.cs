@@ -22,34 +22,36 @@ public sealed class MainWindowModel
 
     private CancellationTokenSource? _cancellationTokenSource;
 
-    private Versions? _availableVersions;
-    private Action<Versions>? _versionsLoaded;
+    private Versions? _offlineVersions;
+    private Versions? _onlineVersions;
+    
+    private Versions? _allVersions;
+    
     private int _profilesToLoadCount;
     private int _currentLoadedProfilesCount;
+
+    private Action<Versions>? _versionsLoaded;
 
     public event Action<Versions>? VersionsLoaded
     {
         add
         {
-            if (_availableVersions != null)
-                value?.Invoke(_availableVersions);
-            
             _versionsLoaded += value;
+            InvokeVersionsLoaded();
         }
         remove => _versionsLoaded -= value;
     }
-
     public event Action<ProgressLocalizationKeys, float, string?>? UpdateProgressValues;
     public event Action? AllProfilesLoaded;
-
-    private event Action SettingsDirectorySet;
+    private event Action Init;
 
     public MainWindowModel()
     {
         _minecraftLauncher = new MinecraftLauncher();
         _minecraftLauncher.LaunchMinecraftProgress += UpdateProgress;
 
-        SettingsDirectorySet += LoadAvailableVersions;
+        Init += LoadOfflineVersions;
+        Init += LoadOnlineVersions;
 
         if (LoadSettings(out var allProfiles, out var lastSelectedProfile, out var settingsData))
         {
@@ -66,7 +68,8 @@ public sealed class MainWindowModel
             SetSettingsData(CurrentSettings);
         }
         
-        SettingsDirectorySet.Invoke();
+        Init.Invoke();
+        UpdateProgressValues?.Invoke(ProgressLocalizationKeys.Loading, 0, null);
     }
 
     public IReadOnlyList<ProfileViewModel> Profiles { get; }
@@ -124,7 +127,7 @@ public sealed class MainWindowModel
 
     public void SetSettingsData(SettingsData settingsData)
     {
-        var needInvokeEvent = CurrentSettings.Directory != settingsData.Directory;
+        var directoryChanged = CurrentSettings.Directory != settingsData.Directory;
         CurrentSettings = settingsData;
 
         LauncherSettings.Instance.Data.LauncherVisibility = (int)settingsData.LauncherVisibility;
@@ -135,8 +138,8 @@ public sealed class MainWindowModel
         LauncherSettings.Instance.Data.ScreenWidth = settingsData.ScreenWidth;
         LauncherSettings.Save();
         
-        if (needInvokeEvent)
-            SettingsDirectorySet.Invoke();
+        if (directoryChanged)
+            LoadOfflineVersions();
     }
 
     public void SaveSelectedProfile(string profileName)
@@ -199,13 +202,45 @@ public sealed class MainWindowModel
         LauncherSettings.Save();
     }
     
-    private async void LoadAvailableVersions()
+    private async void LoadOfflineVersions()
     {
-        UpdateProgressValues?.Invoke(ProgressLocalizationKeys.Loading, 0, null);
-        var availableVersions = await _minecraftLauncher.GetAvailableVersions(CurrentSettings.Directory);
-        _availableVersions = availableVersions;
-        _versionsLoaded?.Invoke(availableVersions);
+        _offlineVersions = await _minecraftLauncher.GetAvailableVersions(CurrentSettings.Directory);
+        if (_offlineVersions.IsEmpty)
+            return;
+        
         UpdateProgressValues?.Invoke(ProgressLocalizationKeys.Ready, 0, null);
+        TryMergeOfflineAndOnlineVersions();
+        InvokeVersionsLoaded();
+    }
+    
+    private async void LoadOnlineVersions()
+    {
+        _onlineVersions = await _minecraftLauncher.GetOnlineAvailableVersions();
+        if (_onlineVersions.IsEmpty)
+            return;
+        
+        UpdateProgressValues?.Invoke(ProgressLocalizationKeys.Ready, 0, null);
+        TryMergeOfflineAndOnlineVersions();
+        InvokeVersionsLoaded();
+    }
+
+    private void TryMergeOfflineAndOnlineVersions()
+    {
+        if (_offlineVersions == null || _onlineVersions == null)
+            return;
+        
+        _allVersions = Versions.Merge(_onlineVersions, _offlineVersions);
+        _versionsLoaded?.Invoke(_allVersions);
+    }
+
+    private void InvokeVersionsLoaded()
+    {
+        if (_allVersions != null)
+            _versionsLoaded?.Invoke(_allVersions);
+        else if (_onlineVersions != null)
+            _versionsLoaded?.Invoke(_onlineVersions);
+        else if (_offlineVersions != null)
+            _versionsLoaded?.Invoke(_offlineVersions);
     }
     
     private bool LoadSettings(out IReadOnlyList<ProfileViewModel> allProfiles, out ProfileViewModel? lastSelectedProfile,

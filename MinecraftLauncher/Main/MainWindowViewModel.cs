@@ -195,7 +195,7 @@ public sealed class MainWindowViewModel : ReactiveObject
         SetDefaultMainContent();
     }
     
-    private void OnVersionsLoaded(Versions versions)
+    private void OnVersionsLoaded(Versions _)
     {
         IsVersionsLoaded = true;
     }
@@ -255,8 +255,11 @@ public sealed class MainWindowViewModel : ReactiveObject
     
     private void DeleteProfile()
     {
-        if (SelectedProfile != null)
-            Profiles.Remove(SelectedProfile);
+        if (SelectedProfile == null)
+            return;
+        
+        Profiles.Remove(SelectedProfile);
+        _mainWindowModel.VersionsLoaded -= SelectedProfile.SetVersions;
         
         IsProfilesComboboxEnabled = Profiles.Count > 0;
     }

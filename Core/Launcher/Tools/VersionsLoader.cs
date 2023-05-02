@@ -33,7 +33,7 @@ internal sealed class VersionsLoader
             GetVersionList(versions.Alpha));
     }
     
-    public async Task<Versions> GetInstalledVersions(string directory, CancellationToken cancellationToken)
+    public async Task<Versions> ReadVersionsFromDisk(string directory, CancellationToken cancellationToken)
     {
         var paths = new MinecraftPaths(directory, string.Empty);
         if (!FileManager.DirectoryExist(paths.VersionDirectory))
@@ -51,22 +51,18 @@ internal sealed class VersionsLoader
             {
                 var subDirectory = subDirectories[i];
                 var fileInfos = FileManager.GetFileInfos(subDirectory.FullName);
-                var hasJar = false;
                 var jsonPath = string.Empty;
                 for (var j = 0; j < fileInfos.Count; j++)
                 {
                     var fileInfo = fileInfos[j];
-                    if (fileInfo.Name == $"{subDirectory.Name}.jar")
-                    {
-                        hasJar = true;
-                    }
-                    else if (fileInfo.Name == $"{subDirectory.Name}.json")
-                    {
-                        jsonPath = fileInfo.FullName;
-                    }
+                    if (fileInfo.Name != $"{subDirectory.Name}.json")
+                        continue;
+                    
+                    jsonPath = fileInfo.FullName;
+                    break;
                 }
 
-                if (!hasJar || string.IsNullOrEmpty(jsonPath))
+                if (string.IsNullOrEmpty(jsonPath))
                     continue;
                 
                 var json = await FileManager.ReadFile(jsonPath, cancellationToken);

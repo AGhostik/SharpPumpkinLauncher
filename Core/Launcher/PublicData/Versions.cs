@@ -1,13 +1,7 @@
-﻿using SimpleLogger;
-
-namespace Launcher.PublicData;
+﻿namespace Launcher.PublicData;
 
 public sealed class Versions
 {
-    private readonly List<Version> _release;
-    private readonly List<Version> _snapshot;
-    private readonly List<Version> _beta;
-    private readonly List<Version> _alpha;
     private readonly Dictionary<string, Version> _versions;
 
     public static Versions Empty => new();
@@ -16,29 +10,29 @@ public sealed class Versions
     {
         Latest = null;
         LatestSnapshot = null;
-        _release = new List<Version>();
-        _snapshot = new List<Version>();
-        _beta = new List<Version>();
-        _alpha = new List<Version>();
+        Release = Array.Empty<Version>();
+        Snapshot = Array.Empty<Version>();
+        Beta = Array.Empty<Version>();
+        Alpha = Array.Empty<Version>();
         _versions = new Dictionary<string, Version>();
     }
 
-    public Versions(string? latestId, string? latestSnapshotId, 
-        List<Version> release, List<Version> snapshot, List<Version> beta, List<Version> alpha)
+    public Versions(string? latestId, string? latestSnapshotId, IReadOnlyList<Version> release,
+        IReadOnlyList<Version> snapshot, IReadOnlyList<Version> beta, IReadOnlyList<Version> alpha)
     {
-        _release = release;
-        _snapshot = snapshot;
-        _beta = beta;
-        _alpha = alpha;
+        Release = release;
+        Snapshot = snapshot;
+        Beta = beta;
+        Alpha = alpha;
 
         _versions = new Dictionary<string, Version>();
-        AddVersionToDictionary(_alpha);
-        AddVersionToDictionary(_beta);
-        AddVersionToDictionary(_snapshot);
-        AddVersionToDictionary(_release);
+        AddVersionToDictionary(Alpha);
+        AddVersionToDictionary(Beta);
+        AddVersionToDictionary(Snapshot);
+        AddVersionToDictionary(Release);
 
-        Latest = _release.Find(version => version.Id == latestId);
-        LatestSnapshot = _snapshot.Find(version => version.Id == latestSnapshotId);
+        Latest = Release.FirstOrDefault(version => version.Id == latestId);
+        LatestSnapshot = Snapshot.FirstOrDefault(version => version.Id == latestSnapshotId);
 
         void AddVersionToDictionary(IReadOnlyList<Version> versions)
         {
@@ -47,47 +41,56 @@ public sealed class Versions
         }
     }
     
-    public Version? Latest { get; private set; }
+    public Version? Latest { get; }
     
-    public Version? LatestSnapshot { get; private set; }
+    public Version? LatestSnapshot { get; }
 
-    public IReadOnlyList<Version> Release => _release;
+    public IReadOnlyList<Version> Release { get; }
 
-    public IReadOnlyList<Version> Snapshot => _snapshot;
+    public IReadOnlyList<Version> Snapshot { get; }
 
-    public IReadOnlyList<Version> Beta => _beta;
+    public IReadOnlyList<Version> Beta { get; }
 
-    public IReadOnlyList<Version> Alpha => _alpha;
+    public IReadOnlyList<Version> Alpha { get; }
 
     public IReadOnlyDictionary<string, Version> AllVersions => _versions;
 
-    public void Merge(Versions versions)
-    {
-        MergeTwoList(versions._release, _release);
-        MergeTwoList(versions._snapshot, _snapshot);
-        MergeTwoList(versions._beta, _beta);
-        MergeTwoList(versions._alpha, _alpha);
+    public bool IsEmpty => Release.Count == 0 && Snapshot.Count == 0 && Beta.Count == 0 && Alpha.Count == 0;
 
-        if (Latest == null)
-            Latest = versions.Latest;
+    public static Versions Merge(Versions a, Versions b)
+    {
+        var latest = a.Latest ?? b.Latest;
+        var latestSnapshot = a.LatestSnapshot ?? b.LatestSnapshot;
         
-        if (LatestSnapshot == null)
-            LatestSnapshot = versions.LatestSnapshot;
+        var release = MergeTwoList(a.Release, b.Release);
+        var snapshot = MergeTwoList(a.Snapshot, b.Snapshot);
+        var beta = MergeTwoList(a.Beta, b.Beta);
+        var alpha = MergeTwoList(a.Alpha, b.Alpha);
+
+        return new Versions(latest?.Id, latestSnapshot?.Id, release, snapshot, beta, alpha);
         
-        void MergeTwoList(IList<Version> from, IList<Version> to)
+        IReadOnlyList<Version> MergeTwoList(IReadOnlyList<Version> listA, IReadOnlyList<Version> listB)
         {
-            for (var i = 0; i < to.Count; i++)
+            var result = new List<Version>();
+            for (var i = 0; i < listA.Count; i++)
             {
-                for (var j = 0; j < from.Count; j++)
+                var element = listA[i];
+                for (var j = 0; j < listB.Count; j++)
                 {
-                    if (to[i].Id != from[j].Id)
+                    if (listA[i].Id != listB[j].Id)
                         continue;
                     
-                    var result = to[i].Merge(from[j]);
-                    if (!result)
-                        Logger.Log($"Error on merge two version of {to[i].Id} id");
+                    var mergeResult = Version.Merge(listA[i], listB[i]);
+                    if (mergeResult == null)
+                        continue;
+
+                    element = mergeResult;
+                    break;
                 }
+                result.Add(element);
             }
+
+            return result.ToArray();
         }
     }
 
@@ -100,13 +103,17 @@ public sealed class Versions
 
     private bool Equals(Versions other)
     {
-        return _release.Equals(other._release) && _snapshot.Equals(other._snapshot) && _beta.Equals(other._beta) &&
-               _alpha.Equals(other._alpha) && _versions.Equals(other._versions) && Equals(Latest, other.Latest) &&
+        return Release.Equals(other.Release) &&
+               Snapshot.Equals(other.Snapshot) &&
+               Beta.Equals(other.Beta) &&
+               Alpha.Equals(other.Alpha) &&
+               _versions.Equals(other._versions) &&
+               Equals(Latest, other.Latest) &&
                Equals(LatestSnapshot, other.LatestSnapshot);
     }
 
     public override int GetHashCode()
     {
-        return HashCode.Combine(_release, _snapshot, _beta, _alpha, _versions);
+        return HashCode.Combine(Release, Snapshot, Beta, Alpha, _versions);
     }
 }
