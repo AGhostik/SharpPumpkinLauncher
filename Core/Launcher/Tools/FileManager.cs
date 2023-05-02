@@ -275,7 +275,7 @@ internal static class FileManager
         return new MinecraftLaunchFiles(client, logging, javaFile, libraries);
     }
     
-    public static MinecraftFileList GetFileList(RuntimeFiles runtimeFiles, string runtimeType, MinecraftData data,
+    public static MinecraftFileList GetFileList(RuntimeFiles runtimeFiles, MinecraftData data,
         IReadOnlyList<Asset> assets, MinecraftPaths minecraftPaths)
     {
         var minecraftVersionId = data.Id;
@@ -296,6 +296,7 @@ internal static class FileManager
             ? GetLegacyAssetsFiles(assets, minecraftPaths)
             : GetAssetsFiles(assets, minecraftPaths);
 
+        var runtimeType = data.JavaVersion.Component;
         var javaRuntimeFiles = GetRuntimeFiles(runtimeFiles, runtimeType, minecraftPaths);
         
         var minecraftFileList = new MinecraftFileList(client, server, librariesFiles, assetsFiles, javaRuntimeFiles);

@@ -48,8 +48,7 @@ internal sealed class Installer
             if (runtimeFiles == null)
                 return runtimeFilesError;
             
-            var runtimeType = minecraftData.JavaVersion.Component;
-            var fileList = FileManager.GetFileList(runtimeFiles, runtimeType, minecraftData, assetsData, minecraftPaths);
+            var fileList = FileManager.GetFileList(runtimeFiles, minecraftData, assetsData, minecraftPaths);
             
             var missingInfoError = GetMissingInfo(fileList, minecraftPaths, out var minecraftMissedInfo);
             if (missingInfoError != ErrorCode.NoError)
