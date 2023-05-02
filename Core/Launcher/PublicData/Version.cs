@@ -19,7 +19,6 @@ public sealed class Version
     public string Id { get; }
     public VersionType Type { get; }
     public string? Url { get; }
-    public bool IsInstalled { get; }
     
     public static Version? Merge(Version a, Version b)
     {
@@ -41,13 +40,16 @@ public sealed class Version
         return false;
     }
 
-    private bool Equals(Version other)
+    public bool Equals(Version? other)
     {
-        return Id == other.Id && Type == other.Type;
+        if (other == null)
+            return false;
+        
+        return Id == other.Id && Type == other.Type && Url == other.Url;
     }
 
     public override int GetHashCode()
     {
-        return HashCode.Combine(Id, (int)Type);
+        return HashCode.Combine(Id, (int)Type, Url);
     }
 }

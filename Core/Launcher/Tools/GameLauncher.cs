@@ -1,5 +1,8 @@
 ﻿using JsonReader;
+using JsonReader.PublicData.Assets;
 using JsonReader.PublicData.Game;
+using JsonReader.PublicData.Runtime;
+using Launcher.Data;
 using Launcher.PublicData;
 
 namespace Launcher.Tools;
@@ -14,6 +17,35 @@ internal sealed class GameLauncher
     }
     
     public event Action<LaunchProgress>? LaunchMinecraftProgress;
+    
+    public async Task<MinecraftMissedInfo?> IsVersionInstalled(LaunchData launchData,
+        CancellationToken cancellationToken)
+    {
+        var minecraftPaths = new MinecraftPaths(launchData.GameDirectory, launchData.Version.Id);
+        
+        var (minecraftData, _) = await ReadMinecraftData(minecraftPaths, launchData.Version.Id, cancellationToken);
+
+        if (minecraftData == null)
+            return null;
+
+        var assetsData = await ReadAssetsData(minecraftData, minecraftPaths, cancellationToken);
+
+        if (assetsData == null)
+            return null;
+
+        var runtimeFiles = await ReadRuntimesData(minecraftData, minecraftPaths, cancellationToken);
+
+        if (runtimeFiles == null)
+            return null;
+        
+        var fileList = FileManager.GetFileList(runtimeFiles, minecraftData, assetsData, minecraftPaths);
+            
+        var missingInfoError = FileManager.GetMissingInfo(fileList, minecraftPaths, out var minecraftMissedInfo);
+        if (missingInfoError != ErrorCode.NoError)
+            return null;
+
+        return minecraftMissedInfo;
+    }
 
     public async Task<ErrorCode> LaunchMinecraft(LaunchData launchData, CancellationToken cancellationToken,
         Action? startedAction = null, Action? exitedAction = null)
@@ -78,5 +110,35 @@ internal sealed class GameLauncher
             return (null, ErrorCode.MinecraftData);
 
         return (minecraftData, ErrorCode.NoError);
+    }
+    
+    private async Task<IReadOnlyList<Asset>?> ReadAssetsData(MinecraftData minecraftData,
+        MinecraftPaths minecraftPaths, CancellationToken cancellationToken)
+    {
+        var assetsDataJson = await FileManager.ReadFile(
+            $"{minecraftPaths.AssetsIndexesDirectory}\\{minecraftData.AssetsVersion}.json",
+            cancellationToken);
+
+        if (string.IsNullOrEmpty(assetsDataJson))
+            return null;
+            
+        var assetsData = _jsonManager.GetAssets(assetsDataJson);
+
+        return assetsData;
+    }
+    
+    private async Task<RuntimeFiles?> ReadRuntimesData(MinecraftData minecraftData,
+        MinecraftPaths minecraftPaths, CancellationToken cancellationToken)
+    {
+        var runtimesDataJson = await FileManager.ReadFile(
+            $"{minecraftPaths.RuntimeDirectory}\\{minecraftData.JavaVersion.Component}-{OsRuleManager.CurrentOsName}.json",
+            cancellationToken);
+
+        if (string.IsNullOrEmpty(runtimesDataJson))
+            return null;
+            
+        var runtimeFiles = _jsonManager.GetRuntimeFiles(runtimesDataJson);
+
+        return runtimeFiles;
     }
 }

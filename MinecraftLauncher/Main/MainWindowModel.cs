@@ -30,6 +30,9 @@ public sealed class MainWindowModel
     private int _profilesToLoadCount;
     private int _currentLoadedProfilesCount;
 
+    private ProfileViewModel? _awaitingStartProfileViewModel;
+    private Action? _awaitingStartGameExitedAction;
+
     private Action<Versions>? _versionsLoaded;
 
     public event Action<Versions>? VersionsLoaded
@@ -109,6 +112,11 @@ public sealed class MainWindowModel
                 gameExited.Invoke();
                 UpdateProgressValues?.Invoke(ProgressLocalizationKeys.Aborted, 0, null);
                 break;
+            case ErrorCode.NeedVersionUrl:
+                _awaitingStartProfileViewModel = profileViewModel;
+                _awaitingStartGameExitedAction = gameExited;
+                VersionsLoaded += WaitOnlineVersionsLoadedAndTryStartGame;
+                break;
             default:
                 gameExited.Invoke();
                 UpdateProgressValues?.Invoke(ProgressLocalizationKeys.FailToStartGame, 0, null);
@@ -120,9 +128,21 @@ public sealed class MainWindowModel
         _cancellationTokenSource = null;
     }
 
+    private async void WaitOnlineVersionsLoadedAndTryStartGame(Versions versions)
+    {
+        if (_onlineVersions == null)
+            return;
+
+        if (_awaitingStartProfileViewModel?.SelectedVersion != null && _awaitingStartGameExitedAction != null)
+            await StartGame(_awaitingStartProfileViewModel, _awaitingStartGameExitedAction);
+
+        VersionsLoaded -= WaitOnlineVersionsLoadedAndTryStartGame;
+    }
+
     public void AbortStartGame()
     {
         _cancellationTokenSource?.Cancel();
+        VersionsLoaded -= WaitOnlineVersionsLoadedAndTryStartGame;
     }
 
     public void SetSettingsData(SettingsData settingsData)
@@ -148,7 +168,7 @@ public sealed class MainWindowModel
         LauncherSettings.Save();
     }
 
-    private void ProfileLoaded(ProfileViewModel profileViewModel)
+    private void ProfileLoaded(ProfileViewModel _)
     {
         _currentLoadedProfilesCount++;
         if (_currentLoadedProfilesCount == _profilesToLoadCount)
@@ -202,6 +222,19 @@ public sealed class MainWindowModel
         LauncherSettings.Save();
     }
     
+    public void DeleteProfile(ProfileViewModel profileViewModel)
+    {
+        if (LauncherSettings.Instance.Data.Profiles == null)
+            return;
+
+        var profileToDelete = LauncherSettings.Instance.Data.Profiles.Find(p => p.Name == profileViewModel.ProfileName);
+        if (profileToDelete == null)
+            return;
+        
+        LauncherSettings.Instance.Data.Profiles.Remove(profileToDelete);
+        LauncherSettings.Save();
+    }
+    
     private async void LoadOfflineVersions()
     {
         _offlineVersions = await _minecraftLauncher.GetAvailableVersions(CurrentSettings.Directory);
@@ -230,7 +263,6 @@ public sealed class MainWindowModel
             return;
         
         _allVersions = Versions.Merge(_onlineVersions, _offlineVersions);
-        _versionsLoaded?.Invoke(_allVersions);
     }
 
     private void InvokeVersionsLoaded()

@@ -6,6 +6,7 @@ using JsonReader.PublicData.Assets;
 using JsonReader.PublicData.Game;
 using JsonReader.PublicData.Runtime;
 using Launcher.Data;
+using Launcher.PublicData;
 using SimpleLogger;
 
 namespace Launcher.Tools;
@@ -273,6 +274,113 @@ internal static class FileManager
         var javaFile = $"{minecraftPaths.RuntimeDirectory}\\{data.JavaVersion.Component}\\{OsRuleManager.GetJavaExecutablePath()}";
 
         return new MinecraftLaunchFiles(client, logging, javaFile, libraries);
+    }
+    
+    public static ErrorCode GetMissingInfo(MinecraftFileList minecraftFileList, MinecraftPaths minecraftPaths,
+        out MinecraftMissedInfo minecraftMissedInfo)
+    {
+        minecraftMissedInfo = new MinecraftMissedInfo();
+        
+        var clientFileError = CheckFileAndDirectoryMissed(ref minecraftMissedInfo, minecraftFileList.Client);
+        if (clientFileError != ErrorCode.NoError)
+            return clientFileError;
+
+        if (minecraftFileList.Server != null)
+        {
+            var serverFileError = CheckFileAndDirectoryMissed(ref minecraftMissedInfo, minecraftFileList.Server);
+            if (serverFileError != ErrorCode.NoError)
+                return serverFileError;
+        }
+
+        if (minecraftFileList.Logging != null)
+        {
+            var loggingFileError = CheckFileAndDirectoryMissed(ref minecraftMissedInfo, minecraftFileList.Logging);
+            if (loggingFileError != ErrorCode.NoError)
+                return loggingFileError;
+        }
+
+        for (var i = 0; i < minecraftFileList.LibraryFiles.Count; i++)
+        {
+            var libraryFile = minecraftFileList.LibraryFiles[i];
+            var libraryFileError = CheckFileAndDirectoryMissed(ref minecraftMissedInfo, libraryFile);
+            if (libraryFileError != ErrorCode.NoError)
+                return libraryFileError;
+
+            if (libraryFile.NeedUnpack)
+            {
+                var natives = minecraftPaths.NativesDirectory;
+                if (!DirectoryExist(natives) && !minecraftMissedInfo.DirectoriesToCreate.Contains(natives))
+                    minecraftMissedInfo.DirectoriesToCreate.Add(natives);
+
+                minecraftMissedInfo.UnpackItems.Add((libraryFile.FileName, natives));
+            }
+
+            if (libraryFile.Delete != null)
+            {
+                var unpackDirectory = minecraftPaths.NativesDirectory;
+                for (var j = 0; j < libraryFile.Delete.Count; j++)
+                {
+                    var path = $"{unpackDirectory}\\{libraryFile.Delete[j]}";
+                    minecraftMissedInfo.PathsToDelete.Add(path);
+                }
+            }
+        }
+
+        for (var i = 0; i < minecraftFileList.AssetFiles.Count; i++)
+        {
+            var assetFileError = CheckFileAndDirectoryMissed(ref minecraftMissedInfo, minecraftFileList.AssetFiles[i]);
+            if (assetFileError != ErrorCode.NoError)
+                return assetFileError;
+        }
+
+        for (var i = 0; i < minecraftFileList.JavaRuntimeFiles.Count; i++)
+        {
+            var javaRuntimeFileError =
+                CheckFileAndDirectoryMissed(ref minecraftMissedInfo, minecraftFileList.JavaRuntimeFiles[i]);
+            if (javaRuntimeFileError != ErrorCode.NoError)
+                return javaRuntimeFileError;
+        }
+
+        return ErrorCode.NoError;
+    }
+
+    private static ErrorCode CheckFileAndDirectoryMissed(ref MinecraftMissedInfo missedInfo,
+        IMinecraftFile minecraftFile)
+    {
+        if (!FileExist(minecraftFile.FileName))
+        {
+            missedInfo.DownloadQueue.Add((new Uri(minecraftFile.Url), minecraftFile.FileName));
+            missedInfo.TotalDownloadSize += minecraftFile.Size;
+        }
+        else
+        {
+            var sha1 = ComputeSha1(minecraftFile.FileName);
+            if (string.IsNullOrEmpty(sha1))
+            {
+                Logger.Log($"Cant compute sha1 for file: {minecraftFile.FileName}");
+            }
+            else if (sha1 != minecraftFile.Sha1)
+            {
+                Logger.Log($"File {minecraftFile.FileName} corrupted ({sha1} != {minecraftFile.Sha1})");
+                missedInfo.CorruptedFiles.Add(minecraftFile.FileName);
+                
+                missedInfo.DownloadQueue.Add((new Uri(minecraftFile.Url), minecraftFile.FileName));
+                missedInfo.TotalDownloadSize += minecraftFile.Size;
+            }
+        }
+
+        var directory = GetPathDirectory(minecraftFile.FileName);
+        if (!string.IsNullOrEmpty(directory))
+        {
+            if (!DirectoryExist(directory) && !missedInfo.DirectoriesToCreate.Contains(directory))
+                missedInfo.DirectoriesToCreate.Add(directory);
+        }
+        else
+        {
+            return ErrorCode.Check;
+        }
+
+        return ErrorCode.NoError;
     }
     
     public static MinecraftFileList GetFileList(RuntimeFiles runtimeFiles, MinecraftData data,

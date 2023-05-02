@@ -4,6 +4,7 @@ public enum ErrorCode
 {
     NoError,
     VersionId,
+    NeedVersionUrl,
     Url,
     MinecraftData,
     AssetsData,

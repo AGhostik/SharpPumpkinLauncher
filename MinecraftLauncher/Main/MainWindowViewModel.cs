@@ -258,9 +258,10 @@ public sealed class MainWindowViewModel : ReactiveObject
         if (SelectedProfile == null)
             return;
         
-        Profiles.Remove(SelectedProfile);
         _mainWindowModel.VersionsLoaded -= SelectedProfile.SetVersions;
-        
+        _mainWindowModel.DeleteProfile(SelectedProfile);
+        Profiles.Remove(SelectedProfile);
+
         IsProfilesComboboxEnabled = Profiles.Count > 0;
     }
     

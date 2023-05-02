@@ -35,41 +35,28 @@ public sealed class MinecraftLauncher
         Action? startedAction = null, Action? exitedAction = null)
     {
         OnLaunchMinecraftProgress(LaunchProgress.Prepare);
-        
-        if (!launchData.Version.IsInstalled)
+
+        var minecraftMissedInfo = await _gameLauncher.IsVersionInstalled(launchData, cancellationToken);
+        if (minecraftMissedInfo == null || !minecraftMissedInfo.IsEmpty)
         {
+            //case when online versions not loaded yet
+            if (string.IsNullOrEmpty(launchData.Version.Url))
+                return ErrorCode.NeedVersionUrl;
+            
             _installer.DownloadingProgress += InstallerOnDownloadingProgress;
             var installResult = await _installer.DownloadAndInstall(launchData, cancellationToken);
             _installer.DownloadingProgress -= InstallerOnDownloadingProgress;
-            
+
             if (installResult is not ErrorCode.NoError)
                 return installResult;
         }
 
         _gameLauncher.LaunchMinecraftProgress += OnLaunchMinecraftProgress;
-        var firstLaunchResult =
+        var launchResult =
             await _gameLauncher.LaunchMinecraft(launchData, cancellationToken, startedAction, exitedAction);
         _gameLauncher.LaunchMinecraftProgress -= OnLaunchMinecraftProgress;
 
-        if (firstLaunchResult is ErrorCode.NoError)
-            return ErrorCode.NoError;
-
-        if (firstLaunchResult is ErrorCode.GameAborted or ErrorCode.StartProcess)
-            return firstLaunchResult;
-
-        _installer.DownloadingProgress += InstallerOnDownloadingProgress;
-        var installAfterLaunchFailResult = await _installer.DownloadAndInstall(launchData, cancellationToken);
-        _installer.DownloadingProgress -= InstallerOnDownloadingProgress;
-        
-        if (installAfterLaunchFailResult is not ErrorCode.NoError)
-            return installAfterLaunchFailResult;
-
-        _gameLauncher.LaunchMinecraftProgress += OnLaunchMinecraftProgress;
-        var secondLaunchResult =
-            await _gameLauncher.LaunchMinecraft(launchData, cancellationToken, startedAction, exitedAction);
-        _gameLauncher.LaunchMinecraftProgress -= OnLaunchMinecraftProgress;
-
-        return secondLaunchResult;
+        return launchResult;
     }
 
     private void InstallerOnDownloadingProgress(DownloadProgress downloadProgress)

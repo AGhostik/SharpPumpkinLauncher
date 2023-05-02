@@ -47,7 +47,7 @@
             SelectedItem="{Binding SelectedVersion}">
             <ComboBox.ItemTemplate>
                 <DataTemplate DataType="publicData:Version">
-                    <Grid ColumnDefinitions="Auto, *, Auto">
+                    <Grid ColumnDefinitions="Auto, *">
                         <Border 
                             Grid.Column="0" 
                             BorderThickness="1"
@@ -63,19 +63,6 @@
                             Grid.Column="1"
                             VerticalAlignment="Center"
                             Text="{Binding Id}"/>
-                        
-                        <Border 
-                            Grid.Column="2" 
-                            BorderThickness="1"
-                            BorderBrush="Black"
-                            CornerRadius="3"
-                            Margin="0, 0, 5, 0"
-                            IsVisible="{Binding IsInstalled}">
-                            <TextBlock
-                                Margin="5, 0, 5, 0"
-                                VerticalAlignment="Center"
-                                Text="{x:Static properties:Localization.Installed}"/>
-                        </Border>
                     </Grid>
                 </DataTemplate>
             </ComboBox.ItemTemplate>

@@ -107,8 +107,16 @@ public sealed class ProfileViewModel : ReactiveObject
                 SelectedVersion = versions.Latest;
             else if (versions.AllVersions.TryGetValue(_loadedSelectedVersion, out var selectedVersion))
                 SelectedVersion = selectedVersion;
+            
+            _loadedSelectedVersion = null;
 
             _versionLoaded?.Invoke(this);
+        }
+
+        if (SelectedVersion != null)
+        {
+            if (versions.AllVersions.TryGetValue(SelectedVersion.Id, out var version) && !SelectedVersion.Equals(version))
+                SelectedVersion = version;
         }
 
         UpdateVisibleVersions();
