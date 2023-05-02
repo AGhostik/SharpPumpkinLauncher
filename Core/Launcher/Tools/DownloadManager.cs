@@ -12,7 +12,8 @@ public static class DownloadManager
         try
         {
             using var client = new HttpClient();
-            var response = await client.GetAsync("https://google.com", cancellationToken);
+            var response = 
+                await client.GetAsync("https://google.com", HttpCompletionOption.ResponseHeadersRead, cancellationToken);
             return response.StatusCode == HttpStatusCode.OK;
         }
         catch (Exception e)
@@ -30,7 +31,8 @@ public static class DownloadManager
             try
             {
                 using var client = new HttpClient();
-                var response = await client.GetAsync(new Uri(url), cancellationToken);
+                var response = 
+                    await client.GetAsync(new Uri(url), HttpCompletionOption.ResponseHeadersRead, cancellationToken);
                 var json = await response.Content.ReadAsStringAsync(cancellationToken);
                 return json;
             }
