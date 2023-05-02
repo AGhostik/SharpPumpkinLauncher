@@ -11,7 +11,7 @@
              x:Class="MinecraftLauncher.Main.Profile.ProfileControl">
     <Grid 
         ColumnDefinitions="Auto, 5, *"
-        RowDefinitions="Auto, 5, Auto, 5, Auto, 5, Auto, 5, Auto"
+        RowDefinitions="Auto, 5, Auto, 5, Auto, 5, Auto, 5, Auto, 5, Auto"
         Margin="5">
         <TextBlock 
             Grid.Column="0"
@@ -92,14 +92,6 @@
                     Grid.Column="0" 
                     VerticalAlignment="Center"
                     Margin="5"
-                    Text="{x:Static properties:Localization.Custom}" />
-                <CheckBox Grid.Column="1" IsChecked="{Binding Custom}" />
-            </Grid>
-            <Grid ColumnDefinitions="Auto, Auto">
-                <TextBlock 
-                    Grid.Column="0" 
-                    VerticalAlignment="Center"
-                    Margin="5"
                     Text="{x:Static properties:Localization.Latest}" />
                 <CheckBox Grid.Column="1" IsChecked="{Binding Latest}" />
             </Grid>
@@ -137,10 +129,42 @@
             </Grid>
         </StackPanel>
         
-        <Grid
+        <StackPanel 
             Grid.Column="0"
             Grid.ColumnSpan="3"
             Grid.Row="8"
+            Orientation="Horizontal" 
+            HorizontalAlignment="Center">
+            <Grid ColumnDefinitions="Auto, Auto">
+                <TextBlock 
+                    Grid.Column="0" 
+                    VerticalAlignment="Center"
+                    Margin="5"
+                    Text="Installed" />
+                <CheckBox Grid.Column="1" IsEnabled="False" IsChecked="{Binding Custom}" />
+            </Grid>
+            <Grid ColumnDefinitions="Auto, Auto">
+                <TextBlock 
+                    Grid.Column="0" 
+                    VerticalAlignment="Center"
+                    Margin="5"
+                    Text="Forge" />
+                <CheckBox Grid.Column="1" IsEnabled="False" IsChecked="{Binding Custom}" />
+            </Grid>
+            <Grid ColumnDefinitions="Auto, Auto">
+                <TextBlock 
+                    Grid.Column="0" 
+                    VerticalAlignment="Center"
+                    Margin="5"
+                    Text="{x:Static properties:Localization.Custom}" />
+                <CheckBox Grid.Column="1" IsEnabled="False" IsChecked="{Binding Custom}" />
+            </Grid>
+        </StackPanel>
+        
+        <Grid
+            Grid.Column="0"
+            Grid.ColumnSpan="3"
+            Grid.Row="10"
             ColumnDefinitions="*, *">
             <Button
                 Grid.Column="0"
