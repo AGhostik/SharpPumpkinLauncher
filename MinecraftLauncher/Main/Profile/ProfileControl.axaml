@@ -127,14 +127,6 @@
                     Grid.Column="0" 
                     VerticalAlignment="Center"
                     Margin="5"
-                    Text="Installed" />
-                <CheckBox Grid.Column="1" IsEnabled="False" IsChecked="{Binding Custom}" />
-            </Grid>
-            <Grid ColumnDefinitions="Auto, Auto">
-                <TextBlock 
-                    Grid.Column="0" 
-                    VerticalAlignment="Center"
-                    Margin="5"
                     Text="Forge" />
                 <CheckBox Grid.Column="1" IsEnabled="False" IsChecked="{Binding Custom}" />
             </Grid>
