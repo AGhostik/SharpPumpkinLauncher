@@ -9,142 +9,176 @@
              x:DataType="profile:ProfileViewModel"
              x:CompileBindings="True"
              x:Class="MinecraftLauncher.Main.Profile.ProfileControl">
-    <Grid 
-        ColumnDefinitions="Auto, 5, *"
-        RowDefinitions="Auto, 5, Auto, 5, Auto, 5, Auto, 5, Auto, 5, Auto"
-        Margin="5">
-        <TextBlock 
-            Grid.Column="0"
-            Grid.Row="0"
-            VerticalAlignment="Center"
-            HorizontalAlignment="Right"
-            Text="{x:Static properties:Localization.ProfileName}"/>
-        <TextBox 
-            Grid.Column="2"
-            Grid.Row="0"
-            Text="{Binding ProfileName}" />
-        
-        <TextBlock 
-            Grid.Column="0"
-            Grid.Row="2"
-            VerticalAlignment="Center"
-            HorizontalAlignment="Right"
-            Text="{x:Static properties:Localization.PlayerName}"/>
-        <TextBox 
-            Grid.Column="2"
-            Grid.Row="2"
-            Text="{Binding PlayerName}" />
-        
-        <ComboBox
-            Grid.Column="0"
-            Grid.ColumnSpan="3"
-            Grid.Row="4"
-            PlaceholderText="{x:Static properties:Localization.MinecraftVersion}"
-            PlaceholderForeground="gray"
-            HorizontalAlignment="Stretch"
-            VirtualizationMode="Simple"
-            Items="{Binding Versions}"
-            SelectedItem="{Binding SelectedVersion}">
-            <ComboBox.ItemTemplate>
-                <DataTemplate DataType="publicData:Version">
-                    <Grid ColumnDefinitions="Auto, *">
-                        <Border 
-                            Grid.Column="0" 
-                            BorderThickness="1"
-                            BorderBrush="Black"
-                            CornerRadius="3"
-                            Margin="0, 0, 5, 0">
-                            <TextBlock
-                                Margin="5, 0, 5, 0"
-                                VerticalAlignment="Center"
-                                Text="{Binding Type}"/>
-                        </Border>
-                        <TextBlock 
-                            Grid.Column="1"
-                            VerticalAlignment="Center"
-                            Text="{Binding Id}"/>
-                    </Grid>
-                </DataTemplate>
-            </ComboBox.ItemTemplate>
-        </ComboBox>
-        
-        <StackPanel 
-            Grid.Column="0"
-            Grid.ColumnSpan="3"
-            Grid.Row="6"
-            Orientation="Horizontal" 
-            HorizontalAlignment="Center">
-            <Grid ColumnDefinitions="Auto, Auto">
-                <TextBlock 
+    <UserControl.Resources>
+        <DataTemplate x:Key="VersionTemplate" DataType="publicData:Version">
+            <Grid ColumnDefinitions="Auto, *">
+                <Border 
                     Grid.Column="0" 
+                    BorderThickness="1"
+                    BorderBrush="Black"
+                    CornerRadius="3"
+                    Margin="0, 0, 5, 0">
+                    <TextBlock
+                        Margin="5, 0, 5, 0"
+                        VerticalAlignment="Center"
+                        Text="{Binding Type}"/>
+                </Border>
+                <TextBlock 
+                    Grid.Column="1"
                     VerticalAlignment="Center"
-                    Margin="5"
-                    Text="{x:Static properties:Localization.Latest}" />
-                <CheckBox Grid.Column="1" IsChecked="{Binding Latest}" />
+                    Text="{Binding Id}"/>
             </Grid>
-            <Grid ColumnDefinitions="Auto, Auto">
+        </DataTemplate>
+    </UserControl.Resources>
+    <Grid RowDefinitions="*, Auto, Auto">
+        <StackPanel Grid.Row="0" Orientation="Vertical">
+            <Grid 
+                Margin="5"
+                RowDefinitions="Auto, 5, Auto"
+                ColumnDefinitions="Auto, 5, *">
                 <TextBlock 
-                    Grid.Column="0" 
+                    Grid.Column="0"
+                    Grid.Row="0"
                     VerticalAlignment="Center"
-                    Margin="5"
-                    Text="{x:Static properties:Localization.Release}" />
-                <CheckBox Grid.Column="1" IsChecked="{Binding Release}" />
+                    HorizontalAlignment="Right"
+                    Text="{x:Static properties:Localization.ProfileName}"/>
+                <TextBox 
+                    Grid.Column="2"
+                    Grid.Row="0"
+                    Text="{Binding ProfileName}" />
+                
+                <TextBlock 
+                    Grid.Column="0"
+                    Grid.Row="2"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Right"
+                    Text="{x:Static properties:Localization.PlayerName}"/>
+                <TextBox 
+                    Grid.Column="2"
+                    Grid.Row="2"
+                    Text="{Binding PlayerName}" />
             </Grid>
-            <Grid ColumnDefinitions="Auto, Auto">
-                <TextBlock 
-                    Grid.Column="0" 
+            
+            <ComboBox
+                Margin="5"
+                PlaceholderText="{x:Static properties:Localization.MinecraftVersion}"
+                PlaceholderForeground="gray"
+                HorizontalAlignment="Stretch"
+                VirtualizationMode="Simple"
+                Items="{Binding Versions}"
+                SelectedItem="{Binding SelectedVersion}"
+                ItemTemplate="{StaticResource VersionTemplate}" />
+
+            <ComboBox
+                Margin="5"
+                PlaceholderText="{x:Static properties:Localization.ForgeVersion}"
+                PlaceholderForeground="gray"
+                HorizontalAlignment="Stretch"
+                VirtualizationMode="Simple"
+                IsVisible="{Binding Forge}"
+                IsEnabled="{Binding SelectedVersion, Converter={x:Static ObjectConverters.IsNotNull}}"
+                Items="{Binding ForgeVersions}"
+                SelectedItem="{Binding SelectedForgeVersion}"
+                ItemTemplate="{StaticResource VersionTemplate}" />
+            
+            <Grid
+                HorizontalAlignment="Center"
+                IsVisible="{Binding Forge}"
+                ColumnDefinitions="Auto, 5, Auto">
+                <TextBlock
+                    Grid.Column="0"
+                    FontSize="10"
                     VerticalAlignment="Center"
-                    Margin="5"
-                    Text="{x:Static properties:Localization.Snapshot}" />
-                <CheckBox Grid.Column="1" IsChecked="{Binding Snapshot}" />
-            </Grid>
-            <Grid ColumnDefinitions="Auto, Auto">
-                <TextBlock 
-                    Grid.Column="0" 
-                    VerticalAlignment="Center"
-                    Margin="5"
-                    Text="{x:Static properties:Localization.Beta}" />
-                <CheckBox Grid.Column="1" IsChecked="{Binding Beta}" />
-            </Grid>
-            <Grid ColumnDefinitions="Auto, Auto">
-                <TextBlock 
-                    Grid.Column="0" 
-                    VerticalAlignment="Center"
-                    Margin="5"
-                    Text="{x:Static properties:Localization.Alpha}" />
-                <CheckBox Grid.Column="1" IsChecked="{Binding Alpha}" />
+                    Text="{x:Static properties:Localization.PleaseSupportForgeAuthors}"/>
+                <TextBox 
+                    Grid.Column="2"
+                    IsReadOnly="True"
+                    FontSize="10"
+                    TextWrapping="NoWrap"
+                    Padding="3"
+                    MinHeight="0"
+                    Text="www.patreon.com/MinecraftForge" />
             </Grid>
         </StackPanel>
-        
-        <StackPanel 
-            Grid.Column="0"
-            Grid.ColumnSpan="3"
-            Grid.Row="8"
-            Orientation="Horizontal" 
-            HorizontalAlignment="Center">
-            <Grid ColumnDefinitions="Auto, Auto">
-                <TextBlock 
-                    Grid.Column="0" 
-                    VerticalAlignment="Center"
-                    Margin="5"
-                    Text="Forge" />
-                <CheckBox Grid.Column="1" IsEnabled="False" IsChecked="{Binding Custom}" />
-            </Grid>
-            <Grid ColumnDefinitions="Auto, Auto">
-                <TextBlock 
-                    Grid.Column="0" 
-                    VerticalAlignment="Center"
-                    Margin="5"
-                    Text="{x:Static properties:Localization.Custom}" />
-                <CheckBox Grid.Column="1" IsEnabled="False" IsChecked="{Binding Custom}" />
-            </Grid>
-        </StackPanel>
-        
-        <Grid
-            Grid.Column="0"
-            Grid.ColumnSpan="3"
-            Grid.Row="10"
-            ColumnDefinitions="*, *">
+        <Grid 
+            Grid.Row="1" 
+            Margin="5"
+            RowDefinitions="Auto, Auto">
+            <StackPanel
+                Grid.Row="0"
+                Orientation="Horizontal" 
+                HorizontalAlignment="Center">
+                <Grid ColumnDefinitions="Auto, Auto">
+                    <TextBlock 
+                        Grid.Column="0" 
+                        VerticalAlignment="Center"
+                        Margin="0,0,5,0"
+                        Text="{x:Static properties:Localization.Latest}" />
+                    <CheckBox Grid.Column="1" IsChecked="{Binding Latest}" />
+                </Grid>
+                <Grid Width="10" />
+                <Grid ColumnDefinitions="Auto, Auto">
+                    <TextBlock 
+                        Grid.Column="0" 
+                        VerticalAlignment="Center"
+                        Margin="0,0,5,0"
+                        Text="{x:Static properties:Localization.Release}" />
+                    <CheckBox Grid.Column="1" IsChecked="{Binding Release}" />
+                </Grid>
+                <Grid Width="10" />
+                <Grid ColumnDefinitions="Auto, Auto">
+                    <TextBlock 
+                        Grid.Column="0" 
+                        VerticalAlignment="Center"
+                        Margin="0,0,5,0"
+                        Text="{x:Static properties:Localization.Snapshot}" />
+                    <CheckBox Grid.Column="1" IsChecked="{Binding Snapshot}" />
+                </Grid>
+                <Grid Width="10" />
+                <Grid ColumnDefinitions="Auto, Auto">
+                    <TextBlock 
+                        Grid.Column="0" 
+                        VerticalAlignment="Center"
+                        Margin="0,0,5,0"
+                        Text="{x:Static properties:Localization.Beta}" />
+                    <CheckBox Grid.Column="1" IsChecked="{Binding Beta}" />
+                </Grid>
+                <Grid Width="10" />
+                <Grid ColumnDefinitions="Auto, Auto">
+                    <TextBlock 
+                        Grid.Column="0" 
+                        VerticalAlignment="Center"
+                        Margin="0,0,5,0"
+                        Text="{x:Static properties:Localization.Alpha}" />
+                    <CheckBox Grid.Column="1" IsChecked="{Binding Alpha}" />
+                </Grid>
+            </StackPanel>
+            
+            <StackPanel
+                Grid.Row="1"
+                Orientation="Horizontal" 
+                HorizontalAlignment="Center">
+                <Grid ColumnDefinitions="Auto, Auto">
+                    <TextBlock 
+                        Grid.Column="0" 
+                        VerticalAlignment="Center"
+                        Margin="0,0,5,0"
+                        Text="{x:Static properties:Localization.Forge}" />
+                    <CheckBox Grid.Column="1" IsChecked="{Binding Forge}" />
+                </Grid>
+                <Grid Width="10" />
+                <Grid ColumnDefinitions="Auto, Auto">
+                    <TextBlock 
+                        Grid.Column="0"
+                        IsEnabled="False"
+                        VerticalAlignment="Center"
+                        Margin="0,0,5,0"
+                        Text="{x:Static properties:Localization.Custom}" />
+                    <CheckBox Grid.Column="1" IsEnabled="False" IsChecked="{Binding Custom}" />
+                </Grid>
+            </StackPanel>
+        </Grid>
+        <Grid Grid.Row="2" Margin="5,0,5,5" ColumnDefinitions="*, *">
             <Button
                 Grid.Column="0"
                 Margin="5"

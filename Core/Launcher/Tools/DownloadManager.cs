@@ -7,6 +7,28 @@ public static class DownloadManager
 {
     private const int MaxAttemptCount = 3;
     
+    public static async Task<string?> GetRequest(string url, IDictionary<string, string> parameters,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            using var client = new HttpClient();
+
+            var queryString = string.Join("&",
+                parameters.Select(x => $"{Uri.EscapeDataString(x.Key)}={Uri.EscapeDataString(x.Value)}"));
+            var urlWithQuery = $"{url}?{queryString}";
+
+            var response = 
+                await client.GetAsync(urlWithQuery, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+            return await response.Content.ReadAsStringAsync(cancellationToken);
+        }
+        catch (Exception e)
+        {
+            Logger.Log(e);
+            return null;
+        }
+    }
+    
     public static async Task<bool> CheckConnection(CancellationToken cancellationToken = default)
     {
         try

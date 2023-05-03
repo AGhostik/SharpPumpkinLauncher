@@ -13,12 +13,15 @@ namespace MinecraftLauncher.Main.Profile;
 
 public sealed class ProfileViewModel : ReactiveObject
 {
-    private const string SetLastVersion = "SetLastVersion";
+    private readonly ProfileModel _profileModel;
+    private readonly VersionsLoader _versionsLoader;
     
     private string? _profileName;
     private string? _playerName;
     private Version? _selectedVersion;
+    private Version? _selectedForgeVersion;
     private Versions? _versions;
+    private bool _forge;
     private bool _custom;
     private bool _latest;
     private bool _release;
@@ -26,50 +29,78 @@ public sealed class ProfileViewModel : ReactiveObject
     private bool _beta;
     private bool _alpha;
 
-    private string? _loadedSelectedVersion;
-    private Action<ProfileViewModel>? _versionLoaded;
     private Action<ProfileViewModel>? _save;
     private Action? _cancel;
 
     private ProfileViewModel()
     {
+        _profileModel = ServiceProvider.ProfileModel;
+        _versionsLoader = ServiceProvider.VersionsLoader;
+        _versionsLoader.VersionsLoaded += SetVersions;
+        
         SaveProfileCommand = ReactiveCommand.Create(SaveProfile, CanSaveProfile);
         CloseProfileControlCommand = ReactiveCommand.Create(CloseProfileControl);
     }
 
-    public static ProfileViewModel CreateDefault(Action<ProfileViewModel> versionLoaded)
+    public void OnDelete()
+    {
+        _versionsLoader.VersionsLoaded -= SetVersions;
+        _profileModel.DeleteProfile(this);
+    }
+
+    public static ProfileViewModel CreateDefault()
     {
         ProfileNameValidationAttribute.RestrictedName = null;
         
-        return new ProfileViewModel() 
+        var profileViewModel = new ProfileViewModel() 
         { 
             Latest = true,
             ProfileName = "Minecraft game",
             _save = null,
-            _cancel = null,
-            _loadedSelectedVersion = SetLastVersion,
-            _versionLoaded = versionLoaded,
+            _cancel = null
         };
+
+        profileViewModel._versionsLoader.VersionsLoaded += OnVersionsLoaded;
+
+        return profileViewModel;
+
+        void OnVersionsLoaded(Versions versions)
+        {
+            profileViewModel.SelectedVersion = versions.Latest;
+            profileViewModel.SaveToSettings();
+            profileViewModel._versionsLoader.VersionsLoaded -= OnVersionsLoaded;
+        }
     }
     
-    public static ProfileViewModel CreateNew(IEnumerable<string?> restrictedNames, Action<ProfileViewModel> save,
-        Action cancel)
+    public static ProfileViewModel CreateNew(string? playerName, IEnumerable<string?> restrictedNames, 
+        Action<ProfileViewModel> save, Action cancel)
     {
         ProfileNameValidationAttribute.RestrictedName = new List<string?>(restrictedNames);
         
         return new ProfileViewModel() 
         { 
             Latest = true,
-            _save = save,
-            _cancel = cancel
+            PlayerName = playerName,
+            _save = profile =>
+            {
+                profile.SaveToSettings();
+                save.Invoke(profile);
+            },
+            _cancel = cancel,
         };
     }
 
     public static ProfileViewModel Edit(ProfileViewModel profileViewModel, IEnumerable<string?> restrictedNames,
-        Action<string?, ProfileViewModel> save, Action cancel)
+        Action<ProfileViewModel> save, Action cancel)
     {
         var profileName = profileViewModel.ProfileName;
-        profileViewModel._save = profile => save.Invoke(profileName, profile);
+        profileViewModel._save = profile =>
+        {
+            if (!string.IsNullOrEmpty(profileName))
+                profile.SaveEdited(profileName);
+            
+            save.Invoke(profile);
+        };
         profileViewModel._cancel = cancel;
         profileViewModel.Latest = true;
         
@@ -78,7 +109,7 @@ public sealed class ProfileViewModel : ReactiveObject
         return profileViewModel;
     }
 
-    public static ProfileViewModel Load(ProfileData profileData, Action<ProfileViewModel> versionLoaded)
+    public static ProfileViewModel Load(ProfileData profileData)
     {
         var profileViewModel = new ProfileViewModel()
         {
@@ -90,38 +121,31 @@ public sealed class ProfileViewModel : ReactiveObject
             Snapshot = profileData.Snapshot,
             Release = profileData.Release,
             SelectedVersion = null,
-            _loadedSelectedVersion = profileData.MinecraftVersion,
-            _versionLoaded = versionLoaded,
         };
+        
+        profileViewModel._versionsLoader.VersionsLoaded += OnVersionsLoaded;
+        void OnVersionsLoaded(Versions versions)
+        {
+            if (!string.IsNullOrEmpty(profileData.MinecraftVersion) &&
+                versions.AllVersions.TryGetValue(profileData.MinecraftVersion, out var selectedVersion))
+                profileViewModel.SelectedVersion = selectedVersion;
+            
+            profileViewModel._versionsLoader.VersionsLoaded -= OnVersionsLoaded;
+        }
 
         return profileViewModel;
     }
 
-    public void SetVersions(Versions versions)
+    private void SaveToSettings()
     {
-        _versions = versions;
-
-        if (!string.IsNullOrEmpty(_loadedSelectedVersion))
-        {
-            if (_loadedSelectedVersion == SetLastVersion)
-                SelectedVersion = versions.Latest;
-            else if (versions.AllVersions.TryGetValue(_loadedSelectedVersion, out var selectedVersion))
-                SelectedVersion = selectedVersion;
-            
-            _loadedSelectedVersion = null;
-
-            _versionLoaded?.Invoke(this);
-        }
-
-        if (SelectedVersion != null)
-        {
-            if (versions.AllVersions.TryGetValue(SelectedVersion.Id, out var version) && !SelectedVersion.Equals(version))
-                SelectedVersion = version;
-        }
-
-        UpdateVisibleVersions();
+        _profileModel.SaveProfile(this);
     }
-    
+
+    private void SaveEdited(string originalProfileName)
+    {
+        _profileModel.ReplaceProfile(originalProfileName, this);
+    }
+
     [ProfileNameValidation]
     public string? ProfileName
     {
@@ -150,11 +174,30 @@ public sealed class ProfileViewModel : ReactiveObject
         set
         {
             this.RaiseAndSetIfChanged(ref _selectedVersion, value);
+            OnSelectedVersionChanged();
             UpdateCanSaveProfile();
         }
     }
 
     public ObservableCollection<Version> Versions { get; } = new();
+    
+    public Version? SelectedForgeVersion
+    {
+        get => _selectedForgeVersion;
+        set
+        {
+            this.RaiseAndSetIfChanged(ref _selectedForgeVersion, value);
+            UpdateCanSaveProfile();
+        }
+    }
+
+    public ObservableCollection<Version> ForgeVersions { get; } = new();
+
+    public bool Forge
+    {
+        get => _forge;
+        set => this.RaiseAndSetIfChanged(ref _forge, value);
+    }
 
     public bool Custom
     {
@@ -228,6 +271,31 @@ public sealed class ProfileViewModel : ReactiveObject
     private void CloseProfileControl()
     {
         _cancel?.Invoke();
+    }
+
+    private async void OnSelectedVersionChanged()
+    {
+        if (Forge && SelectedVersion != null)
+        {
+            var forgeVersions = await _profileModel.RequestForgeVersions(SelectedVersion.Id);
+            
+            ForgeVersions.Clear();
+            for (var i = 0; i < forgeVersions.Forge.Count; i++)
+                ForgeVersions.Add(forgeVersions.Forge[i]);
+        }
+    }
+    
+    private void SetVersions(Versions versions)
+    {
+        _versions = versions;
+
+        if (SelectedVersion != null)
+        {
+            if (versions.AllVersions.TryGetValue(SelectedVersion.Id, out var version) && !SelectedVersion.Equals(version))
+                SelectedVersion = version;
+        }
+
+        UpdateVisibleVersions();
     }
     
     private void UpdateCanSaveProfile()

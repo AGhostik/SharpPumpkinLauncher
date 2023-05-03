@@ -28,14 +28,14 @@ public sealed class MainWindowViewModel : ReactiveObject
     private bool _isProfilesComboboxEnabled;
     private bool _isStartGameVisible;
 
-    public MainWindowViewModel(MainWindowModel mainWindowModel)
+    public MainWindowViewModel()
     {
-        _mainWindowModel = mainWindowModel;
+        _mainWindowModel = ServiceProvider.MainWindowModel;
 
-        mainWindowModel.VersionsLoaded += OnVersionsLoaded;
-        mainWindowModel.AllProfilesLoaded += UpdateCanStartGame;
+        var versionsLoader = ServiceProvider.VersionsLoader;
+        versionsLoader.VersionsLoaded += OnVersionsLoaded;
         
-        var progressViewModel = new ProgressViewModel(mainWindowModel);
+        var progressViewModel = new ProgressViewModel(_mainWindowModel);
         _progressControl = new ProgressControl() { DataContext = progressViewModel };
 
         var settingsViewModel = new SettingsViewModel(SettingsSaved, SetDefaultMainContent);
@@ -71,8 +71,8 @@ public sealed class MainWindowViewModel : ReactiveObject
 
             if (!_dontSaveSelectedProfile)
             {
-                if (value != null && !string.IsNullOrEmpty(value.ProfileName))
-                    _mainWindowModel.SaveSelectedProfile(value.ProfileName);
+                if (!string.IsNullOrEmpty(value?.ProfileName))
+                    MainWindowModel.SaveSelectedProfile(value.ProfileName);
             }
 
             UpdateCanEditProfile();
@@ -188,9 +188,8 @@ public sealed class MainWindowViewModel : ReactiveObject
         MainContent = _settingsControl;
     }
 
-    private void SettingsSaved(SettingsData settingsData)
+    private void SettingsSaved()
     {
-        _mainWindowModel.SetSettingsData(settingsData);
         UpdateCanStartGame();
         SetDefaultMainContent();
     }
@@ -202,14 +201,10 @@ public sealed class MainWindowViewModel : ReactiveObject
 
     private void NewProfile()
     {
-        var profileViewModel = ProfileViewModel.CreateNew(
-            Profiles.Select(profile => profile.ProfileName),
-            NewProfileSaved,
-            SetDefaultMainContent);
+        var restrictedNames = Profiles.Select(profile => profile.ProfileName);
+        var profileViewModel = ProfileViewModel.CreateNew(_mainWindowModel.CurrentSettings.DefaultPlayerName,
+            restrictedNames, NewProfileSaved, SetDefaultMainContent);
 
-        profileViewModel.PlayerName = _mainWindowModel.CurrentSettings.DefaultPlayerName;
-        _mainWindowModel.VersionsLoaded += profileViewModel.SetVersions;
-        
         MainContent = new ProfileControl()
         {
             DataContext = profileViewModel
@@ -223,43 +218,39 @@ public sealed class MainWindowViewModel : ReactiveObject
 
         SetDefaultMainContent();
         UpdateProfilesComboboxEnabled();
-        _mainWindowModel.SaveProfile(newProfileViewModel);
     }
     
     private void EditProfile()
     {
         if (SelectedProfile == null)
             return;
+
+        var restrictedNames = Profiles.Where(profile => profile.ProfileName != SelectedProfile.ProfileName)
+            .Select(profile => profile.ProfileName);
+        
+        var profileViewModel =
+            ProfileViewModel.Edit(SelectedProfile, restrictedNames, EditProfileSaved, SetDefaultMainContent);
         
         MainContent = new ProfileControl()
         {
-            DataContext = ProfileViewModel.Edit(
-                SelectedProfile,
-                Profiles.Where(profile => profile.ProfileName != SelectedProfile.ProfileName)
-                    .Select(profile => profile.ProfileName),
-                ProfileEdited,
-                SetDefaultMainContent)
+            DataContext = profileViewModel
         };
     }
 
-    private void ProfileEdited(string? originalProfileName, ProfileViewModel editedProfileViewModel)
+    private void EditProfileSaved(ProfileViewModel profileViewModel)
     {
+        SelectedProfile = null;
+        SelectedProfile = profileViewModel;
+        
         SetDefaultMainContent();
-        
-        if (string.IsNullOrEmpty(originalProfileName))
-            return;
-        
-        _mainWindowModel.ReplaceProfile(originalProfileName, editedProfileViewModel);
-        _mainWindowModel.SaveSelectedProfile(originalProfileName);
     }
-    
+
     private void DeleteProfile()
     {
         if (SelectedProfile == null)
             return;
         
-        _mainWindowModel.VersionsLoaded -= SelectedProfile.SetVersions;
-        _mainWindowModel.DeleteProfile(SelectedProfile);
+        SelectedProfile.OnDelete();
         Profiles.Remove(SelectedProfile);
 
         IsProfilesComboboxEnabled = Profiles.Count > 0;

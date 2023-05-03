@@ -87,33 +87,6 @@ namespace MinecraftLauncher.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Close.
-        /// </summary>
-        public static string Close {
-            get {
-                return ResourceManager.GetString("Close", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Copied to clipboard.
-        /// </summary>
-        public static string CopiedToClipboard {
-            get {
-                return ResourceManager.GetString("CopiedToClipboard", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Copy to clipboard.
-        /// </summary>
-        public static string CopyToClipboard {
-            get {
-                return ResourceManager.GetString("CopyToClipboard", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Custom.
         /// </summary>
         public static string Custom {
@@ -150,15 +123,6 @@ namespace MinecraftLauncher.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Download Java for Minecraft:.
-        /// </summary>
-        public static string DownloadJavaText {
-            get {
-                return ResourceManager.GetString("DownloadJavaText", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Edit profile.
         /// </summary>
         public static string EditProfile {
@@ -168,11 +132,20 @@ namespace MinecraftLauncher.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Installed.
+        ///   Looks up a localized string similar to Forge.
         /// </summary>
-        public static string Installed {
+        public static string Forge {
             get {
-                return ResourceManager.GetString("Installed", resourceCulture);
+                return ResourceManager.GetString("Forge", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Forge version.
+        /// </summary>
+        public static string ForgeVersion {
+            get {
+                return ResourceManager.GetString("ForgeVersion", resourceCulture);
             }
         }
         
@@ -213,15 +186,6 @@ namespace MinecraftLauncher.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Open link.
-        /// </summary>
-        public static string OpenLink {
-            get {
-                return ResourceManager.GetString("OpenLink", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Pick directory.
         /// </summary>
         public static string PickDirectory {
@@ -236,6 +200,15 @@ namespace MinecraftLauncher.Properties {
         public static string PlayerName {
             get {
                 return ResourceManager.GetString("PlayerName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Support the Forge authors ❤️.
+        /// </summary>
+        public static string PleaseSupportForgeAuthors {
+            get {
+                return ResourceManager.GetString("PleaseSupportForgeAuthors", resourceCulture);
             }
         }
         

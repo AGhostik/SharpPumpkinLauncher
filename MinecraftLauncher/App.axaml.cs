@@ -18,9 +18,8 @@ namespace MinecraftLauncher
             {
                 var mainWindow = new MainWindow()
                 {
-                    DataContext = new MainWindowViewModel(new MainWindowModel())
+                    DataContext = new MainWindowViewModel()
                 };
-
                 desktop.MainWindow = mainWindow;
             }
 

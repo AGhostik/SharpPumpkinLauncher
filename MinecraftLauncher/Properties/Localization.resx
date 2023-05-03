@@ -132,24 +132,6 @@
     <data name="ValidationDirectoryInvalidPath" xml:space="preserve">
         <value>Invalid path</value>
     </data>
-    <data name="Installed" xml:space="preserve">
-        <value>Installed</value>
-    </data>
-    <data name="DownloadJavaText" xml:space="preserve">
-        <value>Download Java for Minecraft:</value>
-    </data>
-    <data name="CopyToClipboard" xml:space="preserve">
-        <value>Copy to clipboard</value>
-    </data>
-    <data name="CopiedToClipboard" xml:space="preserve">
-        <value>Copied to clipboard</value>
-    </data>
-    <data name="OpenLink" xml:space="preserve">
-        <value>Open link</value>
-    </data>
-    <data name="Close" xml:space="preserve">
-        <value>Close</value>
-    </data>
     <data name="LauncherVisibility" xml:space="preserve">
         <value>Launcher visibility</value>
     </data>
@@ -161,5 +143,14 @@
     </data>
     <data name="ProgressAbort" xml:space="preserve">
         <value>Launch aborted</value>
+    </data>
+    <data name="Forge" xml:space="preserve">
+        <value>Forge</value>
+    </data>
+    <data name="ForgeVersion" xml:space="preserve">
+        <value>Forge version</value>
+    </data>
+    <data name="PleaseSupportForgeAuthors" xml:space="preserve">
+        <value>Support the Forge authors ❤️</value>
     </data>
 </root>

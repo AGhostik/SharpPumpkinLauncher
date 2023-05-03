@@ -13,7 +13,8 @@ namespace MinecraftLauncher.Main.Settings;
 
 public sealed class SettingsViewModel : ReactiveObject
 {
-    private readonly Action<SettingsData> _saveAction;
+    private readonly SettingsManager _settingsManager;
+    private readonly Action _saveAction;
     private readonly Action _closeAction;
     
     private string? _directory;
@@ -30,8 +31,10 @@ public sealed class SettingsViewModel : ReactiveObject
     private int _previousScreenWidthValue;
     private int _previousScreenHeightValue;
 
-    public SettingsViewModel(Action<SettingsData> saveAction, Action closeAction)
+    public SettingsViewModel(Action saveAction, Action closeAction)
     {
+        _settingsManager = ServiceProvider.SettingsManager;
+        
         _saveAction = saveAction;
         _closeAction = closeAction;
         SaveCommand = ReactiveCommand.Create(Save, CanSave);
@@ -129,7 +132,10 @@ public sealed class SettingsViewModel : ReactiveObject
 
         var settings = new SettingsData(DefaultPlayerName, Directory, LauncherVisibility, UseCustomResolution,
             ScreenHeight, ScreenWidth);
-        _saveAction.Invoke(settings);
+        
+        _settingsManager.SaveSettingsData(settings);
+        
+        _saveAction.Invoke();
     }
 
     private void Close()

@@ -154,8 +154,8 @@ internal sealed class OsRuleManager
             case OsWindows:
                 return $"{OsWindows}\\bin\\javaw.exe";
 
-            case OsOsx:
-            case OsLinux:
+            //todo: case OsOsx:
+            //todo: case OsLinux:
             default:
                 return null;
         }

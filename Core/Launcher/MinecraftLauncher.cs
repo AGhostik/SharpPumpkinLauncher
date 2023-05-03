@@ -30,6 +30,11 @@ public sealed class MinecraftLauncher
     {
         return await _versionsLoader.GetOnlineAvailableVersions(cancellationToken);
     }
+    
+    public async Task<Versions> GetOnlineForgeVersions(string versionId, CancellationToken cancellationToken = default)
+    {
+        return await _versionsLoader.GetOnlineForgeVersions(versionId, cancellationToken);
+    }
 
     public async Task<ErrorCode> LaunchMinecraft(LaunchData launchData, CancellationToken cancellationToken, 
         Action? startedAction = null, Action? exitedAction = null)

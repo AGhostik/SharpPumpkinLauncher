@@ -16,6 +16,19 @@ internal sealed class VersionsLoader
         _jsonManager = jsonManager;
     }
 
+    public async Task<Versions> GetOnlineForgeVersions(string versionId, CancellationToken cancellationToken)
+    {
+        var parameters = new Dictionary<string, string>
+        {
+            { "version", versionId },
+            { "includeAll", "true" }
+        };
+
+        var forgeVersions = await DownloadManager.GetRequest(WellKnownUrls.CurseForge, parameters, cancellationToken);
+        
+        return Versions.Empty;
+    }
+
     public async Task<Versions> GetOnlineAvailableVersions(CancellationToken cancellationToken)
     {
         var versionsJson = await DownloadManager.DownloadJsonAsync(WellKnownUrls.VersionsUrl, cancellationToken);

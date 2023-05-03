@@ -14,6 +14,7 @@ public sealed class Versions
         Snapshot = Array.Empty<Version>();
         Beta = Array.Empty<Version>();
         Alpha = Array.Empty<Version>();
+        Forge = Array.Empty<Version>();
         _versions = new Dictionary<string, Version>();
     }
 
@@ -24,6 +25,7 @@ public sealed class Versions
         Snapshot = snapshot;
         Beta = beta;
         Alpha = alpha;
+        Forge = Array.Empty<Version>();
 
         _versions = new Dictionary<string, Version>();
         AddVersionToDictionary(Alpha);
@@ -33,14 +35,23 @@ public sealed class Versions
 
         Latest = Release.FirstOrDefault(version => version.Id == latestId);
         LatestSnapshot = Snapshot.FirstOrDefault(version => version.Id == latestSnapshotId);
-
-        void AddVersionToDictionary(IReadOnlyList<Version> versions)
-        {
-            for (var i = 0; i < versions.Count; i++)
-                _versions.Add(versions[i].Id, versions[i]);
-        }
     }
     
+    public Versions(IReadOnlyList<Version> forge)
+    {
+        Latest = null;
+        LatestSnapshot = null;
+        
+        Release = Array.Empty<Version>();
+        Snapshot = Array.Empty<Version>();
+        Beta = Array.Empty<Version>();
+        Alpha = Array.Empty<Version>();
+        Forge = forge;
+
+        _versions = new Dictionary<string, Version>();
+        AddVersionToDictionary(Forge);
+    }
+
     public Version? Latest { get; }
     
     public Version? LatestSnapshot { get; }
@@ -52,6 +63,8 @@ public sealed class Versions
     public IReadOnlyList<Version> Beta { get; }
 
     public IReadOnlyList<Version> Alpha { get; }
+    
+    public IReadOnlyList<Version> Forge { get; }
 
     public IReadOnlyDictionary<string, Version> AllVersions => _versions;
 
@@ -115,5 +128,11 @@ public sealed class Versions
     public override int GetHashCode()
     {
         return HashCode.Combine(Release, Snapshot, Beta, Alpha, _versions);
+    }
+    
+    private void AddVersionToDictionary(IReadOnlyList<Version> versions)
+    {
+        for (var i = 0; i < versions.Count; i++)
+            _versions.Add(versions[i].Id, versions[i]);
     }
 }
