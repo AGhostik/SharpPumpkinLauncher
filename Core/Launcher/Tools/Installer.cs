@@ -22,8 +22,12 @@ internal sealed class Installer
 
     public event Action<DownloadProgress>? DownloadingProgress;
 
-    public async Task<ErrorCode> DownloadAndInstall(LaunchData launchData, CancellationToken cancellationToken)
+    public async Task<ErrorCode> DownloadAndInstall(LaunchData launchData,
+        MinecraftMissedInfo? minecraftMissedInfo = null, CancellationToken cancellationToken = default)
     {
+        if (minecraftMissedInfo != null)
+            return await DownloadAndInstallInternal(minecraftMissedInfo, cancellationToken);
+        
         var versionId = launchData.ForgeVersionId ?? launchData.VersionId;
         
         if (!_versionsLoader.TryGetVersion(launchData.VersionId, out var version))
@@ -41,6 +45,27 @@ internal sealed class Installer
             
         return await DownloadAndInstallInternal(versionId, launchData.GameDirectory, version.Url,
             forgeVersion, cancellationToken);
+    }
+
+    private async Task<ErrorCode> DownloadAndInstallInternal(MinecraftMissedInfo minecraftMissedInfo,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            if (minecraftMissedInfo.IsEmpty)
+                return ErrorCode.NoError;
+            
+            var restoreResult = await RestoreMissedItems(minecraftMissedInfo, cancellationToken);
+            if (restoreResult != ErrorCode.NoError)
+                return restoreResult;
+
+            return ErrorCode.NoError;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            return ErrorCode.Install;
+        }
     }
 
     private async Task<ErrorCode> DownloadAndInstallInternal(string versionId, string gameDirectory,

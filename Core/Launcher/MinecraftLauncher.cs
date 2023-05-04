@@ -46,7 +46,7 @@ public sealed class MinecraftLauncher
         if (minecraftMissedInfo == null || !minecraftMissedInfo.IsDownloadingNotNeeded)
         {
             _installer.DownloadingProgress += InstallerOnDownloadingProgress;
-            var installResult = await _installer.DownloadAndInstall(launchData, cancellationToken);
+            var installResult = await _installer.DownloadAndInstall(launchData, minecraftMissedInfo, cancellationToken);
             _installer.DownloadingProgress -= InstallerOnDownloadingProgress;
 
             if (installResult is not ErrorCode.NoError)
