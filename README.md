@@ -28,7 +28,6 @@ Todo:
 
 - add more unit tests
 - add launch tests (test all versions)
-- add Forge support
 - add launcher_profiles.json support
 - add java argument setup window
 - add backup system
