@@ -14,4 +14,7 @@ public sealed class MinecraftMissedInfo
                            UnpackItems.Count == 0 &&
                            PathsToDelete.Count == 0 &&
                            CorruptedFiles.Count == 0;
+    
+    public bool IsDownloadingNotNeeded => DownloadQueue.Count == 0 &&
+                                        CorruptedFiles.Count == 0;
 }

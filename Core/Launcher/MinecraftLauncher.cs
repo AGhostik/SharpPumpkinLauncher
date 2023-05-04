@@ -43,7 +43,7 @@ public sealed class MinecraftLauncher
         OnLaunchMinecraftProgress(LaunchProgress.Prepare);
 
         var minecraftMissedInfo = await _gameLauncher.IsVersionInstalled(launchData, cancellationToken);
-        if (minecraftMissedInfo == null || !minecraftMissedInfo.IsEmpty)
+        if (minecraftMissedInfo == null || !minecraftMissedInfo.IsDownloadingNotNeeded)
         {
             _installer.DownloadingProgress += InstallerOnDownloadingProgress;
             var installResult = await _installer.DownloadAndInstall(launchData, cancellationToken);
