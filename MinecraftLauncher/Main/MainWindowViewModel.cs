@@ -18,8 +18,7 @@ public sealed class MainWindowViewModel : ReactiveObject
     private readonly MainWindowModel _mainWindowModel;
     private readonly ProgressControl _progressControl;
     private readonly SettingsControl _settingsControl;
-    
-    private readonly bool _dontSaveSelectedProfile;
+    private readonly VersionsLoader _versionsLoader;
     
     private ProfileViewModel? _selectedProfile;
     private object? _mainContent;
@@ -31,10 +30,8 @@ public sealed class MainWindowViewModel : ReactiveObject
     public MainWindowViewModel()
     {
         _mainWindowModel = ServiceProvider.MainWindowModel;
+        _versionsLoader = ServiceProvider.VersionsLoader;
 
-        var versionsLoader = ServiceProvider.VersionsLoader;
-        versionsLoader.VersionsLoaded += OnVersionsLoaded;
-        
         var progressViewModel = new ProgressViewModel(_mainWindowModel);
         _progressControl = new ProgressControl() { DataContext = progressViewModel };
 
@@ -52,13 +49,20 @@ public sealed class MainWindowViewModel : ReactiveObject
         IsStartGameVisible = true;
         
         settingsViewModel.SetUp(_mainWindowModel.CurrentSettings);
+
+        if (_mainWindowModel.LastSelectedProfile == null && _mainWindowModel.Profiles.Count == 0)
+        {
+            _versionsLoader.VersionsLoaded += SetDefaultProfile;
+        }
+        else
+        {
+            Profiles.AddRange(_mainWindowModel.Profiles);
+            SelectedProfile = _mainWindowModel.LastSelectedProfile;
+        }
         
-        Profiles.AddRange(_mainWindowModel.Profiles);
-        _dontSaveSelectedProfile = true;
-        SelectedProfile = _mainWindowModel.LastSelectedProfile;
-        _dontSaveSelectedProfile = false;
+        _versionsLoader.VersionsLoaded += SetIsVersionsLoaded;
+
         UpdateProfilesComboboxEnabled();
-        
         SetDefaultMainContent();
     }
 
@@ -69,11 +73,8 @@ public sealed class MainWindowViewModel : ReactiveObject
         {
             this.RaiseAndSetIfChanged(ref _selectedProfile, value);
 
-            if (!_dontSaveSelectedProfile)
-            {
-                if (!string.IsNullOrEmpty(value?.ProfileName))
-                    MainWindowModel.SaveSelectedProfile(value.ProfileName);
-            }
+            if (!string.IsNullOrEmpty(value?.ProfileName))
+                MainWindowModel.SaveSelectedProfile(value.ProfileName);
 
             UpdateCanEditProfile();
             UpdateCanDeleteProfile();
@@ -194,9 +195,24 @@ public sealed class MainWindowViewModel : ReactiveObject
         SetDefaultMainContent();
     }
     
-    private void OnVersionsLoaded(Versions _)
+    private void SetIsVersionsLoaded(Versions versions)
     {
+        _versionsLoader.VersionsLoaded -= SetIsVersionsLoaded;
         IsVersionsLoaded = true;
+    }
+    
+    private void SetDefaultProfile(Versions versions)
+    {
+        if (versions.Latest == null)
+            return;
+        
+        _versionsLoader.VersionsLoaded -= SetDefaultProfile;
+        
+        var profile = ProfileViewModel.Create(versions.Latest, _mainWindowModel.CurrentSettings.DefaultPlayerName);
+        Profiles.Add(profile);
+        SelectedProfile = profile;
+
+        UpdateProfilesComboboxEnabled();
     }
 
     private void NewProfile()

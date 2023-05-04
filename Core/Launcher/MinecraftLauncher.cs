@@ -15,7 +15,7 @@ public sealed class MinecraftLauncher
     {
         var jsonManager = new JsonManager();
         _versionsLoader = new VersionsLoader(jsonManager);
-        _installer = new Installer(jsonManager);
+        _installer = new Installer(jsonManager, _versionsLoader);
         _gameLauncher = new GameLauncher(jsonManager);
     }
 
@@ -45,10 +45,6 @@ public sealed class MinecraftLauncher
         var minecraftMissedInfo = await _gameLauncher.IsVersionInstalled(launchData, cancellationToken);
         if (minecraftMissedInfo == null || !minecraftMissedInfo.IsEmpty)
         {
-            //case when online versions not loaded yet
-            if (string.IsNullOrEmpty(launchData.Version.Url))
-                return ErrorCode.NeedVersionUrl;
-            
             _installer.DownloadingProgress += InstallerOnDownloadingProgress;
             var installResult = await _installer.DownloadAndInstall(launchData, cancellationToken);
             _installer.DownloadingProgress -= InstallerOnDownloadingProgress;
@@ -59,7 +55,7 @@ public sealed class MinecraftLauncher
 
         _gameLauncher.LaunchMinecraftProgress += OnLaunchMinecraftProgress;
         var launchResult =
-            await _gameLauncher.LaunchMinecraft(launchData, cancellationToken, startedAction, exitedAction);
+            await _gameLauncher.LaunchMinecraft(launchData, startedAction, exitedAction, cancellationToken);
         _gameLauncher.LaunchMinecraftProgress -= OnLaunchMinecraftProgress;
 
         return launchResult;

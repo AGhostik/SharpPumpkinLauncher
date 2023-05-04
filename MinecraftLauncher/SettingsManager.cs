@@ -30,12 +30,10 @@ public class SettingsManager
         }
         else
         {
-            CreateDefaultSettings(out var profileViewModel, out var defaultSettingsData);
+            Profiles = Array.Empty<ProfileViewModel>();
+            LastSelectedProfile = null;
             
-            Profiles = new []{ profileViewModel };
-            LastSelectedProfile = profileViewModel;
-            
-            SaveSettingsData(defaultSettingsData);
+            SaveSettingsData(new SettingsData());
         }
     }
     
@@ -83,6 +81,13 @@ public class SettingsManager
             Snapshot = profileViewModel.Snapshot,
             Forge = profileViewModel.Forge
         };
+
+        if (profileViewModel.SelectedVersion != null)
+            profileData.MinecraftVersionTags = new List<string>(profileViewModel.SelectedVersion.Tags);
+        
+        if (profileViewModel.SelectedForgeVersion != null)
+            profileData.ForgeVersionTags = new List<string>(profileViewModel.SelectedForgeVersion.Tags);
+        
         LauncherSettings.Instance.Data.Profiles.Add(profileData);
         LauncherSettings.Save();
     }
@@ -102,11 +107,18 @@ public class SettingsManager
         editedProfileData.Name = profileViewModel.ProfileName;
         editedProfileData.PlayerNickname = profileViewModel.PlayerName;
         editedProfileData.MinecraftVersion = profileViewModel.SelectedVersion?.Id;
+        editedProfileData.ForgeVersion = profileViewModel.SelectedForgeVersion?.Id;
         editedProfileData.Alpha = profileViewModel.Alpha;
         editedProfileData.Beta = profileViewModel.Beta;
         editedProfileData.Custom = profileViewModel.Custom;
         editedProfileData.Release = profileViewModel.Release;
         editedProfileData.Snapshot = profileViewModel.Snapshot;
+        
+        if (profileViewModel.SelectedVersion != null)
+            editedProfileData.MinecraftVersionTags = new List<string>(profileViewModel.SelectedVersion.Tags);
+        
+        if (profileViewModel.SelectedForgeVersion != null)
+            editedProfileData.ForgeVersionTags = new List<string>(profileViewModel.SelectedForgeVersion.Tags);
         
         LauncherSettings.Save();
     }
@@ -174,12 +186,5 @@ public class SettingsManager
         }
 
         return false;
-    }
-    
-    private static void CreateDefaultSettings(out ProfileViewModel profileViewModel, out SettingsData settingsData)
-    {
-        settingsData = new SettingsData();
-        profileViewModel = ProfileViewModel.CreateDefault();
-        profileViewModel.PlayerName = settingsData.DefaultPlayerName;
     }
 }

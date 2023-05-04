@@ -2,7 +2,7 @@
 
 public sealed class LaunchData
 {
-    public LaunchData(string playerName, Version version, ForgeVersion? forgeVersion, string gameDirectory, 
+    public LaunchData(string playerName, string versionId, string? forgeVersionId, string gameDirectory, 
         bool useCustomResolution, int screenHeight, int screenWidth)
     {
         PlayerName = playerName;
@@ -10,14 +10,14 @@ public sealed class LaunchData
         UseCustomResolution = useCustomResolution;
         ScreenHeight = screenHeight;
         ScreenWidth = screenWidth;
-        Version = version;
-        ForgeVersion = forgeVersion;
+        VersionId = versionId;
+        ForgeVersionId = forgeVersionId;
     }
 
     public string PlayerName { get; }
     public string GameDirectory { get; }
-    public Version Version { get; }
-    public ForgeVersion? ForgeVersion { get; }
+    public string VersionId { get; }
+    public string? ForgeVersionId { get; }
     public bool UseCustomResolution { get; }
     public int ScreenHeight { get; }
     public int ScreenWidth { get; }

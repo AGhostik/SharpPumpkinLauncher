@@ -4,7 +4,8 @@ public enum ErrorCode
 {
     NoError,
     VersionId,
-    NeedVersionUrl,
+    GetVersionData,
+    GetForgeVersionData,
     Url,
     MinecraftData,
     AssetsData,
@@ -24,5 +25,4 @@ public enum ErrorCode
     LaunchArgument,
     StartProcess,
     GameAborted,
-    Connection,
 }

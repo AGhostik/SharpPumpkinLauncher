@@ -10,7 +10,6 @@ public sealed class ServiceProvider
         SettingsManager = new SettingsManager();
         MinecraftLauncher = new Launcher.MinecraftLauncher();
         
-        ProfileModel = new ProfileModel(MinecraftLauncher);
         VersionsLoader = new VersionsLoader(MinecraftLauncher, SettingsManager);
         MainWindowModel = new MainWindowModel(MinecraftLauncher, VersionsLoader, SettingsManager);
     }
@@ -18,6 +17,5 @@ public sealed class ServiceProvider
     public static Launcher.MinecraftLauncher MinecraftLauncher { get; }
     public static VersionsLoader VersionsLoader { get; }
     public static MainWindowModel MainWindowModel { get; }
-    public static ProfileModel ProfileModel { get; }
     public static SettingsManager SettingsManager { get; }
 }

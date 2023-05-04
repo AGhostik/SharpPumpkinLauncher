@@ -50,17 +50,11 @@ public sealed class MainWindowModel
             UpdateProgressValues?.Invoke(ProgressLocalizationKeys.InvalidProfile, 0, null);
             return;
         }
-
-        if (!profileViewModel.IsLoaded)
-        {
-            UpdateProgressValues?.Invoke(ProgressLocalizationKeys.Aborted, 0, null);
-            return;
-        }
         
         var launchData = new LaunchData(
             profileViewModel.PlayerName,
-            profileViewModel.SelectedVersion,
-            profileViewModel.SelectedForgeVersion,
+            profileViewModel.SelectedVersion.Id,
+            profileViewModel.SelectedForgeVersion?.Id,
             CurrentSettings.Directory,
             CurrentSettings.UseCustomResolution,
             CurrentSettings.ScreenHeight,

@@ -153,4 +153,7 @@
     <data name="PleaseSupportForgeAuthors" xml:space="preserve">
         <value>Support the Forge authors ❤️</value>
     </data>
+    <data name="Recommended" xml:space="preserve">
+        <value>Recommended</value>
+    </data>
 </root>

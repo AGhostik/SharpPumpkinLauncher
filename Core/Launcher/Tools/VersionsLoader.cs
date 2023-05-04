@@ -1,4 +1,5 @@
-﻿using JsonReader;
+﻿using System.Diagnostics.CodeAnalysis;
+using JsonReader;
 using JsonReader.PublicData.Manifest;
 using Launcher.PublicData;
 using SimpleLogger;
@@ -11,15 +12,57 @@ namespace Launcher.Tools;
 
 internal sealed class VersionsLoader
 {
+    private readonly Dictionary<string, ForgeVersions> _forgeVersions = new();
     private readonly JsonManager _jsonManager;
+    
+    private Versions? _onlineVersions;
+    private Versions? _offlineVersions;
 
     public VersionsLoader(JsonManager jsonManager)
     {
         _jsonManager = jsonManager;
     }
 
+    public bool TryGetVersion(string versionId, [NotNullWhen(true)]out Version? version)
+    {
+        if (_onlineVersions != null)
+        {
+            if (_onlineVersions.AllVersions.TryGetValue(versionId, out version))
+                return true;
+        }
+
+        if (_offlineVersions != null)
+        {
+            if (_offlineVersions.AllVersions.TryGetValue(versionId, out version))
+                return true;
+        }
+
+        version = null;
+        return false;
+    }
+
+    public async Task<ForgeVersion?> GetForgeVersion(string versionId, string forgeVersionId, 
+        CancellationToken cancellationToken = default)
+    {
+        if (_forgeVersions.TryGetValue(versionId, out var forgeVersions))
+        {
+            if (forgeVersions.AllForgeVersions.TryGetValue(forgeVersionId, out var forgeVersion))
+                return forgeVersion;
+        }
+
+        var loadedForgeVersions = await GetOnlineForgeVersions(versionId, cancellationToken);
+
+        if (loadedForgeVersions.AllForgeVersions.TryGetValue(forgeVersionId, out var loadedForgeVersion))
+            return loadedForgeVersion;
+
+        return null;
+    }
+
     public async Task<ForgeVersions> GetOnlineForgeVersions(string versionId, CancellationToken cancellationToken)
     {
+        if (_forgeVersions.TryGetValue(versionId, out var alreadyLoadedForgeVersions))
+            return alreadyLoadedForgeVersions;
+
         var parameters = new Dictionary<string, string>
         {
             { "version", versionId },
@@ -59,24 +102,33 @@ internal sealed class VersionsLoader
         
         versions.Sort((versionA, versionB) => versionB.CompareTo(versionA));
         
-        return new ForgeVersions(latest, recommended, versions);
+        var result = new ForgeVersions(latest, recommended, versions);
+        _forgeVersions.Add(versionId, result);
+        return result;
     }
 
     public async Task<Versions> GetOnlineAvailableVersions(CancellationToken cancellationToken)
     {
+        if (_onlineVersions != null)
+            return _onlineVersions;
+        
         var versionsJson = await DownloadManager.DownloadJsonAsync(WellKnownUrls.VersionsUrl, cancellationToken);
         var versions = _jsonManager.GetVersions(versionsJson);
         
         if (versions == null)
             return Versions.Empty;
 
-        return new Versions(
+        var result = new Versions(
             versions.Latest,
             versions.LatestSnapshot,
             GetVersionList(versions.Release), 
             GetVersionList(versions.Snapshot), 
             GetVersionList(versions.Beta), 
             GetVersionList(versions.Alpha));
+
+        _onlineVersions = result;
+
+        return result;
     }
     
     public async Task<Versions> ReadVersionsFromDisk(string directory, CancellationToken cancellationToken)
@@ -155,7 +207,10 @@ internal sealed class VersionsLoader
             }
         }
 
-        return new Versions(null, null, release, snapshot, beta, alpha);
+        var result = new Versions(null, null, release, snapshot, beta, alpha);
+        _offlineVersions = result;
+
+        return result;
     }
     
     private static List<Version> GetVersionList(IEnumerable<MinecraftVersion> minecraftVersions)

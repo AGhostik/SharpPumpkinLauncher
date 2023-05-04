@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Launcher.PublicData;
 
 namespace MinecraftLauncher;
@@ -6,7 +7,7 @@ namespace MinecraftLauncher;
 public sealed class VersionsLoader
 {
     private readonly Launcher.MinecraftLauncher _minecraftLauncher;
-    
+
     private Action<Versions>? _versionsLoaded;
     private Versions? _offlineVersions;
     private Versions? _onlineVersions;
@@ -29,6 +30,11 @@ public sealed class VersionsLoader
             InvokeVersionsLoaded();
         }
         remove => _versionsLoaded -= value;
+    }
+    
+    public async Task<ForgeVersions> RequestForgeVersions(string versionId)
+    {
+        return await _minecraftLauncher.GetOnlineForgeVersions(versionId);
     }
 
     public async void LoadOfflineVersions(string directory)

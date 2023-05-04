@@ -3,71 +3,40 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:profile="clr-namespace:MinecraftLauncher.Main.Profile"
-             xmlns:publicData="clr-namespace:Launcher.PublicData;assembly=Launcher"
              xmlns:properties="clr-namespace:MinecraftLauncher.Properties"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:DataType="profile:ProfileViewModel"
              x:CompileBindings="True"
              x:Class="MinecraftLauncher.Main.Profile.ProfileControl">
     <UserControl.Resources>
-        <DataTemplate x:Key="VersionTemplate" DataType="publicData:Version">
+        <DataTemplate x:Key="VersionTemplate" DataType="profile:VersionViewModel">
             <Grid ColumnDefinitions="Auto, *">
-                <Border 
-                    Grid.Column="0" 
-                    BorderThickness="1"
-                    BorderBrush="Black"
-                    CornerRadius="3"
-                    Margin="0, 0, 5, 0">
-                    <TextBlock
-                        Margin="5, 0, 5, 0"
-                        VerticalAlignment="Center"
-                        Text="{Binding Type}"/>
-                </Border>
+                <ItemsControl
+                    Grid.Column="0"
+                    Items="{Binding Tags}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border 
+                                BorderThickness="1"
+                                BorderBrush="Black"
+                                CornerRadius="3"
+                                Margin="0, 0, 5, 0">
+                                <TextBlock
+                                    Margin="5, 0, 5, 0"
+                                    VerticalAlignment="Center"
+                                    Text="{Binding}"/>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                
                 <TextBlock 
                     Grid.Column="1"
-                    VerticalAlignment="Center"
-                    Text="{Binding Id}"/>
-            </Grid>
-        </DataTemplate>
-        <DataTemplate x:Key="ForgeVersionTemplate" DataType="publicData:ForgeVersion">
-            <Grid ColumnDefinitions="Auto, Auto, Auto, *">
-                <Border 
-                    Grid.Column="0" 
-                    BorderThickness="1"
-                    BorderBrush="Black"
-                    CornerRadius="3"
-                    Margin="0, 0, 5, 0">
-                    <TextBlock
-                        Margin="5, 0, 5, 0"
-                        VerticalAlignment="Center"
-                        Text="{x:Static properties:Localization.Forge}"/>
-                </Border>
-                <Border 
-                    Grid.Column="1" 
-                    BorderThickness="1"
-                    BorderBrush="Black"
-                    CornerRadius="3"
-                    IsVisible="{Binding IsLatest}"
-                    Margin="0, 0, 5, 0">
-                    <TextBlock
-                        Margin="5, 0, 5, 0"
-                        VerticalAlignment="Center"
-                        Text="Latest"/>
-                </Border>
-                <Border 
-                    Grid.Column="2" 
-                    BorderThickness="1"
-                    BorderBrush="Black"
-                    CornerRadius="3"
-                    IsVisible="{Binding IsRecommended}"
-                    Margin="0, 0, 5, 0">
-                    <TextBlock
-                        Margin="5, 0, 5, 0"
-                        VerticalAlignment="Center"
-                        Text="Recommended"/>
-                </Border>
-                <TextBlock 
-                    Grid.Column="3"
                     VerticalAlignment="Center"
                     Text="{Binding Id}"/>
             </Grid>
@@ -122,7 +91,7 @@
                 IsEnabled="{Binding SelectedVersion, Converter={x:Static ObjectConverters.IsNotNull}}"
                 Items="{Binding ForgeVersions}"
                 SelectedItem="{Binding SelectedForgeVersion}"
-                ItemTemplate="{StaticResource ForgeVersionTemplate}" />
+                ItemTemplate="{StaticResource VersionTemplate}" />
             
             <Grid
                 HorizontalAlignment="Center"

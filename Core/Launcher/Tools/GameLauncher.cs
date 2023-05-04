@@ -5,7 +5,6 @@ using JsonReader.PublicData.Game;
 using JsonReader.PublicData.Runtime;
 using Launcher.Data;
 using Launcher.PublicData;
-using ForgeVersion = Launcher.PublicData.ForgeVersion;
 
 namespace Launcher.Tools;
 
@@ -23,7 +22,7 @@ internal sealed class GameLauncher
     public async Task<MinecraftMissedInfo?> IsVersionInstalled(LaunchData launchData,
         CancellationToken cancellationToken)
     {
-        var versionId = launchData.ForgeVersion == null ? launchData.Version.Id : launchData.ForgeVersion.Id;
+        var versionId = launchData.ForgeVersionId ?? launchData.VersionId;
         
         var minecraftPaths = new MinecraftPaths(launchData.GameDirectory, versionId);
         
@@ -43,9 +42,9 @@ internal sealed class GameLauncher
             return null;
         
         ForgeInfo? forgeInfo = null;
-        if (launchData.ForgeVersion != null)
+        if (launchData.ForgeVersionId != null)
         {
-            var (forge, _) = await ReadForgeInfo(launchData.ForgeVersion.Id, minecraftPaths, cancellationToken);
+            var (forge, _) = await ReadForgeInfo(launchData.ForgeVersionId, minecraftPaths, cancellationToken);
 
             if (forge == null)
                 return null;
@@ -63,18 +62,18 @@ internal sealed class GameLauncher
         return minecraftMissedInfo;
     }
 
-    public async Task<ErrorCode> LaunchMinecraft(LaunchData launchData, CancellationToken cancellationToken,
-        Action? startedAction = null, Action? exitedAction = null)
+    public async Task<ErrorCode> LaunchMinecraft(LaunchData launchData, Action? startedAction = null,
+        Action? exitedAction = null, CancellationToken cancellationToken = default)
     {
-        var versionId = launchData.ForgeVersion == null ? launchData.Version.Id : launchData.ForgeVersion.Id;
-
+        var versionId = launchData.ForgeVersionId ?? launchData.VersionId;
+        
         return await LaunchMinecraftInternal(launchData.GameDirectory, versionId, launchData.PlayerName,
-            launchData.ForgeVersion, launchData.UseCustomResolution, launchData.ScreenWidth, launchData.ScreenHeight,
+            launchData.ForgeVersionId, launchData.UseCustomResolution, launchData.ScreenWidth, launchData.ScreenHeight,
             startedAction, exitedAction, cancellationToken);
     }
     
     private async Task<ErrorCode> LaunchMinecraftInternal(string gameDirectory, string versionId, string playerName, 
-        ForgeVersion? forgeVersion = null, bool useCustomResolution = false, int screenWidth = 0, int screenHeight = 0,
+        string? forgeVersionId = null, bool useCustomResolution = false, int screenWidth = 0, int screenHeight = 0,
         Action? startedAction = null, Action? exitedAction = null, CancellationToken cancellationToken = default)
     {
         try
@@ -90,10 +89,10 @@ internal sealed class GameLauncher
                 return minecraftDataError;
             
             ForgeInfo? forgeInfo = null;
-            if (forgeVersion != null)
+            if (forgeVersionId != null)
             {
                 var (forge, forgeInfoError) =
-                    await ReadForgeInfo(forgeVersion.Id, minecraftPaths, cancellationToken);
+                    await ReadForgeInfo(forgeVersionId, minecraftPaths, cancellationToken);
 
                 if (forge == null)
                     return forgeInfoError;

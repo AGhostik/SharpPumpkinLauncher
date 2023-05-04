@@ -12,20 +12,35 @@ namespace Launcher.Tools;
 internal sealed class Installer
 {
     private readonly JsonManager _jsonManager;
+    private readonly VersionsLoader _versionsLoader;
 
-    public Installer(JsonManager jsonManager)
+    public Installer(JsonManager jsonManager, VersionsLoader versionsLoader)
     {
         _jsonManager = jsonManager;
+        _versionsLoader = versionsLoader;
     }
 
     public event Action<DownloadProgress>? DownloadingProgress;
 
     public async Task<ErrorCode> DownloadAndInstall(LaunchData launchData, CancellationToken cancellationToken)
     {
-        var versionId = launchData.ForgeVersion == null ? launchData.Version.Id : launchData.ForgeVersion.Id;
+        var versionId = launchData.ForgeVersionId ?? launchData.VersionId;
         
-        return await DownloadAndInstallInternal(versionId, launchData.GameDirectory, launchData.Version.Url,
-            launchData.ForgeVersion, cancellationToken);
+        if (!_versionsLoader.TryGetVersion(launchData.VersionId, out var version))
+            return ErrorCode.GetVersionData;
+        
+        ForgeVersion? forgeVersion = null;
+        if (launchData.ForgeVersionId != null)
+        {
+            forgeVersion = await _versionsLoader.GetForgeVersion(launchData.VersionId, launchData.ForgeVersionId,
+                cancellationToken);
+                
+            if (forgeVersion == null)
+                return ErrorCode.GetForgeVersionData;
+        }
+            
+        return await DownloadAndInstallInternal(versionId, launchData.GameDirectory, version.Url,
+            forgeVersion, cancellationToken);
     }
 
     private async Task<ErrorCode> DownloadAndInstallInternal(string versionId, string gameDirectory,
