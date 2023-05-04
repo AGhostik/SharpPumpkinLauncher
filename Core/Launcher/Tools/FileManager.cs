@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.IO.Compression;
 using JsonReader.PublicData.Assets;
+using JsonReader.PublicData.Forge;
 using JsonReader.PublicData.Game;
 using JsonReader.PublicData.Runtime;
 using Launcher.Data;
@@ -244,14 +245,13 @@ internal static class FileManager
         return true;
     }
     
-    public static MinecraftLaunchFiles GetLaunchFiles(MinecraftData data, MinecraftPaths minecraftPaths)
+    public static MinecraftLaunchFiles GetLaunchFiles(string versionId, MinecraftData data,
+        MinecraftPaths minecraftPaths, ForgeInfo? forgeInfo = null)
     {
-        var minecraftVersionId = data.Id;
-
-        var client = GetFullPath($"{minecraftPaths.VersionDirectory}\\{minecraftVersionId}.jar") ?? string.Empty;
+        var client = GetFullPath($"{minecraftPaths.VersionDirectory}\\{versionId}.jar") ?? string.Empty;
 
         var libraries = new List<string>();
-        var librariesFiles = GetLibrariesFiles(data.Libraries, minecraftPaths);
+        var librariesFiles = GetLibrariesFiles(data, forgeInfo, minecraftPaths);
         for (var i = 0; i < librariesFiles.Count; i++)
         {
             var libraryFile = librariesFiles[i];
@@ -383,22 +383,20 @@ internal static class FileManager
         return ErrorCode.NoError;
     }
     
-    public static MinecraftFileList GetFileList(RuntimeFiles runtimeFiles, MinecraftData data,
-        IReadOnlyList<Asset> assets, MinecraftPaths minecraftPaths)
+    public static MinecraftFileList GetFileList(string versionId, MinecraftData data, RuntimeFiles runtimeFiles,
+        IReadOnlyList<Asset> assets, MinecraftPaths minecraftPaths, ForgeInfo? forgeInfo = null)
     {
-        var minecraftVersionId = data.Id;
-        
         var client = new MinecraftFile(data.Client.Url, data.Client.Size, data.Client.Sha1,
-            $"{minecraftPaths.VersionDirectory}\\{minecraftVersionId}.jar");
+            $"{minecraftPaths.VersionDirectory}\\{versionId}.jar");
 
         MinecraftFile? server = null;
         if (data.Server != null)
         {
             server = new MinecraftFile(data.Server.Url, data.Server.Size, data.Server.Sha1,
-                $"{minecraftPaths.VersionDirectory}\\{minecraftVersionId}-server.jar");
+                $"{minecraftPaths.VersionDirectory}\\{versionId}-server.jar");
         }
 
-        var librariesFiles = GetLibrariesFiles(data.Libraries, minecraftPaths);
+        var librariesFiles = GetLibrariesFiles(data, forgeInfo, minecraftPaths);
 
         var assetsFiles = data.IsLegacyAssets()
             ? GetLegacyAssetsFiles(assets, minecraftPaths)
@@ -433,7 +431,25 @@ internal static class FileManager
         return files;
     }
 
-    private static IReadOnlyList<MinecraftLibraryFile> GetLibrariesFiles(IReadOnlyList<Library> libraries,
+    private static IReadOnlyList<MinecraftLibraryFile> GetLibrariesFiles(MinecraftData data, ForgeInfo? forgeInfo,
+        MinecraftPaths minecraftPaths)
+    {
+        IReadOnlyList<MinecraftLibraryFile> librariesFiles;
+        if (forgeInfo != null)
+        {
+            var forgeAndMinecraftLibs = new List<Library>(data.Libraries);
+            forgeAndMinecraftLibs.AddRange(forgeInfo.Libraries);
+            librariesFiles = GetLibrariesFilesInternal(forgeAndMinecraftLibs, minecraftPaths);
+        }
+        else
+        {
+            librariesFiles = GetLibrariesFilesInternal(data.Libraries, minecraftPaths);
+        }
+
+        return librariesFiles;
+    }
+    
+    private static IReadOnlyList<MinecraftLibraryFile> GetLibrariesFilesInternal(IReadOnlyList<Library> libraries,
         MinecraftPaths minecraftPaths)
     {
         var result = new List<MinecraftLibraryFile>(libraries.Count);

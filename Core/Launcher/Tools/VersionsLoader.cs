@@ -2,6 +2,8 @@
 using JsonReader.PublicData.Manifest;
 using Launcher.PublicData;
 using SimpleLogger;
+using ForgeVersion = Launcher.PublicData.ForgeVersion;
+using ForgeVersions = Launcher.PublicData.ForgeVersions;
 using Version = Launcher.PublicData.Version;
 using Versions = Launcher.PublicData.Versions;
 
@@ -16,7 +18,7 @@ internal sealed class VersionsLoader
         _jsonManager = jsonManager;
     }
 
-    public async Task<Versions> GetOnlineForgeVersions(string versionId, CancellationToken cancellationToken)
+    public async Task<ForgeVersions> GetOnlineForgeVersions(string versionId, CancellationToken cancellationToken)
     {
         var parameters = new Dictionary<string, string>
         {
@@ -24,9 +26,40 @@ internal sealed class VersionsLoader
             { "includeAll", "true" }
         };
 
-        var forgeVersions = await DownloadManager.GetRequest(WellKnownUrls.CurseForge, parameters, cancellationToken);
+        var forgeVersionsJson = await DownloadManager.GetRequest(WellKnownUrls.CurseForge, parameters, cancellationToken);
+        var forgeVersions = _jsonManager.GetForgeVersions(forgeVersionsJson, WellKnownUrls.CurseForge);
         
-        return Versions.Empty;
+        if (forgeVersions == null)
+            return ForgeVersions.Empty;
+        
+        ForgeVersion? recommended = null;
+        ForgeVersion? latest = null;
+        var versions = new List<ForgeVersion>(forgeVersions.Versions.Count);
+        for (var i = 0; i < forgeVersions.Versions.Count; i++)
+        {
+            var version = forgeVersions.Versions[i];
+
+            var isLatest = version.Id == forgeVersions.Latest?.Id;
+            var isRecommended = version.Id == forgeVersions.Recommended?.Id;
+            
+            var forgeVersion = new ForgeVersion(version.Id, version.Url, version.MinecraftId)
+            {
+                IsLatest = isLatest,
+                IsRecommended = isRecommended
+            };
+            
+            if (isLatest)
+                latest = forgeVersion;
+            
+            if (isRecommended)
+                recommended = forgeVersion;
+            
+            versions.Add(forgeVersion);
+        }
+        
+        versions.Sort((versionA, versionB) => versionB.CompareTo(versionA));
+        
+        return new ForgeVersions(latest, recommended, versions);
     }
 
     public async Task<Versions> GetOnlineAvailableVersions(CancellationToken cancellationToken)
@@ -93,7 +126,7 @@ internal sealed class VersionsLoader
                 }
                 
                 var type = MinecraftTypeConverter.GetVersionType(minecraftData.MinecraftType);
-                var version = new Version(minecraftData.Id, type);
+                var version = new Version(subDirectory.Name, type);
 
                 switch (type)
                 {

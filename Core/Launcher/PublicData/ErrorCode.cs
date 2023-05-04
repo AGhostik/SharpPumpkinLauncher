@@ -9,6 +9,7 @@ public enum ErrorCode
     MinecraftData,
     AssetsData,
     RuntimeData,
+    ForgeData,
     UnknownRuntimeVersion,
     RuntimeDataNotFound,
     CreateDirectory,

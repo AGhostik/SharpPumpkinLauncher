@@ -1,10 +1,12 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using JsonReader.InternalData.Assets;
+using JsonReader.InternalData.Forge;
 using JsonReader.InternalData.Game;
 using JsonReader.InternalData.Manifest;
 using JsonReader.InternalData.Runtime;
 using JsonReader.PublicData.Assets;
+using JsonReader.PublicData.Forge;
 using JsonReader.PublicData.Game;
 using JsonReader.PublicData.Manifest;
 using JsonReader.PublicData.Runtime;
@@ -14,6 +16,90 @@ namespace JsonReader;
 
 public sealed class JsonManager
 {
+    public ForgeInfo? GetForgeInfo(string? json)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(json))
+                return null;
+
+            var forgeParentData = JsonSerializer.Deserialize<ForgeParentData>(json);
+            var forgeData = forgeParentData?.Data;
+            if (forgeData == null)
+                return null;
+
+            if (string.IsNullOrEmpty(forgeData.VersionJson))
+                return null;
+
+            var forgeVersionJson = forgeData.VersionJson.Replace("\\r\\n", string.Empty).Replace("\\\"", "\"");
+            var forgeVersionData = JsonSerializer.Deserialize<ForgeVersionData>(forgeVersionJson);
+            if (forgeVersionData == null)
+                return null;
+            
+            var libraries = GetLibraries(forgeVersionData.Libraries);
+
+            if (string.IsNullOrEmpty(forgeVersionData.MinecraftArguments))
+                return null;
+
+            if (string.IsNullOrEmpty(forgeVersionData.MainClass))
+                return null;
+
+            return new ForgeInfo(forgeVersionData.MainClass, forgeVersionData.MinecraftArguments, libraries);
+        }
+        catch (Exception e)
+        {
+            Logger.Log(e);
+            return null;
+        }
+    }
+    
+    public ForgeVersions? GetForgeVersions(string? json, string curseForgeUrl)
+    {
+        const int forgeType = 1;
+        
+        try
+        {
+            if (string.IsNullOrEmpty(json))
+                return null;
+
+            var forgeManifestsData = JsonSerializer.Deserialize<ForgeManifestsData>(json);
+            if (forgeManifestsData?.Data == null)
+                return null;
+
+            ForgeVersion? recommended = null;
+            ForgeVersion? latest = null;
+            var versions = new List<ForgeVersion>();
+            for (var i = 0; i < forgeManifestsData.Data.Length; i++)
+            {
+                var manifestData = forgeManifestsData.Data[i];
+                
+                if (string.IsNullOrEmpty(manifestData.Name) || string.IsNullOrEmpty(manifestData.GameVersion))
+                    continue;
+                
+                if (manifestData.Type != forgeType)
+                    continue;
+
+                var url = $"{curseForgeUrl}\\{manifestData.Name}";
+                var forgeVersion = new ForgeVersion(manifestData.Name, url, manifestData.GameVersion);
+
+                if (manifestData.Recommended)
+                    recommended = forgeVersion;
+
+                if (manifestData.Latest)
+                    latest = forgeVersion;
+                
+                versions.Add(forgeVersion);
+            }
+
+            return new ForgeVersions(latest, recommended, versions);
+        }
+        catch (Exception e)
+        {
+            Logger.Log(e);
+            return null;
+        }
+    }
+    
     public RuntimeFiles? GetRuntimeFiles(string? json)
     {
         try
@@ -254,7 +340,7 @@ public sealed class JsonManager
             var javaVersion = new JavaVersion(minecraftVersionData.JavaVersion.Component,
                 minecraftVersionData.JavaVersion.MajorVersion);
 
-            var libraries = GetLibraries(minecraftVersionData);
+            var libraries = GetLibraries(minecraftVersionData.Libraries);
 
             return new MinecraftData(
                 id: minecraftVersionData.Id,
@@ -279,15 +365,15 @@ public sealed class JsonManager
         }
     }
 
-    private static IReadOnlyList<Library> GetLibraries(MinecraftVersionData minecraftVersionData)
+    private static IReadOnlyList<Library> GetLibraries(IReadOnlyList<LibraryData>? libraryDatas)
     {
-        if (minecraftVersionData.Library == null)
+        if (libraryDatas == null)
             return Array.Empty<Library>();
         
-        var libraries = new List<Library>(minecraftVersionData.Library.Length);
-        for (var i = 0; i < minecraftVersionData.Library.Length; i++)
+        var libraries = new List<Library>(libraryDatas.Count);
+        for (var i = 0; i < libraryDatas.Count; i++)
         {
-            var lib = minecraftVersionData.Library[i];
+            var lib = libraryDatas[i];
             var downloads = lib.Downloads;
             if (downloads == null)
                 continue;
@@ -398,15 +484,20 @@ public sealed class JsonManager
 
         if (!string.IsNullOrEmpty(minecraftVersionData.MinecraftArguments))
         {
-            var legacyArguments = new LegacyArguments(minecraftVersionData.MinecraftArguments,
-                "-Djava.library.path=${natives_directory} -cp ${classpath}");
-            
-            arguments = new Arguments(legacyArguments);
+            arguments = GetLegacyArguments(minecraftVersionData.MinecraftArguments);
             return true;
         }
 
         arguments = null;
         return false;
+    }
+
+    private static Arguments GetLegacyArguments(string minecraftArguments)
+    {
+        var legacyArguments = new LegacyArguments(minecraftArguments,
+            "-Djava.library.path=${natives_directory} -cp ${classpath}");
+            
+        return new Arguments(legacyArguments);
     }
 
     private static List<ArgumentItem> GetArgumentItems(IReadOnlyList<ArgumentItemData>? argumentDatas)

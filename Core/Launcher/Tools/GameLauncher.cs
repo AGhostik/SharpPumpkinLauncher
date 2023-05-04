@@ -1,9 +1,11 @@
 ﻿using JsonReader;
 using JsonReader.PublicData.Assets;
+using JsonReader.PublicData.Forge;
 using JsonReader.PublicData.Game;
 using JsonReader.PublicData.Runtime;
 using Launcher.Data;
 using Launcher.PublicData;
+using ForgeVersion = Launcher.PublicData.ForgeVersion;
 
 namespace Launcher.Tools;
 
@@ -21,9 +23,11 @@ internal sealed class GameLauncher
     public async Task<MinecraftMissedInfo?> IsVersionInstalled(LaunchData launchData,
         CancellationToken cancellationToken)
     {
-        var minecraftPaths = new MinecraftPaths(launchData.GameDirectory, launchData.Version.Id);
+        var versionId = launchData.ForgeVersion == null ? launchData.Version.Id : launchData.ForgeVersion.Id;
         
-        var (minecraftData, _) = await ReadMinecraftData(minecraftPaths, launchData.Version.Id, cancellationToken);
+        var minecraftPaths = new MinecraftPaths(launchData.GameDirectory, versionId);
+        
+        var (minecraftData, _) = await ReadMinecraftData(minecraftPaths, versionId, cancellationToken);
 
         if (minecraftData == null)
             return null;
@@ -38,7 +42,19 @@ internal sealed class GameLauncher
         if (runtimeFiles == null)
             return null;
         
-        var fileList = FileManager.GetFileList(runtimeFiles, minecraftData, assetsData, minecraftPaths);
+        ForgeInfo? forgeInfo = null;
+        if (launchData.ForgeVersion != null)
+        {
+            var (forge, _) = await ReadForgeInfo(launchData.ForgeVersion.Id, minecraftPaths, cancellationToken);
+
+            if (forge == null)
+                return null;
+
+            forgeInfo = forge;
+        }
+        
+        var fileList = FileManager.GetFileList(versionId, minecraftData, runtimeFiles, assetsData, minecraftPaths,
+            forgeInfo);
             
         var missingInfoError = FileManager.GetMissingInfo(fileList, minecraftPaths, out var minecraftMissedInfo);
         if (missingInfoError != ErrorCode.NoError)
@@ -50,26 +66,59 @@ internal sealed class GameLauncher
     public async Task<ErrorCode> LaunchMinecraft(LaunchData launchData, CancellationToken cancellationToken,
         Action? startedAction = null, Action? exitedAction = null)
     {
+        var versionId = launchData.ForgeVersion == null ? launchData.Version.Id : launchData.ForgeVersion.Id;
+
+        return await LaunchMinecraftInternal(launchData.GameDirectory, versionId, launchData.PlayerName,
+            launchData.ForgeVersion, launchData.UseCustomResolution, launchData.ScreenWidth, launchData.ScreenHeight,
+            startedAction, exitedAction, cancellationToken);
+    }
+    
+    private async Task<ErrorCode> LaunchMinecraftInternal(string gameDirectory, string versionId, string playerName, 
+        ForgeVersion? forgeVersion = null, bool useCustomResolution = false, int screenWidth = 0, int screenHeight = 0,
+        Action? startedAction = null, Action? exitedAction = null, CancellationToken cancellationToken = default)
+    {
         try
         {
             LaunchMinecraftProgress?.Invoke(LaunchProgress.Prepare);
             
-            var minecraftPaths = new MinecraftPaths(launchData.GameDirectory, launchData.Version.Id);
+            var minecraftPaths = new MinecraftPaths(gameDirectory, versionId);
 
-            var (minecraftData, minecraftDataError) = await ReadMinecraftData(minecraftPaths, launchData.Version.Id,
+            var (minecraftData, minecraftDataError) = await ReadMinecraftData(minecraftPaths, versionId,
                 cancellationToken);
 
             if (minecraftData == null)
                 return minecraftDataError;
+            
+            ForgeInfo? forgeInfo = null;
+            if (forgeVersion != null)
+            {
+                var (forge, forgeInfoError) =
+                    await ReadForgeInfo(forgeVersion.Id, minecraftPaths, cancellationToken);
 
-            var launchFiles = FileManager.GetLaunchFiles(minecraftData, minecraftPaths);
+                if (forge == null)
+                    return forgeInfoError;
 
-            var launchArgumentsData = new LaunchArgumentsData(launchData, minecraftData, launchFiles, minecraftPaths);
+                forgeInfo = forge;
+            }
+
+            var launchFiles = FileManager.GetLaunchFiles(versionId, minecraftData, minecraftPaths, forgeInfo);
+
+            var launchArgumentsData = new LaunchArgumentsData(minecraftData, launchFiles, minecraftPaths,
+                playerName, useCustomResolution, screenWidth, screenHeight);
             
             if (!launchArgumentsData.IsValid)
                 return ErrorCode.LaunchArgument;
-            
-            var launchArguments = LaunchArgumentsBuilder.GetLaunchArguments(minecraftData, launchArgumentsData);
+
+            string launchArguments;
+            if (forgeInfo != null)
+            {
+                launchArguments = LaunchArgumentsBuilder.GetForgeLaunchArguments(forgeInfo.MainClass,
+                    forgeInfo.Arguments, minecraftData, launchArgumentsData);
+            }
+            else
+            {
+                launchArguments = LaunchArgumentsBuilder.GetLaunchArguments(minecraftData, launchArgumentsData);
+            }
 
             LaunchMinecraftProgress?.Invoke(LaunchProgress.StartGame);
 
@@ -140,5 +189,23 @@ internal sealed class GameLauncher
         var runtimeFiles = _jsonManager.GetRuntimeFiles(runtimesDataJson);
 
         return runtimeFiles;
+    }
+    
+    private async Task<(ForgeInfo?, ErrorCode)> ReadForgeInfo(string forgeVersionId,
+        MinecraftPaths minecraftPaths, CancellationToken cancellationToken)
+    {
+        var forgeInfoJson =
+            await FileManager.ReadFile($"{minecraftPaths.VersionDirectory}\\FORGE-{forgeVersionId}.json",
+                cancellationToken);
+
+        if (string.IsNullOrEmpty(forgeInfoJson))
+            return (null, ErrorCode.ReadFile);
+            
+        var forgeInfo = _jsonManager.GetForgeInfo(forgeInfoJson);
+
+        if (forgeInfo == null)
+            return (null, ErrorCode.ForgeData);
+
+        return (forgeInfo, ErrorCode.NoError);
     }
 }

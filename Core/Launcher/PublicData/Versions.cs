@@ -14,7 +14,6 @@ public sealed class Versions
         Snapshot = Array.Empty<Version>();
         Beta = Array.Empty<Version>();
         Alpha = Array.Empty<Version>();
-        Forge = Array.Empty<Version>();
         _versions = new Dictionary<string, Version>();
     }
 
@@ -25,7 +24,6 @@ public sealed class Versions
         Snapshot = snapshot;
         Beta = beta;
         Alpha = alpha;
-        Forge = Array.Empty<Version>();
 
         _versions = new Dictionary<string, Version>();
         AddVersionToDictionary(Alpha);
@@ -35,21 +33,6 @@ public sealed class Versions
 
         Latest = Release.FirstOrDefault(version => version.Id == latestId);
         LatestSnapshot = Snapshot.FirstOrDefault(version => version.Id == latestSnapshotId);
-    }
-    
-    public Versions(IReadOnlyList<Version> forge)
-    {
-        Latest = null;
-        LatestSnapshot = null;
-        
-        Release = Array.Empty<Version>();
-        Snapshot = Array.Empty<Version>();
-        Beta = Array.Empty<Version>();
-        Alpha = Array.Empty<Version>();
-        Forge = forge;
-
-        _versions = new Dictionary<string, Version>();
-        AddVersionToDictionary(Forge);
     }
 
     public Version? Latest { get; }
@@ -64,8 +47,6 @@ public sealed class Versions
 
     public IReadOnlyList<Version> Alpha { get; }
     
-    public IReadOnlyList<Version> Forge { get; }
-
     public IReadOnlyDictionary<string, Version> AllVersions => _versions;
 
     public bool IsEmpty => Release.Count == 0 && Snapshot.Count == 0 && Beta.Count == 0 && Alpha.Count == 0;
@@ -93,7 +74,7 @@ public sealed class Versions
                     if (listA[i].Id != listB[j].Id)
                         continue;
                     
-                    var mergeResult = Version.Merge(listA[i], listB[i]);
+                    var mergeResult = Version.Merge(listA[i], listB[j]);
                     if (mergeResult == null)
                         continue;
 

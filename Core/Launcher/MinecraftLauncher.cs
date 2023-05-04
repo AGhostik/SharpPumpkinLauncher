@@ -31,7 +31,8 @@ public sealed class MinecraftLauncher
         return await _versionsLoader.GetOnlineAvailableVersions(cancellationToken);
     }
     
-    public async Task<Versions> GetOnlineForgeVersions(string versionId, CancellationToken cancellationToken = default)
+    public async Task<ForgeVersions> GetOnlineForgeVersions(string versionId,
+        CancellationToken cancellationToken = default)
     {
         return await _versionsLoader.GetOnlineForgeVersions(versionId, cancellationToken);
     }

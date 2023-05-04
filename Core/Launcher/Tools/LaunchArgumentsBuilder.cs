@@ -3,8 +3,29 @@ using JsonReader.PublicData.Game;
 
 namespace Launcher.Tools;
 
-internal sealed class LaunchArgumentsBuilder
+internal static class LaunchArgumentsBuilder
 {
+    public static string GetForgeLaunchArguments(string forgeMainCLass, string forgeArguments,
+        MinecraftData minecraftVersionData, LaunchArgumentsData launchArgumentsData)
+    {
+        string? jvmFilledArguments;
+        if (minecraftVersionData.Arguments.LegacyArguments == null)
+        {
+            var jvmArguments = BuildArguments(minecraftVersionData.Arguments.Jvm);
+            jvmFilledArguments = FillJmvParameters(jvmArguments, launchArgumentsData,
+                minecraftVersionData.MinimumLauncherVersion);
+        }
+        else
+        {
+            jvmFilledArguments = FillJmvParameters(minecraftVersionData.Arguments.LegacyArguments.Jvm,
+                launchArgumentsData, minecraftVersionData.MinimumLauncherVersion);
+        }
+
+        var gameFilledArguments = FillGameArguments(forgeArguments, launchArgumentsData);
+
+        return $"{jvmFilledArguments} {forgeMainCLass} {gameFilledArguments}";
+    }
+    
     public static string GetLaunchArguments(MinecraftData minecraftVersionData, LaunchArgumentsData launchArgumentsData)
     {
         if (minecraftVersionData.Arguments.LegacyArguments == null)

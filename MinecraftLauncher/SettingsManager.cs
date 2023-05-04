@@ -75,11 +75,13 @@ public class SettingsManager
             Name = profileViewModel.ProfileName,
             PlayerNickname = profileViewModel.PlayerName,
             MinecraftVersion = profileViewModel.SelectedVersion?.Id,
+            ForgeVersion = profileViewModel.SelectedForgeVersion?.Id,
             Alpha = profileViewModel.Alpha,
             Beta = profileViewModel.Beta,
             Custom = profileViewModel.Custom,
             Release = profileViewModel.Release,
             Snapshot = profileViewModel.Snapshot,
+            Forge = profileViewModel.Forge
         };
         LauncherSettings.Instance.Data.Profiles.Add(profileData);
         LauncherSettings.Save();

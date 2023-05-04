@@ -23,7 +23,7 @@ internal class MinecraftVersionData
     public string? Id { get; set; }
 
     [JsonPropertyName("libraries")]
-    public LibraryData[]? Library { get; set; }
+    public LibraryData[]? Libraries { get; set; }
     
     [JsonPropertyName("logging")]
     public LoggingData? Logging { get; set; }

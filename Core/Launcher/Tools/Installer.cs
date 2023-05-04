@@ -1,9 +1,11 @@
 ﻿using JsonReader;
 using JsonReader.PublicData.Assets;
+using JsonReader.PublicData.Forge;
 using JsonReader.PublicData.Game;
 using JsonReader.PublicData.Runtime;
 using Launcher.Data;
 using Launcher.PublicData;
+using ForgeVersion = Launcher.PublicData.ForgeVersion;
 
 namespace Launcher.Tools;
 
@@ -20,17 +22,23 @@ internal sealed class Installer
 
     public async Task<ErrorCode> DownloadAndInstall(LaunchData launchData, CancellationToken cancellationToken)
     {
+        var versionId = launchData.ForgeVersion == null ? launchData.Version.Id : launchData.ForgeVersion.Id;
+        
+        return await DownloadAndInstallInternal(versionId, launchData.GameDirectory, launchData.Version.Url,
+            launchData.ForgeVersion, cancellationToken);
+    }
+
+    private async Task<ErrorCode> DownloadAndInstallInternal(string versionId, string gameDirectory,
+        string? minecraftUrl, ForgeVersion? forgeVersion = null, CancellationToken cancellationToken = default)
+    {
         try
         {
-            if (!await DownloadManager.CheckConnection(cancellationToken))
-                return ErrorCode.Connection;
-            
-            if (string.IsNullOrEmpty(launchData.Version.Id))
+            if (string.IsNullOrEmpty(versionId))
                 return ErrorCode.VersionId;
             
-            var minecraftPaths = new MinecraftPaths(launchData.GameDirectory, launchData.Version.Id);
+            var minecraftPaths = new MinecraftPaths(gameDirectory, versionId);
 
-            var (minecraftData, minecraftDataError) = await GetAndSaveMinecraftData(launchData.Version.Url,
+            var (minecraftData, minecraftDataError) = await GetAndSaveMinecraftData(minecraftUrl, versionId,
                 minecraftPaths, cancellationToken);
 
             if (minecraftData == null)
@@ -47,8 +55,20 @@ internal sealed class Installer
 
             if (runtimeFiles == null)
                 return runtimeFilesError;
-            
-            var fileList = FileManager.GetFileList(runtimeFiles, minecraftData, assetsData, minecraftPaths);
+
+            ForgeInfo? forgeInfo = null;
+            if (forgeVersion != null)
+            {
+                var (forge, forgeInfoError) = await GetAndSaveForge(forgeVersion, minecraftPaths, cancellationToken);
+
+                if (forge == null)
+                    return forgeInfoError;
+
+                forgeInfo = forge;
+            }
+
+            var fileList = FileManager.GetFileList(versionId, minecraftData, runtimeFiles, assetsData, minecraftPaths,
+                forgeInfo);
             
             var missingInfoError = FileManager.GetMissingInfo(fileList, minecraftPaths, out var minecraftMissedInfo);
             if (missingInfoError != ErrorCode.NoError)
@@ -70,8 +90,8 @@ internal sealed class Installer
         }
     }
 
-    private async Task<(MinecraftData?, ErrorCode)> GetAndSaveMinecraftData(string? url, MinecraftPaths minecraftPaths,
-        CancellationToken cancellationToken)
+    private async Task<(MinecraftData?, ErrorCode)> GetAndSaveMinecraftData(string? url, string versionId,
+        MinecraftPaths minecraftPaths, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(url))
             return (null, ErrorCode.Url);
@@ -92,7 +112,7 @@ internal sealed class Installer
             return (null, ErrorCode.CreateDirectory);
             
         var versionJsonCreated =
-            await FileManager.WriteFile($"{minecraftPaths.VersionDirectory}\\{minecraftData.Id}.json",
+            await FileManager.WriteFile($"{minecraftPaths.VersionDirectory}\\{versionId}.json",
                 minecraftVersionJson);
         
         if (!versionJsonCreated)
@@ -199,6 +219,28 @@ internal sealed class Installer
             return (null, ErrorCode.CreateFile);
 
         return (runtimeFiles, ErrorCode.NoError);
+    }
+
+    private async Task<(ForgeInfo?, ErrorCode)> GetAndSaveForge(ForgeVersion forgeVersion,
+        MinecraftPaths minecraftPaths, CancellationToken cancellationToken)
+    {
+        var forgeJson = await DownloadManager.DownloadJsonAsync(forgeVersion.Url, cancellationToken);
+        
+        if (string.IsNullOrEmpty(forgeJson))
+            return (null, ErrorCode.Download);
+
+        var forgeInfo = _jsonManager.GetForgeInfo(forgeJson);
+
+        if (forgeInfo == null)
+            return (null, ErrorCode.ForgeData);
+        
+        var forgeInfoJsonCreated = await FileManager.WriteFile(
+            $"{minecraftPaths.VersionDirectory}\\FORGE-{forgeVersion.Id}.json", forgeJson);
+        
+        if (!forgeInfoJsonCreated)
+            return (null, ErrorCode.CreateFile);
+        
+        return (forgeInfo, ErrorCode.NoError);
     }
 
     private async Task<ErrorCode> RestoreMissedItems(MinecraftMissedInfo missedInfo,

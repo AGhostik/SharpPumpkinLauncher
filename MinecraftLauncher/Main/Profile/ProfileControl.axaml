@@ -29,6 +29,49 @@
                     Text="{Binding Id}"/>
             </Grid>
         </DataTemplate>
+        <DataTemplate x:Key="ForgeVersionTemplate" DataType="publicData:ForgeVersion">
+            <Grid ColumnDefinitions="Auto, Auto, Auto, *">
+                <Border 
+                    Grid.Column="0" 
+                    BorderThickness="1"
+                    BorderBrush="Black"
+                    CornerRadius="3"
+                    Margin="0, 0, 5, 0">
+                    <TextBlock
+                        Margin="5, 0, 5, 0"
+                        VerticalAlignment="Center"
+                        Text="{x:Static properties:Localization.Forge}"/>
+                </Border>
+                <Border 
+                    Grid.Column="1" 
+                    BorderThickness="1"
+                    BorderBrush="Black"
+                    CornerRadius="3"
+                    IsVisible="{Binding IsLatest}"
+                    Margin="0, 0, 5, 0">
+                    <TextBlock
+                        Margin="5, 0, 5, 0"
+                        VerticalAlignment="Center"
+                        Text="Latest"/>
+                </Border>
+                <Border 
+                    Grid.Column="2" 
+                    BorderThickness="1"
+                    BorderBrush="Black"
+                    CornerRadius="3"
+                    IsVisible="{Binding IsRecommended}"
+                    Margin="0, 0, 5, 0">
+                    <TextBlock
+                        Margin="5, 0, 5, 0"
+                        VerticalAlignment="Center"
+                        Text="Recommended"/>
+                </Border>
+                <TextBlock 
+                    Grid.Column="3"
+                    VerticalAlignment="Center"
+                    Text="{Binding Id}"/>
+            </Grid>
+        </DataTemplate>
     </UserControl.Resources>
     <Grid RowDefinitions="*, Auto, Auto">
         <StackPanel Grid.Row="0" Orientation="Vertical">
@@ -79,7 +122,7 @@
                 IsEnabled="{Binding SelectedVersion, Converter={x:Static ObjectConverters.IsNotNull}}"
                 Items="{Binding ForgeVersions}"
                 SelectedItem="{Binding SelectedForgeVersion}"
-                ItemTemplate="{StaticResource VersionTemplate}" />
+                ItemTemplate="{StaticResource ForgeVersionTemplate}" />
             
             <Grid
                 HorizontalAlignment="Center"

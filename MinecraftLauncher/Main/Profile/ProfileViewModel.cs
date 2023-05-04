@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Reactive;
 using System.Reactive.Subjects;
+using System.Threading.Tasks;
 using Launcher.PublicData;
 using MinecraftLauncher.Main.Validation;
 using ReactiveUI;
@@ -19,7 +20,7 @@ public sealed class ProfileViewModel : ReactiveObject
     private string? _profileName;
     private string? _playerName;
     private Version? _selectedVersion;
-    private Version? _selectedForgeVersion;
+    private ForgeVersion? _selectedForgeVersion;
     private Versions? _versions;
     private bool _forge;
     private bool _custom;
@@ -41,6 +42,8 @@ public sealed class ProfileViewModel : ReactiveObject
         SaveProfileCommand = ReactiveCommand.Create(SaveProfile, CanSaveProfile);
         CloseProfileControlCommand = ReactiveCommand.Create(CloseProfileControl);
     }
+    
+    public bool IsLoaded { get; private set; }
 
     public void OnDelete()
     {
@@ -120,17 +123,38 @@ public sealed class ProfileViewModel : ReactiveObject
             Custom = profileData.Custom,
             Snapshot = profileData.Snapshot,
             Release = profileData.Release,
+            Forge = profileData.Forge,
             SelectedVersion = null,
         };
-        
+
         profileViewModel._versionsLoader.VersionsLoaded += OnVersionsLoaded;
         void OnVersionsLoaded(Versions versions)
         {
             if (!string.IsNullOrEmpty(profileData.MinecraftVersion) &&
                 versions.AllVersions.TryGetValue(profileData.MinecraftVersion, out var selectedVersion))
+            {
                 profileViewModel.SelectedVersion = selectedVersion;
-            
-            profileViewModel._versionsLoader.VersionsLoaded -= OnVersionsLoaded;
+
+                if (profileData.Forge && !string.IsNullOrEmpty(profileData.ForgeVersion))
+                    LoadForge(profileViewModel, profileData.ForgeVersion);
+                else
+                    profileViewModel.IsLoaded = true;
+                
+                profileViewModel._versionsLoader.VersionsLoaded -= OnVersionsLoaded;
+            }
+        }
+
+        async void LoadForge(ProfileViewModel profile, string forgeVersion)
+        {
+            await profile.UpdateVisibleForgeVersions();
+            for (var i = 0; i < profile.ForgeVersions.Count; i++)
+            {
+                if (profile.ForgeVersions[i].Id != forgeVersion)
+                    continue;
+                profile.SelectedForgeVersion = profile.ForgeVersions[i];
+                profileViewModel.IsLoaded = true;
+                break;
+            }
         }
 
         return profileViewModel;
@@ -181,7 +205,7 @@ public sealed class ProfileViewModel : ReactiveObject
 
     public ObservableCollection<Version> Versions { get; } = new();
     
-    public Version? SelectedForgeVersion
+    public ForgeVersion? SelectedForgeVersion
     {
         get => _selectedForgeVersion;
         set
@@ -191,12 +215,16 @@ public sealed class ProfileViewModel : ReactiveObject
         }
     }
 
-    public ObservableCollection<Version> ForgeVersions { get; } = new();
+    public ObservableCollection<ForgeVersion> ForgeVersions { get; } = new();
 
     public bool Forge
     {
         get => _forge;
-        set => this.RaiseAndSetIfChanged(ref _forge, value);
+        set
+        {
+            this.RaiseAndSetIfChanged(ref _forge, value);
+            OnForgeCheckboxChanged();
+        }
     }
 
     public bool Custom
@@ -275,14 +303,12 @@ public sealed class ProfileViewModel : ReactiveObject
 
     private async void OnSelectedVersionChanged()
     {
-        if (Forge && SelectedVersion != null)
-        {
-            var forgeVersions = await _profileModel.RequestForgeVersions(SelectedVersion.Id);
-            
-            ForgeVersions.Clear();
-            for (var i = 0; i < forgeVersions.Forge.Count; i++)
-                ForgeVersions.Add(forgeVersions.Forge[i]);
-        }
+        await UpdateVisibleForgeVersions();
+    }
+    
+    private async void OnForgeCheckboxChanged()
+    {
+        await UpdateVisibleForgeVersions();
     }
     
     private void SetVersions(Versions versions)
@@ -302,7 +328,8 @@ public sealed class ProfileViewModel : ReactiveObject
     {
         var value = ProfileNameValidation.IsProfileNameValid(ProfileName, ProfileNameValidationAttribute.RestrictedName) &&
                     PlayerNameValidation.IsPlayerNameValid(PlayerName) &&
-                    SelectedVersion != null && !string.IsNullOrEmpty(SelectedVersion.Id);
+                    SelectedVersion != null && !string.IsNullOrEmpty(SelectedVersion.Id) &&
+                    (!Forge || Forge && SelectedForgeVersion != null);
         
         CanSaveProfile.OnNext(value);
     }
@@ -356,5 +383,22 @@ public sealed class ProfileViewModel : ReactiveObject
         
         if (SelectedVersion != null && !Versions.Contains(SelectedVersion))
             Versions.Add(SelectedVersion);
+    }
+
+    private async Task UpdateVisibleForgeVersions()
+    {
+        ForgeVersions.Clear();
+        SelectedForgeVersion = null;
+        
+        if (Forge && SelectedVersion != null)
+        {
+            var forgeVersions = await _profileModel.RequestForgeVersions(SelectedVersion.Id);
+
+            for (var i = 0; i < forgeVersions.Versions.Count; i++)
+            {
+                var forgeVersion = forgeVersions.Versions[i];
+                ForgeVersions.Add(forgeVersion);
+            }
+        }
     }
 }

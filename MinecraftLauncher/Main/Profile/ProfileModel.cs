@@ -12,7 +12,7 @@ public sealed class ProfileModel
         _minecraftLauncher = minecraftLauncher;
     }
 
-    public async Task<Versions> RequestForgeVersions(string versionId)
+    public async Task<ForgeVersions> RequestForgeVersions(string versionId)
     {
         return await _minecraftLauncher.GetOnlineForgeVersions(versionId);
     }

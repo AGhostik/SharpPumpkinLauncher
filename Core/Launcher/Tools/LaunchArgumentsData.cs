@@ -2,24 +2,24 @@
 using System.Text;
 using JsonReader.PublicData.Game;
 using Launcher.Data;
-using Launcher.PublicData;
 using SimpleLogger;
 
 namespace Launcher.Tools;
 
 internal sealed class LaunchArgumentsData
 {
-    public LaunchArgumentsData(LaunchData launchData, MinecraftData minecraftData, MinecraftLaunchFiles launchFiles,
-        MinecraftPaths minecraftPaths)
+    public LaunchArgumentsData(MinecraftData minecraftData, MinecraftLaunchFiles launchFiles,
+        MinecraftPaths minecraftPaths, string playerName,
+        bool useCustomResolution = false, int screenWidth = 0, int screenHeight = 0)
     {
         var isValid = true;
         
-        PlayerName = launchData.PlayerName;
+        PlayerName = playerName;
         
-        Width = launchData.ScreenWidth.ToString();
-        Height = launchData.ScreenHeight.ToString();
+        Width = screenWidth.ToString();
+        Height = screenHeight.ToString();
 
-        Features = new Features(launchData.UseCustomResolution);
+        Features = new Features(useCustomResolution);
         
         VersionId = minecraftData.Id;
         VersionType = minecraftData.Type;
