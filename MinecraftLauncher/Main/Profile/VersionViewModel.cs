@@ -33,6 +33,24 @@ public class VersionViewModel : ReactiveObject
         Tags = tags;
     }
 
-    public string Id { get; set; }
+    public string Id { get; }
     public IReadOnlyList<string> Tags { get; }
+
+    public override bool Equals(object? obj)
+    {
+        if (obj is VersionViewModel versionViewModel)
+            return Equals(versionViewModel);
+        
+        return false;
+    }
+
+    public bool Equals(VersionViewModel other)
+    {
+        return Id == other.Id;
+    }
+
+    public override int GetHashCode()
+    {
+        return Id.GetHashCode();
+    }
 }

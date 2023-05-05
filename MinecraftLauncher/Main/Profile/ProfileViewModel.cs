@@ -342,6 +342,9 @@ public sealed class ProfileViewModel : ReactiveObject
                 var forgeVersion = forgeVersions.Versions[i];
                 ForgeVersions.Add(new VersionViewModel(forgeVersion));
             }
+            
+            if (SelectedForgeVersion != null && !ForgeVersions.Contains(SelectedForgeVersion))
+                ForgeVersions.Add(SelectedForgeVersion);
         }
     }
 }
