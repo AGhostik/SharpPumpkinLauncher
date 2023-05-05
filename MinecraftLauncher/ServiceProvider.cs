@@ -1,5 +1,4 @@
 ﻿using MinecraftLauncher.Main;
-using MinecraftLauncher.Main.Profile;
 
 namespace MinecraftLauncher;
 
