@@ -1,12 +1,42 @@
 ﻿using System.Text;
+using JsonReader.PublicData.Forge;
 using JsonReader.PublicData.Game;
 
 namespace Launcher.Tools;
 
 internal static class LaunchArgumentsBuilder
 {
-    public static string GetForgeLaunchArguments(string forgeMainCLass, string forgeArguments,
+    public static string GetForgeLaunchArguments(ForgeInfo forgeInfo, MinecraftData minecraftVersionData,
+        LaunchArgumentsData launchArgumentsData)
+    {
+        if (forgeInfo.ForgeArguments != null)
+        {
+            return GetForgeArguments(forgeInfo.MainClass, forgeInfo.ForgeArguments, minecraftVersionData,
+                launchArgumentsData);
+        }
+
+        return GetLegacyForgeArguments(forgeInfo, minecraftVersionData, launchArgumentsData);
+    }
+    
+    private static string GetForgeArguments(string mainClass, ForgeArguments forgeArguments, 
         MinecraftData minecraftVersionData, LaunchArgumentsData launchArgumentsData)
+    {
+        var jvmArguments = BuildArguments(minecraftVersionData.Arguments.Jvm);
+        var gameArguments = BuildArguments(minecraftVersionData.Arguments.Game, launchArgumentsData.Features);
+            
+        var forgeJvmArguments = BuildArguments(forgeArguments.Jvm, jvmArguments);
+        var forgeGameArguments = BuildArguments(forgeArguments.Game, gameArguments);
+            
+        var jvmFilledArguments = FillJmvParameters(forgeJvmArguments, launchArgumentsData,
+            minecraftVersionData.MinimumLauncherVersion);
+
+        var gameFilledArguments = FillGameArguments(forgeGameArguments, launchArgumentsData);
+            
+        return $"{jvmFilledArguments} {mainClass} {gameFilledArguments}";
+    }
+
+    private static string GetLegacyForgeArguments(ForgeInfo forgeInfo, MinecraftData minecraftVersionData,
+        LaunchArgumentsData launchArgumentsData)
     {
         string? jvmFilledArguments;
         if (minecraftVersionData.Arguments.LegacyArguments == null)
@@ -21,9 +51,28 @@ internal static class LaunchArgumentsBuilder
                 launchArgumentsData, minecraftVersionData.MinimumLauncherVersion);
         }
 
-        var gameFilledArguments = FillGameArguments(forgeArguments, launchArgumentsData);
+        var gameFilledArguments = FillGameArguments(forgeInfo.LegacyGameArguments, launchArgumentsData);
+        
+        return $"{jvmFilledArguments} {forgeInfo.MainClass} {gameFilledArguments}";
+    }
+    
+    private static string? BuildArguments(IReadOnlyList<string>? arguments, string? firstPart)
+    {
+        if (arguments == null)
+            return null;
+        
+        var stringBuilder = new StringBuilder();
+        
+        stringBuilder.Append(firstPart);
+        stringBuilder.Append(' ');
+        
+        for (var i = 0; i < arguments.Count; i++)
+        {
+            stringBuilder.Append(arguments[i]);
+            stringBuilder.Append(' ');
+        }
 
-        return $"{jvmFilledArguments} {forgeMainCLass} {gameFilledArguments}";
+        return stringBuilder.ToString();
     }
     
     public static string GetLaunchArguments(MinecraftData minecraftVersionData, LaunchArgumentsData launchArgumentsData)
@@ -97,7 +146,8 @@ internal static class LaunchArgumentsBuilder
             .Replace("${classpath_separator}", separator.ToString())
             .Replace("${primary_jar}", launchArgumentsData.ClientJar)
             .Replace("${library_directory}", launchArgumentsData.LibrariesDirectory)
-            .Replace("${game_directory}", launchArgumentsData.GameDirectory);
+            .Replace("${game_directory}", launchArgumentsData.GameDirectory)
+            .Replace("${version_name}", launchArgumentsData.VersionId);
         
         if (!string.IsNullOrEmpty(launchArgumentsData.LoggingArgument) &&
             !string.IsNullOrEmpty(launchArgumentsData.LoggingFile))

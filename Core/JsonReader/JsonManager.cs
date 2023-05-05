@@ -38,13 +38,23 @@ public sealed class JsonManager
             
             var libraries = GetLibraries(forgeVersionData.Libraries);
 
+            ForgeArguments? forgeArguments = null;
             if (string.IsNullOrEmpty(forgeVersionData.MinecraftArguments))
-                return null;
+            {
+                if (forgeVersionData.Arguments?.Game == null || forgeVersionData.Arguments?.Jvm == null)
+                    return null;
+
+                forgeArguments = new ForgeArguments(forgeVersionData.Arguments.Jvm, forgeVersionData.Arguments.Game);
+            }
 
             if (string.IsNullOrEmpty(forgeVersionData.MainClass))
                 return null;
 
-            return new ForgeInfo(forgeVersionData.MainClass, forgeVersionData.MinecraftArguments, libraries);
+            return new ForgeInfo(
+                forgeVersionData.MainClass, 
+                forgeVersionData.MinecraftArguments, 
+                forgeArguments,
+                libraries);
         }
         catch (Exception e)
         {

@@ -20,6 +20,9 @@ internal class ForgeVersionData
     [JsonPropertyName("minecraftArguments")]
     public string? MinecraftArguments { get; set; }
     
+    [JsonPropertyName("arguments")]
+    public ForgeArgumentsData? Arguments { get; set; }
+    
     [JsonPropertyName("minimumLauncherVersion")]
     public int MinimumLauncherVersion { get; set; }
     

@@ -103,7 +103,7 @@ internal sealed class GameLauncher
             var launchFiles = FileManager.GetLaunchFiles(versionId, minecraftData, minecraftPaths, forgeInfo);
 
             var launchArgumentsData = new LaunchArgumentsData(minecraftData, launchFiles, minecraftPaths,
-                playerName, useCustomResolution, screenWidth, screenHeight);
+                versionId, playerName, useCustomResolution, screenWidth, screenHeight);
             
             if (!launchArgumentsData.IsValid)
                 return ErrorCode.LaunchArgument;
@@ -111,8 +111,8 @@ internal sealed class GameLauncher
             string launchArguments;
             if (forgeInfo != null)
             {
-                launchArguments = LaunchArgumentsBuilder.GetForgeLaunchArguments(forgeInfo.MainClass,
-                    forgeInfo.Arguments, minecraftData, launchArgumentsData);
+                launchArguments =
+                    LaunchArgumentsBuilder.GetForgeLaunchArguments(forgeInfo, minecraftData, launchArgumentsData);
             }
             else
             {

@@ -437,8 +437,8 @@ internal static class FileManager
         IReadOnlyList<MinecraftLibraryFile> librariesFiles;
         if (forgeInfo != null)
         {
-            var forgeAndMinecraftLibs = new List<Library>(data.Libraries);
-            forgeAndMinecraftLibs.AddRange(forgeInfo.Libraries);
+            var forgeAndMinecraftLibs = new List<Library>(forgeInfo.Libraries);
+            forgeAndMinecraftLibs.AddRange(data.Libraries);
             librariesFiles = GetLibrariesFilesInternal(forgeAndMinecraftLibs, minecraftPaths);
         }
         else

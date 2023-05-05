@@ -9,7 +9,7 @@ namespace Launcher.Tools;
 internal sealed class LaunchArgumentsData
 {
     public LaunchArgumentsData(MinecraftData minecraftData, MinecraftLaunchFiles launchFiles,
-        MinecraftPaths minecraftPaths, string playerName,
+        MinecraftPaths minecraftPaths, string versionId, string playerName,
         bool useCustomResolution = false, int screenWidth = 0, int screenHeight = 0)
     {
         var isValid = true;
@@ -21,7 +21,7 @@ internal sealed class LaunchArgumentsData
 
         Features = new Features(useCustomResolution);
         
-        VersionId = minecraftData.Id;
+        VersionId = versionId;
         VersionType = minecraftData.Type;
         AssetsVersion = minecraftData.AssetsVersion;
         
