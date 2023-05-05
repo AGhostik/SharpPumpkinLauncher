@@ -50,7 +50,12 @@ public sealed class MinecraftLauncher
             _installer.DownloadingProgress -= InstallerOnDownloadingProgress;
 
             if (installResult is not ErrorCode.NoError)
+            {
+                if (cancellationToken.IsCancellationRequested)
+                    return ErrorCode.GameAborted;
+                
                 return installResult;
+            }
         }
 
         _gameLauncher.LaunchMinecraftProgress += OnLaunchMinecraftProgress;
@@ -58,6 +63,9 @@ public sealed class MinecraftLauncher
             await _gameLauncher.LaunchMinecraft(launchData, startedAction, exitedAction, cancellationToken);
         _gameLauncher.LaunchMinecraftProgress -= OnLaunchMinecraftProgress;
 
+        if (cancellationToken.IsCancellationRequested)
+            return ErrorCode.GameAborted;
+        
         return launchResult;
     }
 

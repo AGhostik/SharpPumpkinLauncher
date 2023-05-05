@@ -29,8 +29,8 @@ public sealed class MainWindowViewModel : ReactiveObject
 
     public MainWindowViewModel()
     {
-        _mainWindowModel = ServiceProvider.MainWindowModel;
         _versionsLoader = ServiceProvider.VersionsLoader;
+        _mainWindowModel = new MainWindowModel(ServiceProvider.MinecraftLauncher, ServiceProvider.SettingsManager);
 
         var progressViewModel = new ProgressViewModel(_mainWindowModel);
         _progressControl = new ProgressControl() { DataContext = progressViewModel };
@@ -197,8 +197,11 @@ public sealed class MainWindowViewModel : ReactiveObject
     
     private void SetIsVersionsLoaded(Versions versions)
     {
-        _versionsLoader.VersionsLoaded -= SetIsVersionsLoaded;
+        if (versions.IsEmpty)
+            return;
+        
         IsVersionsLoaded = true;
+        _versionsLoader.VersionsLoaded -= SetIsVersionsLoaded;
     }
     
     private void SetDefaultProfile(Versions versions)

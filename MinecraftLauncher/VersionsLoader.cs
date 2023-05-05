@@ -18,6 +18,7 @@ public sealed class VersionsLoader
         _minecraftLauncher = minecraftLauncher;
         
         settingsManager.DirectoryChanged += LoadOfflineVersions;
+        
         LoadOfflineVersions(settingsManager.CurrentSettings.Directory);
         LoadOnlineVersions();
     }
@@ -37,7 +38,7 @@ public sealed class VersionsLoader
         return await _minecraftLauncher.GetOnlineForgeVersions(versionId);
     }
 
-    public async void LoadOfflineVersions(string directory)
+    private async void LoadOfflineVersions(string directory)
     {
         _offlineVersions = await _minecraftLauncher.GetAvailableVersions(directory);
         if (_offlineVersions.IsEmpty)

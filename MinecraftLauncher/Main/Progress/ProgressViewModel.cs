@@ -1,4 +1,5 @@
 using System;
+using Launcher.PublicData;
 using MinecraftLauncher.Properties;
 using ReactiveUI;
 
@@ -6,6 +7,8 @@ namespace MinecraftLauncher.Main.Progress;
 
 public sealed class ProgressViewModel : ReactiveObject
 {
+    private readonly VersionsLoader _versionsLoader;
+    
     private double _progressValue;
     private string? _text;
     private string? _additionalText;
@@ -13,8 +16,11 @@ public sealed class ProgressViewModel : ReactiveObject
 
     public ProgressViewModel(MainWindowModel mainWindowModel)
     {
-        mainWindowModel.UpdateProgressValues += OnUpdateProgressValues;
+        _versionsLoader = ServiceProvider.VersionsLoader;
+        
         Text = Localization.ProgressLoading;
+        _versionsLoader.VersionsLoaded += OnVersionsLoaded;
+        mainWindowModel.Progress += OnUpdateProgressValues;
     }
 
     public double ProgressValue
@@ -39,6 +45,15 @@ public sealed class ProgressViewModel : ReactiveObject
     {
         get => _isProgressVisible;
         set => this.RaiseAndSetIfChanged(ref _isProgressVisible, value);
+    }
+    
+    private void OnVersionsLoaded(Versions versions)
+    {
+        if (versions.IsEmpty)
+            return;
+        
+        _versionsLoader.VersionsLoaded -= OnVersionsLoaded;
+        OnUpdateProgressValues(ProgressLocalizationKeys.Ready, 0f, null);
     }
 
     private void OnUpdateProgressValues(ProgressLocalizationKeys localizationKey, float progress01,

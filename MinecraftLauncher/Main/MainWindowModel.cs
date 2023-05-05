@@ -13,26 +13,20 @@ namespace MinecraftLauncher.Main;
 public sealed class MainWindowModel
 {
     private readonly Launcher.MinecraftLauncher _minecraftLauncher;
-    private readonly VersionsLoader _versionsLoader;
     private readonly SettingsManager _settingsManager;
 
     private CancellationTokenSource? _cancellationTokenSource;
+    
+    public event Action<ProgressLocalizationKeys, float, string?>? Progress;
 
-    public event Action<ProgressLocalizationKeys, float, string?>? UpdateProgressValues;
-
-    public MainWindowModel(Launcher.MinecraftLauncher minecraftLauncher, VersionsLoader versionsLoader,
-        SettingsManager settingsManager)
+    public MainWindowModel(Launcher.MinecraftLauncher minecraftLauncher, SettingsManager settingsManager)
     {
         _minecraftLauncher = minecraftLauncher;
-        _versionsLoader = versionsLoader;
         _settingsManager = settingsManager;
 
         settingsManager.Init();
         Profiles = settingsManager.Profiles;
         LastSelectedProfile = settingsManager.LastSelectedProfile;
-
-        _minecraftLauncher.LaunchMinecraftProgress += UpdateProgress;
-        _versionsLoader.VersionsLoaded += OnVersionsLoaded;
     }
 
     public IReadOnlyList<ProfileViewModel> Profiles { get; }
@@ -43,11 +37,10 @@ public sealed class MainWindowModel
 
     public async Task StartGame(ProfileViewModel profileViewModel, Action gameExited)
     {
-        if (string.IsNullOrEmpty(profileViewModel.PlayerName) ||
-            string.IsNullOrEmpty(CurrentSettings.Directory) ||
+        if (string.IsNullOrEmpty(profileViewModel.PlayerName) || string.IsNullOrEmpty(CurrentSettings.Directory) ||
             profileViewModel.SelectedVersion == null)
         {
-            UpdateProgressValues?.Invoke(ProgressLocalizationKeys.InvalidProfile, 0, null);
+            Progress?.Invoke(ProgressLocalizationKeys.InvalidProfile, 0, null);
             return;
         }
         
@@ -62,8 +55,12 @@ public sealed class MainWindowModel
 
         _cancellationTokenSource = new CancellationTokenSource();
         
+        _minecraftLauncher.LaunchMinecraftProgress += OnLaunchMinecraftProgress;
+        
         var result =
             await _minecraftLauncher.LaunchMinecraft(launchData, _cancellationTokenSource.Token, gameExited.Invoke);
+        
+        _minecraftLauncher.LaunchMinecraftProgress -= OnLaunchMinecraftProgress;
 
         switch (result)
         {
@@ -71,11 +68,11 @@ public sealed class MainWindowModel
                 break;
             case ErrorCode.GameAborted:
                 gameExited.Invoke();
-                UpdateProgressValues?.Invoke(ProgressLocalizationKeys.Aborted, 0, null);
+                Progress?.Invoke(ProgressLocalizationKeys.Aborted, 0, null);
                 break;
             default:
                 gameExited.Invoke();
-                UpdateProgressValues?.Invoke(ProgressLocalizationKeys.FailToStartGame, 0, null);
+                Progress?.Invoke(ProgressLocalizationKeys.FailToStartGame, 0, null);
                 Logger.Log(result);
                 break;
         }
@@ -84,18 +81,7 @@ public sealed class MainWindowModel
         _cancellationTokenSource = null;
     }
 
-    public void AbortStartGame()
-    {
-        _cancellationTokenSource?.Cancel();
-    }
-    
-    private void OnVersionsLoaded(Versions _)
-    {
-        UpdateProgressValues?.Invoke(ProgressLocalizationKeys.Ready, 0, null);
-        _versionsLoader.VersionsLoaded -= OnVersionsLoaded;
-    }
-    
-    private void UpdateProgress(LaunchProgress launchProgress, float progress01, string? additionalInfo)
+    private void OnLaunchMinecraftProgress(LaunchProgress launchProgress, float progress01, string? additionalInfo)
     {
         var key = launchProgress switch
         {
@@ -106,7 +92,12 @@ public sealed class MainWindowModel
             _ => throw new ArgumentOutOfRangeException(nameof(launchProgress), launchProgress, null)
         };
         
-        UpdateProgressValues?.Invoke(key, progress01, additionalInfo);
+        Progress?.Invoke(key, progress01, additionalInfo);
+    }
+
+    public void AbortStartGame()
+    {
+        _cancellationTokenSource?.Cancel();
     }
 
     public static void SaveSelectedProfile(string profileName)

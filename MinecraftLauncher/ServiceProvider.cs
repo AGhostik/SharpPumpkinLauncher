@@ -1,8 +1,6 @@
-﻿using MinecraftLauncher.Main;
+﻿namespace MinecraftLauncher;
 
-namespace MinecraftLauncher;
-
-public sealed class ServiceProvider
+public static class ServiceProvider
 {
     static ServiceProvider()
     {
@@ -10,11 +8,9 @@ public sealed class ServiceProvider
         MinecraftLauncher = new Launcher.MinecraftLauncher();
         
         VersionsLoader = new VersionsLoader(MinecraftLauncher, SettingsManager);
-        MainWindowModel = new MainWindowModel(MinecraftLauncher, VersionsLoader, SettingsManager);
     }
     
     public static Launcher.MinecraftLauncher MinecraftLauncher { get; }
     public static VersionsLoader VersionsLoader { get; }
-    public static MainWindowModel MainWindowModel { get; }
     public static SettingsManager SettingsManager { get; }
 }
