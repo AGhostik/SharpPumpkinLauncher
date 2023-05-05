@@ -147,8 +147,8 @@ internal sealed class Installer
         if (minecraftData == null)
             return (null, ErrorCode.MinecraftData);
         
-        var versionsDirectoryCreated = FileManager.CreateDirectory(minecraftPaths.VersionDirectory);
-        if (!versionsDirectoryCreated)
+        var directoryCreated = FileManager.CreateDirectory(minecraftPaths.VersionDirectory);
+        if (!directoryCreated)
             return (null, ErrorCode.CreateDirectory);
             
         var versionJsonCreated =
@@ -169,8 +169,8 @@ internal sealed class Installer
         if (string.IsNullOrEmpty(assetsJson))
             return (null, ErrorCode.Download);
             
-        var assetsIndexDirectoryCreated = FileManager.CreateDirectory(minecraftPaths.AssetsIndexesDirectory);
-        if (!assetsIndexDirectoryCreated)
+        var directoryCreated = FileManager.CreateDirectory(minecraftPaths.AssetsIndexesDirectory);
+        if (!directoryCreated)
             return (null, ErrorCode.CreateDirectory);
 
         var assetsIndexJsonCreated =
@@ -251,6 +251,10 @@ internal sealed class Installer
         if (runtimeFiles == null)
             return (null, ErrorCode.RuntimeData);
         
+        var directoryCreated = FileManager.CreateDirectory(minecraftPaths.RuntimeDirectory);
+        if (!directoryCreated)
+            return (null, ErrorCode.CreateDirectory);
+        
         var runtimeFilesJsonCreated = await FileManager.WriteFile(
             $"{minecraftPaths.RuntimeDirectory}\\{minecraftData.JavaVersion.Component}-{OsRuleManager.CurrentOsName}.json",
             currentRuntimeJson);
@@ -273,6 +277,10 @@ internal sealed class Installer
 
         if (forgeInfo == null)
             return (null, ErrorCode.ForgeData);
+        
+        var directoryCreated = FileManager.CreateDirectory(minecraftPaths.VersionDirectory);
+        if (!directoryCreated)
+            return (null, ErrorCode.CreateDirectory);
         
         var forgeInfoJsonCreated = await FileManager.WriteFile(
             $"{minecraftPaths.VersionDirectory}\\FORGE-{forgeVersion.Id}.json", forgeJson);
