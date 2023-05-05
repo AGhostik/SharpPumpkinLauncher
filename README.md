@@ -26,11 +26,17 @@ SVG icons (MIT License) - [github.com/neuicons/neu](https://github.com/neuicons/
 Todo:
 ------------
 
-- add more unit tests
-- add launch tests (test all versions)
-- add launcher_profiles.json support
-- add java argument setup window
+Major:
+- support linux
+- support macos
+- add start server button
 - add backup system
+- add java argument setup window
+
+Minor:
+- add launcher_profiles.json support
+- add launch tests (test all versions)
+- add more unit tests
 
 Useful links:
 ------------
