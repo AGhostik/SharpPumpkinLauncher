@@ -2,10 +2,11 @@
 
 public sealed class Library
 {
-    public Library(LibraryFile? file, LibraryFile? nativesWindowsFile, LibraryFile? nativesLinuxFile,
+    public Library(string name, LibraryFile? file, LibraryFile? nativesWindowsFile, LibraryFile? nativesLinuxFile,
         LibraryFile? nativesOsxFile, string? nativesWindows, string? nativesLinux, string? nativesOsx,
         IReadOnlyList<Rule> rules, IReadOnlyList<string> delete)
     {
+        Name = name;
         File = file;
         NativesWindowsFile = nativesWindowsFile;
         NativesLinuxFile = nativesLinuxFile;
@@ -17,6 +18,7 @@ public sealed class Library
         Delete = delete;
     }
 
+    public string Name { get; }
     public LibraryFile? File { get; }
     public LibraryFile? NativesWindowsFile { get; }
     public LibraryFile? NativesLinuxFile { get; }

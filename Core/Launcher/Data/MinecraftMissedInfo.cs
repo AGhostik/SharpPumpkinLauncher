@@ -8,6 +8,7 @@ public sealed class MinecraftMissedInfo
     public List<(string fileName, string unpackDirectory)> UnpackItems { get; } = new();
     public List<string> PathsToDelete { get; } = new();
     public List<string> CorruptedFiles { get; } = new();
+    public Task? AfterInstallTask { get; set; }
 
     public bool IsEmpty => DirectoriesToCreate.Count == 0 &&
                            DownloadQueue.Count == 0 &&

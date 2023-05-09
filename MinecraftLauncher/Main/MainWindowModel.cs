@@ -43,22 +43,25 @@ public sealed class MainWindowModel
             Progress?.Invoke(ProgressLocalizationKeys.InvalidProfile, 0, null);
             return;
         }
+
+        var features = new LaunchFeaturesData(
+            CurrentSettings.UseCustomResolution,
+            CurrentSettings.ScreenHeight,
+            CurrentSettings.ScreenWidth);
         
         var launchData = new LaunchData(
             profileViewModel.PlayerName,
             profileViewModel.SelectedVersion.Id,
             profileViewModel.SelectedForgeVersion?.Id,
             CurrentSettings.Directory,
-            CurrentSettings.UseCustomResolution,
-            CurrentSettings.ScreenHeight,
-            CurrentSettings.ScreenWidth);
+            features);
 
         _cancellationTokenSource = new CancellationTokenSource();
         
         _minecraftLauncher.LaunchMinecraftProgress += OnLaunchMinecraftProgress;
         
-        var result =
-            await _minecraftLauncher.LaunchMinecraft(launchData, _cancellationTokenSource.Token, gameExited.Invoke);
+        var result = await _minecraftLauncher.LaunchMinecraft(launchData, null, gameExited.Invoke,
+                _cancellationTokenSource.Token);
         
         _minecraftLauncher.LaunchMinecraftProgress -= OnLaunchMinecraftProgress;
 

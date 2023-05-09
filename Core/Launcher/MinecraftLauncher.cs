@@ -1,53 +1,95 @@
 ﻿using JsonReader;
+using Launcher.Forge;
+using Launcher.Interfaces;
 using Launcher.PublicData;
 using Launcher.Tools;
+using Launcher.Vanilla;
 using Versions = Launcher.PublicData.Versions;
 
 namespace Launcher;
 
 public sealed class MinecraftLauncher
 {
-    private readonly VersionsLoader _versionsLoader;
-    private readonly Installer _installer;
-    private readonly GameLauncher _gameLauncher;
+    private readonly VanillaInstaller _vanillaInstaller;
+    private readonly VanillaGameLauncher _vanillaGameLauncher;
+    private readonly VanillaVersionsLoader _vanillaVersionsLoader;
+    
+    private readonly ForgeInstaller _forgeInstaller;
+    private readonly ForgeGameLauncher _forgeGameLauncher;
+    private readonly ForgeVersionsLoader _forgeVersionsLoader;
 
     public MinecraftLauncher()
     {
         var jsonManager = new JsonManager();
-        _versionsLoader = new VersionsLoader(jsonManager);
-        _installer = new Installer(jsonManager, _versionsLoader);
-        _gameLauncher = new GameLauncher(jsonManager);
+
+        var installerData = new InstallerData(jsonManager);
+        var baseInstaller = new BaseInstaller();
+        
+        _vanillaVersionsLoader = new VanillaVersionsLoader(jsonManager);
+        _vanillaInstaller = new VanillaInstaller(baseInstaller, _vanillaVersionsLoader, installerData);
+        _vanillaGameLauncher = new VanillaGameLauncher(installerData);
+
+        _forgeVersionsLoader = new ForgeVersionsLoader(jsonManager);
+        _forgeInstaller = new ForgeInstaller(baseInstaller, _vanillaVersionsLoader, _forgeVersionsLoader, installerData);
+        _forgeGameLauncher = new ForgeGameLauncher(installerData);
     }
 
     public event Action<LaunchProgress, float, string?>? LaunchMinecraftProgress;
     
     public async Task<Versions> GetAvailableVersions(string directory, CancellationToken cancellationToken = default)
     {
-        return await _versionsLoader.ReadVersionsFromDisk(directory, cancellationToken);
+        return await _vanillaVersionsLoader.ReadVersionsFromDisk(directory, cancellationToken);
     }
     
     public async Task<Versions> GetOnlineAvailableVersions(CancellationToken cancellationToken = default)
     {
-        return await _versionsLoader.GetOnlineAvailableVersions(cancellationToken);
+        return await _vanillaVersionsLoader.GetOnlineAvailableVersions(cancellationToken);
     }
     
     public async Task<ForgeVersions> GetOnlineForgeVersions(string versionId,
         CancellationToken cancellationToken = default)
     {
-        return await _versionsLoader.GetOnlineForgeVersions(versionId, cancellationToken);
+        return await _forgeVersionsLoader.GetOnlineForgeVersions(versionId, cancellationToken);
     }
 
-    public async Task<ErrorCode> LaunchMinecraft(LaunchData launchData, CancellationToken cancellationToken, 
-        Action? startedAction = null, Action? exitedAction = null)
+    public async Task<ErrorCode> LaunchMinecraft(LaunchData launchData, Action? startedAction = null, 
+        Action? exitedAction = null, CancellationToken cancellationToken = default)
+    {
+        string versionId;
+        IInstaller installer;
+        IGameLauncher gameLauncher;
+        if (string.IsNullOrEmpty(launchData.ForgeVersionId))
+        {
+            versionId = launchData.VersionId;
+            installer = _vanillaInstaller;
+            gameLauncher = _vanillaGameLauncher;
+        }
+        else
+        {
+            versionId = launchData.ForgeVersionId;
+            installer = _forgeInstaller;
+            gameLauncher = _forgeGameLauncher;
+        }
+        
+        return await LaunchMinecraftInternal(versionId, launchData, installer, gameLauncher, startedAction,
+            exitedAction, cancellationToken);
+    }
+    
+    private async Task<ErrorCode> LaunchMinecraftInternal(string versionId, LaunchData launchData, 
+        IInstaller installer, IGameLauncher gameLauncher, Action? startedAction = null, Action? exitedAction = null, 
+        CancellationToken cancellationToken = default)
     {
         OnLaunchMinecraftProgress(LaunchProgress.Prepare);
 
-        var minecraftMissedInfo = await _gameLauncher.IsVersionInstalled(launchData, cancellationToken);
+        var minecraftMissedInfo = await installer.IsVersionInstalled(launchData, cancellationToken);
         if (minecraftMissedInfo == null || !minecraftMissedInfo.IsDownloadingNotNeeded)
         {
-            _installer.DownloadingProgress += InstallerOnDownloadingProgress;
-            var installResult = await _installer.DownloadAndInstall(launchData, minecraftMissedInfo, cancellationToken);
-            _installer.DownloadingProgress -= InstallerOnDownloadingProgress;
+            installer.DownloadingProgress += OnDownloadingProgress;
+            
+            var installResult = await installer.DownloadAndInstall(versionId, launchData.GameDirectory,
+                minecraftMissedInfo, cancellationToken);
+            
+            installer.DownloadingProgress -= OnDownloadingProgress;
 
             if (installResult is not ErrorCode.NoError)
             {
@@ -58,10 +100,10 @@ public sealed class MinecraftLauncher
             }
         }
 
-        _gameLauncher.LaunchMinecraftProgress += OnLaunchMinecraftProgress;
+        gameLauncher.LaunchMinecraftProgress += OnLaunchMinecraftProgress;
         var launchResult =
-            await _gameLauncher.LaunchMinecraft(launchData, startedAction, exitedAction, cancellationToken);
-        _gameLauncher.LaunchMinecraftProgress -= OnLaunchMinecraftProgress;
+            await gameLauncher.LaunchMinecraft(launchData, startedAction, exitedAction, cancellationToken);
+        gameLauncher.LaunchMinecraftProgress -= OnLaunchMinecraftProgress;
 
         if (cancellationToken.IsCancellationRequested)
             return ErrorCode.GameAborted;
@@ -69,7 +111,7 @@ public sealed class MinecraftLauncher
         return launchResult;
     }
 
-    private void InstallerOnDownloadingProgress(DownloadProgress downloadProgress)
+    private void OnDownloadingProgress(DownloadProgress downloadProgress)
     {
         var progress = (float)downloadProgress.BytesReceived / downloadProgress.TotalSizeInBytes;
         var additionalInfo = $" ({downloadProgress.FilesDownloaded} / {downloadProgress.TotalFilesCount})";

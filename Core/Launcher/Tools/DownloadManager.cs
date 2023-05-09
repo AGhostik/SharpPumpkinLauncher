@@ -62,7 +62,7 @@ public static class DownloadManager
             {
                 Logger.Log(e);
                 currentAttempt++;
-                await Task.Delay(1000 * currentAttempt, cancellationToken);
+                await Delay(1000 * currentAttempt, cancellationToken);
             }
         } while (currentAttempt < MaxAttemptCount);
 
@@ -137,8 +137,8 @@ public static class DownloadManager
                         totalRead -= localRead;
                         localRead = 0;
                         bytesReceived?.Invoke(totalRead);
-                        
-                        await Task.Delay(1000 * currentAttempt, cancellationToken);
+
+                        await Delay(1000 * currentAttempt, cancellationToken);
                     }
                     else
                     {
@@ -152,6 +152,18 @@ public static class DownloadManager
                 isSucced = false;
                 internalTokenSource.Cancel();
             }
+        }
+    }
+
+    private static async Task Delay(int millisecondDelay, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await Task.Delay(millisecondDelay, cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            Logger.Log(exception);
         }
     }
 }

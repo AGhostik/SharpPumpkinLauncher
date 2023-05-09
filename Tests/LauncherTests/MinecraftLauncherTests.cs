@@ -6,6 +6,7 @@ namespace LauncherTests;
 
 public class MinecraftLauncherTests
 {
+    private readonly LaunchFeaturesData _features = new(false, 0, 0);
     private string _temporaryGameFolder = string.Empty;
     private Versions? _availableVersions;
 
@@ -33,8 +34,8 @@ public class MinecraftLauncherTests
             return;
     
         var launcher = new MinecraftLauncher();
-        var launchData = new LaunchData("Steve", _availableVersions.Latest.Id, null, _temporaryGameFolder, false, 0, 0);
-        var errorCode = await launcher.LaunchMinecraft(launchData, default, startedAction: FindAndCloseMinecraft);
+        var launchData = new LaunchData("Steve", _availableVersions.Latest.Id, null, _temporaryGameFolder, _features);
+        var errorCode = await launcher.LaunchMinecraft(launchData, startedAction: FindAndCloseMinecraft);
     
         Assert.That(errorCode, Is.EqualTo(ErrorCode.NoError));
     }
@@ -48,8 +49,8 @@ public class MinecraftLauncherTests
         var launcher = new MinecraftLauncher();
         foreach (var version in _availableVersions.Release)
         {
-            var launchData = new LaunchData("Steve", version.Id, null, _temporaryGameFolder, false, 0, 0);
-            var errorCode = await launcher.LaunchMinecraft(launchData, default, startedAction: FindAndCloseMinecraft);
+            var launchData = new LaunchData("Steve", version.Id, null, _temporaryGameFolder, _features);
+            var errorCode = await launcher.LaunchMinecraft(launchData, startedAction: FindAndCloseMinecraft);
             if (errorCode != ErrorCode.NoError)
                 Assert.Fail($"Failed to run '{version.Id}', errorCode: '{errorCode}'");
         }

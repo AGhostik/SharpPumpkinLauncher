@@ -28,13 +28,31 @@ public sealed class JsonManager
             if (forgeData == null)
                 return null;
 
-            if (string.IsNullOrEmpty(forgeData.VersionJson))
+            if (string.IsNullOrEmpty(forgeData.VersionJson) || string.IsNullOrEmpty(forgeData.InstallProfileJson))
                 return null;
 
             var forgeVersionJson = forgeData.VersionJson.Replace("\\r\\n", string.Empty).Replace("\\\"", "\"");
             var forgeVersionData = JsonSerializer.Deserialize<ForgeVersionData>(forgeVersionJson);
             if (forgeVersionData == null)
                 return null;
+            
+            var forgeInstallProfileJson = forgeData.InstallProfileJson.Replace("\\r\\n", string.Empty).Replace("\\\"", "\"");
+            var forgeInstallData = JsonSerializer.Deserialize<ForgeInstallProfileData>(forgeInstallProfileJson);
+            if (forgeInstallData == null)
+                return null;
+
+            if (string.IsNullOrEmpty(forgeInstallData.Profile) || string.IsNullOrEmpty(forgeInstallData.Version) ||
+                string.IsNullOrEmpty(forgeInstallData.Json) || string.IsNullOrEmpty(forgeInstallData.Path) ||
+                string.IsNullOrEmpty(forgeInstallData.Logo) || string.IsNullOrEmpty(forgeInstallData.Minecraft))
+                return null;
+
+            var installData = GetForgeInstallData(forgeInstallData);
+            var processors = GetForgeProcessors(forgeInstallData);
+            var installLibraries = GetLibraries(forgeInstallData.Libraries);
+
+            var forgeInstall = new ForgeInstall(forgeInstallData.Profile, forgeInstallData.Version, 
+                forgeInstallData.Json, forgeInstallData.Path, forgeInstallData.Logo, forgeInstallData.Minecraft,
+                installData, processors, installLibraries);
             
             var libraries = GetLibraries(forgeVersionData.Libraries);
 
@@ -54,12 +72,82 @@ public sealed class JsonManager
                 forgeVersionData.MainClass, 
                 forgeVersionData.MinecraftArguments, 
                 forgeArguments,
+                forgeInstall,
                 libraries);
         }
         catch (Exception e)
         {
             Logger.Log(e);
             return null;
+        }
+    }
+
+    private static IReadOnlyList<ForgeInstallProcessor>? GetForgeProcessors(ForgeInstallProfileData forgeInstallData)
+    {
+        if (forgeInstallData.Processors == null)
+            return null;
+        
+        var processors = new List<ForgeInstallProcessor>();
+        for (var i = 0; i < forgeInstallData.Processors.Length; i++)
+        {
+            var procesorData = forgeInstallData.Processors[i];
+            if (string.IsNullOrEmpty(procesorData.Jar) ||
+                procesorData.Classpath == null || procesorData.Args == null)
+                continue;
+
+            List<(string, string)>? outputs = null;
+            if (procesorData.Outputs != null)
+            {
+                outputs = new List<(string, string)>(procesorData.Outputs.Count);
+                foreach (var (key, value) in procesorData.Outputs)
+                    outputs.Add((key, value));
+            }
+                    
+            var processor = new ForgeInstallProcessor(procesorData.Jar, procesorData.Classpath, procesorData.Args,
+                procesorData.Sides, outputs);
+            
+            processors.Add(processor);
+        }
+
+        return processors;
+    }
+
+    private static ForgeInstallData? GetForgeInstallData(ForgeInstallProfileData forgeInstallData)
+    {
+        if (forgeInstallData.Data != null)
+        {
+            var mappings = GetForgeInstallDataItem(forgeInstallData.Data.Mappings);
+            var mojmaps = GetForgeInstallDataItem(forgeInstallData.Data.Mojmaps);
+            var mergedMappings = GetForgeInstallDataItem(forgeInstallData.Data.MergedMappings);
+            var binpatch = GetForgeInstallDataItem(forgeInstallData.Data.Binpatch);
+            var mcUnpacked = GetForgeInstallDataItem(forgeInstallData.Data.McUnpacked);
+            var mcSlim = GetForgeInstallDataItem(forgeInstallData.Data.McSlim);
+            var mcSlimSha = GetForgeInstallDataItem(forgeInstallData.Data.McSlimSha);
+            var mcExtra = GetForgeInstallDataItem(forgeInstallData.Data.McExtra);
+            var mcExtraSha = GetForgeInstallDataItem(forgeInstallData.Data.McExtraSha);
+            var mcSrg = GetForgeInstallDataItem(forgeInstallData.Data.McSrg);
+            var patched = GetForgeInstallDataItem(forgeInstallData.Data.Patched);
+            var patchedSha = GetForgeInstallDataItem(forgeInstallData.Data.PathedSha);
+            var mpcVersion = GetForgeInstallDataItem(forgeInstallData.Data.MpcVersion);
+            var side = GetForgeInstallDataItem(forgeInstallData.Data.Side);
+
+            if (mappings == null || mojmaps == null || mergedMappings == null || binpatch == null || 
+                mcUnpacked == null || mcSlim == null || mcSlimSha == null || mcExtra == null || mcExtraSha == null ||
+                mcSrg == null || patched == null || patchedSha == null || mpcVersion == null || side == null)
+                return null;
+            
+            return new ForgeInstallData(mappings, mojmaps, mergedMappings, binpatch, mcUnpacked, mcSlim, 
+                mcSlimSha, mcExtra, mcExtraSha, mcSrg, patched, patchedSha, mpcVersion, side);
+        }
+
+        return null;
+
+        ForgeInstallDataItem? GetForgeInstallDataItem(ForgeInstallProfileDataItemData? itemData)
+        {
+            if (itemData == null || string.IsNullOrEmpty(itemData.Client) || string.IsNullOrEmpty(itemData.Server))
+                return null;
+            
+            return new ForgeInstallDataItem(itemData.Client, itemData.Server);
         }
     }
     
@@ -384,6 +472,10 @@ public sealed class JsonManager
         for (var i = 0; i < libraryDatas.Count; i++)
         {
             var lib = libraryDatas[i];
+            
+            if (string.IsNullOrEmpty(lib.Name))
+                continue;
+            
             var downloads = lib.Downloads;
             if (downloads == null)
                 continue;
@@ -431,7 +523,7 @@ public sealed class JsonManager
                 }
             }
             
-            var library = new Library(file, nativesWindowsFile, nativesLinuxFile, nativesOsxFile,
+            var library = new Library(lib.Name, file, nativesWindowsFile, nativesLinuxFile, nativesOsxFile,
                 lib.Natives?.Windows, lib.Natives?.Linux, lib.Natives?.Osx, rules, delete);
             
             libraries.Add(library);
@@ -445,11 +537,10 @@ public sealed class JsonManager
         if (artifact == null)
             return null;
 
-        if (string.IsNullOrEmpty(artifact.Path) || string.IsNullOrEmpty(artifact.Sha1) ||
-            string.IsNullOrEmpty(artifact.Url))
+        if (string.IsNullOrEmpty(artifact.Path) || string.IsNullOrEmpty(artifact.Url))
             return null;
             
-        return new LibraryFile(artifact.Path, artifact.Sha1, artifact.Size, artifact.Url);
+        return new LibraryFile(artifact.Path, artifact.Sha1 ?? string.Empty, artifact.Size, artifact.Url);
     }
 
     private static Logging? GetLoggingData(MinecraftVersionData minecraftVersionData)
