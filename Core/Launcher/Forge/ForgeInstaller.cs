@@ -1,4 +1,6 @@
-﻿using Launcher.Data;
+﻿using JsonReader.PublicData.Forge;
+using JsonReader.PublicData.Game;
+using Launcher.Data;
 using Launcher.Interfaces;
 using Launcher.PublicData;
 using Launcher.Tools;
@@ -69,16 +71,21 @@ internal sealed class ForgeInstaller : IInstaller
         if (missingInfoError != ErrorCode.NoError)
             return null;
 
+        minecraftMissedInfo.AfterInstallTask = GetAfterInstallTask(versionId, forgeInfo, minecraftData, minecraftPaths);
+
         return minecraftMissedInfo;
     }
     
-    public async Task<ErrorCode> DownloadAndInstall(string versionId, string gameDirectory,
+    public async Task<ErrorCode> DownloadAndInstall(LaunchData launchData,
         MinecraftMissedInfo? minecraftMissedInfo = null, CancellationToken cancellationToken = default)
     {
+        var versionId = launchData.ForgeVersionId;
+        var vanillaVersionId = launchData.VersionId;
+        
         if (minecraftMissedInfo != null)
             return await DownloadAndInstallInternal(minecraftMissedInfo, cancellationToken:cancellationToken);
         
-        if (!_vanillaVersionsLoader.TryGetVersion(versionId, out var version))
+        if (!_vanillaVersionsLoader.TryGetVersion(vanillaVersionId, out var version))
             return ErrorCode.GetVersionData;
         
         if (string.IsNullOrEmpty(version.Url))
@@ -88,13 +95,13 @@ internal sealed class ForgeInstaller : IInstaller
             return ErrorCode.VersionId;
 
         var forgeVersion = 
-            await _forgeVersionsLoader.GetForgeVersion(versionId, versionId, cancellationToken);
+            await _forgeVersionsLoader.GetForgeVersion(vanillaVersionId, versionId, cancellationToken);
         
         if (forgeVersion == null)
             return ErrorCode.GetForgeVersionData;
 
-        var (missedInfo, missedInfoError) = await GetMinecraftMissedInfo(versionId, gameDirectory, version.Url, 
-            forgeVersion, cancellationToken);
+        var (missedInfo, missedInfoError) = await GetMinecraftMissedInfo(versionId, launchData.GameDirectory, 
+            version.Url, forgeVersion, cancellationToken);
 
         if (missedInfo == null)
             return missedInfoError;
@@ -166,9 +173,41 @@ internal sealed class ForgeInstaller : IInstaller
         var javaFile =
             $"{minecraftPaths.RuntimeDirectory}\\{minecraftData.JavaVersion.Component}\\{OsRuleManager.GetJavaExecutablePath()}";
         
-        minecraftMissedInfo.AfterInstallTask = _forgeProfileInstaller.Install(forgeInfo, javaFile,
-            $"{minecraftPaths.VersionDirectory}\\{versionId}.jar", minecraftPaths.LibrariesDirectory);
+        minecraftMissedInfo.AfterInstallTask = new Task(() =>
+            _forgeProfileInstaller
+                .Install(forgeInfo, javaFile, $"{minecraftPaths.VersionDirectory}\\{versionId}.jar",
+                    minecraftPaths.LibrariesDirectory).Wait(cancellationToken));
 
         return (minecraftMissedInfo, ErrorCode.NoError);
+    }
+
+    private Task? GetAfterInstallTask(string versionId, ForgeInfo forgeInfo, MinecraftData minecraftData, 
+        MinecraftPaths minecraftPaths)
+    {
+        var forgeData = forgeInfo.ForgeInstall.Data;
+        if (forgeData == null)
+            return null;
+        
+        var srgFile = ForgeProfileInstaller.GetPathFromPackageName(forgeData.McSrg.Client,
+            minecraftPaths.LibrariesDirectory);
+        var extraFile = ForgeProfileInstaller.GetPathFromPackageName(forgeData.McExtra.Client,
+            minecraftPaths.LibrariesDirectory);
+        var forgeJarFile = ForgeProfileInstaller.GetPathFromPackageName(forgeData.Patched.Client,
+            minecraftPaths.LibrariesDirectory);
+
+        if (string.IsNullOrEmpty(srgFile) || string.IsNullOrEmpty(extraFile) || string.IsNullOrEmpty(forgeJarFile))
+            return null;
+
+        if (FileManager.FileExist(srgFile) && FileManager.FileExist(extraFile) && FileManager.FileExist(forgeJarFile))
+            return null;
+            
+        var javaFile =
+            $"{minecraftPaths.RuntimeDirectory}\\{minecraftData.JavaVersion.Component}\\{OsRuleManager.GetJavaExecutablePath()}";
+
+        return new Task(() =>
+            _forgeProfileInstaller
+                .Install(forgeInfo, javaFile, $"{minecraftPaths.VersionDirectory}\\{versionId}.jar",
+                    minecraftPaths.LibrariesDirectory).Wait());
+
     }
 }

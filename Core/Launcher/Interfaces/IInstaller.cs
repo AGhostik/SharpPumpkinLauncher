@@ -10,6 +10,6 @@ internal interface IInstaller
     Task<MinecraftMissedInfo?> IsVersionInstalled(LaunchData launchData,
         CancellationToken cancellationToken);
 
-    Task<ErrorCode> DownloadAndInstall(string versionId, string gameDirectory,
-        MinecraftMissedInfo? minecraftMissedInfo = null, CancellationToken cancellationToken = default);
+    Task<ErrorCode> DownloadAndInstall(LaunchData launchData, MinecraftMissedInfo? minecraftMissedInfo = null,
+        CancellationToken cancellationToken = default);
 }

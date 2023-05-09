@@ -55,17 +55,19 @@ internal sealed class VanillaInstaller : IInstaller
         return minecraftMissedInfo;
     }
 
-    public async Task<ErrorCode> DownloadAndInstall(string versionId, string gameDirectory,
+    public async Task<ErrorCode> DownloadAndInstall(LaunchData launchData,
         MinecraftMissedInfo? minecraftMissedInfo = null, CancellationToken cancellationToken = default)
     {
+        var versionId = launchData.VersionId;
+        
         if (minecraftMissedInfo != null)
             return await DownloadAndInstallInternal(minecraftMissedInfo, cancellationToken:cancellationToken);
 
         if (!_vanillaVersionsLoader.TryGetVersion(versionId, out var version))
             return ErrorCode.GetVersionData;
 
-        var (missedInfo, missedInfoError) = await GetMinecraftMissedInfo(versionId, gameDirectory, version.Url, 
-            cancellationToken);
+        var (missedInfo, missedInfoError) = await GetMinecraftMissedInfo(versionId, launchData.GameDirectory, 
+            version.Url, cancellationToken);
 
         if (missedInfo == null)
             return missedInfoError;

@@ -49,6 +49,7 @@ internal sealed class BaseInstaller
 
         if (missedInfo.AfterInstallTask != null)
         {
+            missedInfo.AfterInstallTask.Start();
             await missedInfo.AfterInstallTask.WaitAsync(cancellationToken);
         }
 

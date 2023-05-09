@@ -197,7 +197,7 @@ internal class ForgeProfileInstaller
         return null;
     }
 
-    private static string? GetPathFromPackageName(string name, string librariesDirectory)
+    public static string? GetPathFromPackageName(string name, string librariesDirectory)
     {
         var libName = GetLibraryFileName(name.Replace("[", "").Replace("]", ""));
         if (string.IsNullOrEmpty(libName))

@@ -14,8 +14,10 @@ public sealed class MinecraftMissedInfo
                            DownloadQueue.Count == 0 &&
                            UnpackItems.Count == 0 &&
                            PathsToDelete.Count == 0 &&
-                           CorruptedFiles.Count == 0;
+                           CorruptedFiles.Count == 0 &&
+                           AfterInstallTask != null;
     
     public bool IsDownloadingNotNeeded => DownloadQueue.Count == 0 &&
-                                        CorruptedFiles.Count == 0;
+                                        CorruptedFiles.Count == 0 &&
+                                        AfterInstallTask == null;
 }

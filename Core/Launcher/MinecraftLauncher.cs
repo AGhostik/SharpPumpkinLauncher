@@ -55,28 +55,25 @@ public sealed class MinecraftLauncher
     public async Task<ErrorCode> LaunchMinecraft(LaunchData launchData, Action? startedAction = null, 
         Action? exitedAction = null, CancellationToken cancellationToken = default)
     {
-        string versionId;
         IInstaller installer;
         IGameLauncher gameLauncher;
         if (string.IsNullOrEmpty(launchData.ForgeVersionId))
         {
-            versionId = launchData.VersionId;
             installer = _vanillaInstaller;
             gameLauncher = _vanillaGameLauncher;
         }
         else
         {
-            versionId = launchData.ForgeVersionId;
             installer = _forgeInstaller;
             gameLauncher = _forgeGameLauncher;
         }
         
-        return await LaunchMinecraftInternal(versionId, launchData, installer, gameLauncher, startedAction,
+        return await LaunchMinecraftInternal(launchData, installer, gameLauncher, startedAction,
             exitedAction, cancellationToken);
     }
     
-    private async Task<ErrorCode> LaunchMinecraftInternal(string versionId, LaunchData launchData, 
-        IInstaller installer, IGameLauncher gameLauncher, Action? startedAction = null, Action? exitedAction = null, 
+    private async Task<ErrorCode> LaunchMinecraftInternal(LaunchData launchData, IInstaller installer, 
+        IGameLauncher gameLauncher, Action? startedAction = null, Action? exitedAction = null, 
         CancellationToken cancellationToken = default)
     {
         OnLaunchMinecraftProgress(LaunchProgress.Prepare);
@@ -85,10 +82,7 @@ public sealed class MinecraftLauncher
         if (minecraftMissedInfo == null || !minecraftMissedInfo.IsDownloadingNotNeeded)
         {
             installer.DownloadingProgress += OnDownloadingProgress;
-            
-            var installResult = await installer.DownloadAndInstall(versionId, launchData.GameDirectory,
-                minecraftMissedInfo, cancellationToken);
-            
+            var installResult = await installer.DownloadAndInstall(launchData, minecraftMissedInfo, cancellationToken);
             installer.DownloadingProgress -= OnDownloadingProgress;
 
             if (installResult is not ErrorCode.NoError)
@@ -114,7 +108,7 @@ public sealed class MinecraftLauncher
     private void OnDownloadingProgress(DownloadProgress downloadProgress)
     {
         var progress = (float)downloadProgress.BytesReceived / downloadProgress.TotalSizeInBytes;
-        var additionalInfo = $" ({downloadProgress.FilesDownloaded} / {downloadProgress.TotalFilesCount})";
+        var additionalInfo = $" ({downloadProgress.TotalFilesCount - downloadProgress.FilesDownloaded})";
         LaunchMinecraftProgress?.Invoke(LaunchProgress.DownloadFiles, progress, additionalInfo);
     }
 
