@@ -157,7 +157,7 @@
         <value>Recommended</value>
     </data>
     <data name="DownloadFilesLeft" xml:space="preserve">
-        <value>fIles left</value>
+        <value>files left</value>
     </data>
     <data name="StepsLeft" xml:space="preserve">
         <value>steps left</value>

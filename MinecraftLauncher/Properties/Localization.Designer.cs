@@ -123,7 +123,7 @@ namespace MinecraftLauncher.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to fIles left.
+        ///   Looks up a localized string similar to files left.
         /// </summary>
         public static string DownloadFilesLeft {
             get {
