@@ -3,6 +3,10 @@
 
 This is a free and open source minecraft launcher.
 
+Its can automatically install and run game with Forge modloader.
+
+Support Forge authors - [Patreon](www.patreon.com/MinecraftForge)
+
 
 Download
 ------------
@@ -29,6 +33,8 @@ Todo:
 Major:
 - support linux
 - support macos
+- support Fabric
+- support Quilt
 - add start server button
 - add backup system
 - add java argument setup window
