@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using JsonReader.PublicData.Forge;
+using Launcher.PublicData;
 using Launcher.Tools;
 using SimpleLogger;
 
@@ -14,14 +15,18 @@ internal class ForgeProfileInstaller
 
     private string? _lzmaFile;
 
-    public async Task Install(ForgeInfo forgeInfo, string jre, string minecraftJar, string librariesDirectory)
-    {
-        if (forgeInfo.ForgeInstall.Processors == null || forgeInfo.ForgeInstall.Data == null)
-            return;
+    public event Action<ForgeInstallProfileProgress>? Progress;
 
-        for (var i = 0; i < forgeInfo.ForgeInstall.Libraries.Count; i++)
+    public async Task<bool> Install(ForgeInfo forgeInfo, string jre, string minecraftJar, string librariesDirectory,
+        CancellationToken cancellationToken)
+    {
+        var forgeInstall = forgeInfo.ForgeInstall;
+        if (forgeInstall.Processors == null || forgeInstall.Data == null)
+            return true;
+
+        for (var i = 0; i < forgeInstall.Libraries.Count; i++)
         {
-            var library = forgeInfo.ForgeInstall.Libraries[i];
+            var library = forgeInstall.Libraries[i];
             if (library.File == null)
                 continue;
             
@@ -34,27 +39,44 @@ internal class ForgeProfileInstaller
             
             _libraries.Add(library.Name, fullPath);
         }
-        
+
+        var isSuccess = true;
+
         if (string.IsNullOrEmpty(_lzmaFile))
-            return;
-        
-        for (var i = 0; i < forgeInfo.ForgeInstall.Processors.Count; i++)
         {
-            var processor = forgeInfo.ForgeInstall.Processors[i];
-            
-            if (processor.Sides != null && processor.Sides.Contains("server"))
-                continue;
-
-            var arguments = GetArguments(minecraftJar, librariesDirectory, processor, forgeInfo.ForgeInstall.Data);
-            if (string.IsNullOrEmpty(arguments))
-                break;
-
-            var result = await FileManager.StartProcess(jre, arguments);
-            if (!result)
-                break;
+            isSuccess = false;
         }
-        
+        else
+        {
+            var client = forgeInstall.Data.Side.Client;
+            var processorsCount = forgeInstall.Processors.Count;
+            for (var i = 0; i < processorsCount; i++)
+            {
+                var processor = forgeInstall.Processors[i];
+
+                if (processor.Sides != null && !processor.Sides.Contains(client))
+                    continue;
+
+                var arguments = GetArguments(minecraftJar, librariesDirectory, processor, forgeInstall.Data);
+                if (string.IsNullOrEmpty(arguments))
+                {
+                    isSuccess = false;
+                    break;
+                }
+
+                Progress?.Invoke(new ForgeInstallProfileProgress(i, processorsCount));
+
+                var result = await FileManager.StartProcess(jre, arguments, cancellationToken: cancellationToken);
+                if (!result)
+                {
+                    isSuccess = false;
+                    break;
+                }
+            }
+        }
+
         _libraries.Clear();
+        return isSuccess;
     }
 
     private string? GetArguments(string minecraftJar, string librariesDirectory, ForgeInstallProcessor processor, 

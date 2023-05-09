@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Launcher.PublicData;
 using MinecraftLauncher.Main.Profile;
 using MinecraftLauncher.Main.Progress;
+using MinecraftLauncher.Properties;
 using SimpleLogger;
 using SettingsData = MinecraftLauncher.Main.Settings.SettingsData;
 
@@ -40,7 +41,7 @@ public sealed class MainWindowModel
         if (string.IsNullOrEmpty(profileViewModel.PlayerName) || string.IsNullOrEmpty(CurrentSettings.Directory) ||
             profileViewModel.SelectedVersion == null)
         {
-            Progress?.Invoke(ProgressLocalizationKeys.InvalidProfile, 0, null);
+            InvokeSimpleProgress(ProgressLocalizationKeys.InvalidProfile);
             return;
         }
 
@@ -69,13 +70,13 @@ public sealed class MainWindowModel
         {
             case ErrorCode.NoError:
                 break;
-            case ErrorCode.GameAborted:
+            case ErrorCode.Aborted:
                 gameExited.Invoke();
-                Progress?.Invoke(ProgressLocalizationKeys.Aborted, 0, null);
+                InvokeSimpleProgress(ProgressLocalizationKeys.Aborted);
                 break;
             default:
                 gameExited.Invoke();
-                Progress?.Invoke(ProgressLocalizationKeys.FailToStartGame, 0, null);
+                InvokeSimpleProgress(ProgressLocalizationKeys.FailToStartGame);
                 Logger.Log(result);
                 break;
         }
@@ -84,16 +85,43 @@ public sealed class MainWindowModel
         _cancellationTokenSource = null;
     }
 
-    private void OnLaunchMinecraftProgress(LaunchProgress launchProgress, float progress01, string? additionalInfo)
+    private void InvokeSimpleProgress(ProgressLocalizationKeys key)
+    {
+        Progress?.Invoke(key, -1, null);
+    }
+    
+    private void OnLaunchMinecraftProgress(LaunchProgress launchProgress, DownloadProgress? downloadProgress,
+        ForgeInstallProfileProgress? forgeInstallProfileProgress)
     {
         var key = launchProgress switch
         {
             LaunchProgress.Prepare => ProgressLocalizationKeys.Prepare,
             LaunchProgress.DownloadFiles => ProgressLocalizationKeys.DownloadFiles,
+            LaunchProgress.InstallForge => ProgressLocalizationKeys.InstallForge,
             LaunchProgress.StartGame => ProgressLocalizationKeys.StartGame,
             LaunchProgress.End => ProgressLocalizationKeys.End,
             _ => throw new ArgumentOutOfRangeException(nameof(launchProgress), launchProgress, null)
         };
+
+        float progress01;
+        string? additionalInfo;
+        if (downloadProgress.HasValue)
+        {
+            var value = downloadProgress.Value;
+            progress01 = (float)value.BytesReceived / value.TotalSizeInBytes;
+            additionalInfo = $" ({Localization.DownloadFilesLeft}: {value.TotalFilesCount - value.FilesDownloaded})";
+        }
+        else if (forgeInstallProfileProgress.HasValue)
+        {
+            var value = forgeInstallProfileProgress.Value;
+            progress01 = (float)value.CurrentProcessor / value.TotalProcessor;
+            additionalInfo = $" ({Localization.StepsLeft}: {value.TotalProcessor - value.CurrentProcessor})";
+        }
+        else
+        { 
+            progress01 = -1;
+            additionalInfo = null;
+        }
         
         Progress?.Invoke(key, progress01, additionalInfo);
     }

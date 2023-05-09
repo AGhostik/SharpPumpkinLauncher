@@ -156,4 +156,16 @@
     <data name="Recommended" xml:space="preserve">
         <value>Recommended</value>
     </data>
+    <data name="DownloadFilesLeft" xml:space="preserve">
+        <value>fIles left</value>
+    </data>
+    <data name="StepsLeft" xml:space="preserve">
+        <value>steps left</value>
+    </data>
+    <data name="ProgressInstallForge" xml:space="preserve">
+        <value>Install Forge</value>
+    </data>
+    <data name="ProgressForgeInstallFailed" xml:space="preserve">
+        <value>Fail to install Forge</value>
+    </data>
 </root>

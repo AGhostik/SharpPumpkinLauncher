@@ -32,9 +32,11 @@ public sealed class MinecraftLauncher
         _forgeVersionsLoader = new ForgeVersionsLoader(jsonManager);
         _forgeInstaller = new ForgeInstaller(baseInstaller, _vanillaVersionsLoader, _forgeVersionsLoader, installerData);
         _forgeGameLauncher = new ForgeGameLauncher(installerData);
+        
+        _forgeInstaller.ForgeInstallProgress += OnForgeInstallProgress;
     }
 
-    public event Action<LaunchProgress, float, string?>? LaunchMinecraftProgress;
+    public event Action<LaunchProgress, DownloadProgress?, ForgeInstallProfileProgress?>? LaunchMinecraftProgress;
     
     public async Task<Versions> GetAvailableVersions(string directory, CancellationToken cancellationToken = default)
     {
@@ -88,7 +90,7 @@ public sealed class MinecraftLauncher
             if (installResult is not ErrorCode.NoError)
             {
                 if (cancellationToken.IsCancellationRequested)
-                    return ErrorCode.GameAborted;
+                    return ErrorCode.Aborted;
                 
                 return installResult;
             }
@@ -100,20 +102,23 @@ public sealed class MinecraftLauncher
         gameLauncher.LaunchMinecraftProgress -= OnLaunchMinecraftProgress;
 
         if (cancellationToken.IsCancellationRequested)
-            return ErrorCode.GameAborted;
+            return ErrorCode.Aborted;
         
         return launchResult;
     }
 
     private void OnDownloadingProgress(DownloadProgress downloadProgress)
     {
-        var progress = (float)downloadProgress.BytesReceived / downloadProgress.TotalSizeInBytes;
-        var additionalInfo = $" ({downloadProgress.TotalFilesCount - downloadProgress.FilesDownloaded})";
-        LaunchMinecraftProgress?.Invoke(LaunchProgress.DownloadFiles, progress, additionalInfo);
+        LaunchMinecraftProgress?.Invoke(LaunchProgress.DownloadFiles, downloadProgress, null);
     }
 
     private void OnLaunchMinecraftProgress(LaunchProgress progress)
     {
-        LaunchMinecraftProgress?.Invoke(progress, 0f, null);
+        LaunchMinecraftProgress?.Invoke(progress, null, null);
+    }
+    
+    private void OnForgeInstallProgress(ForgeInstallProfileProgress progress)
+    {
+        LaunchMinecraftProgress?.Invoke(LaunchProgress.InstallForge, null, progress);
     }
 }

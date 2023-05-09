@@ -78,7 +78,7 @@ internal sealed class ForgeGameLauncher : IGameLauncher
         {
             Console.WriteLine(e);
             LaunchMinecraftProgress?.Invoke(LaunchProgress.End);
-            return ErrorCode.GameAborted;
+            return ErrorCode.Aborted;
         }
     }
 }

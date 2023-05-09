@@ -53,7 +53,7 @@ public sealed class ProgressViewModel : ReactiveObject
             return;
         
         _versionsLoader.VersionsLoaded -= OnVersionsLoaded;
-        OnUpdateProgressValues(ProgressLocalizationKeys.Ready, 0f, null);
+        OnUpdateProgressValues(ProgressLocalizationKeys.Ready, -1, null);
     }
 
     private void OnUpdateProgressValues(ProgressLocalizationKeys localizationKey, float progress01,
@@ -63,6 +63,7 @@ public sealed class ProgressViewModel : ReactiveObject
         {
             ProgressLocalizationKeys.Prepare => Localization.ProgressPrepare,
             ProgressLocalizationKeys.DownloadFiles => Localization.ProgressDownloadFiles,
+            ProgressLocalizationKeys.InstallForge => Localization.ProgressInstallForge,
             ProgressLocalizationKeys.StartGame => Localization.ProgressStartGame,
             ProgressLocalizationKeys.End => Localization.ProgressEnd,
             ProgressLocalizationKeys.InvalidProfile => Localization.ProgressInvalidProfile,
@@ -75,7 +76,7 @@ public sealed class ProgressViewModel : ReactiveObject
 
         AdditionalText = additionalInfo;
 
-        IsProgressVisible = progress01 > 0;
+        IsProgressVisible = progress01 >= 0;
         ProgressValue = 100f * progress01;
     }
 }

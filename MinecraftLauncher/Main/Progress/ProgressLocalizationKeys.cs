@@ -4,6 +4,7 @@ public enum ProgressLocalizationKeys
 {
     Prepare,
     DownloadFiles,
+    InstallForge,
     StartGame,
     End,
     Loading,

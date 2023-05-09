@@ -22,7 +22,8 @@ public enum ErrorCode
     Install,
     JavaNotInstalled,
     ExtractArchive,
+    AfterInstallTask,
     LaunchArgument,
     StartProcess,
-    GameAborted,
+    Aborted,
 }

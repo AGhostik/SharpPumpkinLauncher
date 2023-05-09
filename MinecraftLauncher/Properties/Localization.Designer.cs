@@ -123,6 +123,15 @@ namespace MinecraftLauncher.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to fIles left.
+        /// </summary>
+        public static string DownloadFilesLeft {
+            get {
+                return ResourceManager.GetString("DownloadFilesLeft", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Edit profile.
         /// </summary>
         public static string EditProfile {
@@ -258,6 +267,24 @@ namespace MinecraftLauncher.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Fail to install Forge.
+        /// </summary>
+        public static string ProgressForgeInstallFailed {
+            get {
+                return ResourceManager.GetString("ProgressForgeInstallFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Install Forge.
+        /// </summary>
+        public static string ProgressInstallForge {
+            get {
+                return ResourceManager.GetString("ProgressInstallForge", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid profile, check parameters.
         /// </summary>
         public static string ProgressInvalidProfile {
@@ -371,6 +398,15 @@ namespace MinecraftLauncher.Properties {
         public static string StartGame {
             get {
                 return ResourceManager.GetString("StartGame", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to steps left.
+        /// </summary>
+        public static string StepsLeft {
+            get {
+                return ResourceManager.GetString("StepsLeft", resourceCulture);
             }
         }
         
