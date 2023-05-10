@@ -39,7 +39,7 @@
                 Margin="5"
                 IsReadOnly="True"
                 HorizontalContentAlignment="Center"
-                Text="github.com/AGhostik/MCLauncher" />
+                Text="github.com/AGhostik/SharpPumpkinLauncher" />
         </StackPanel>
         <Button
             Grid.Row="2"

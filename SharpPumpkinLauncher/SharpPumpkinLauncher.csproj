@@ -10,8 +10,8 @@
         <PublishSingleFile>true</PublishSingleFile>
         <Version>0.4.1</Version>
         <Authors>AGhostik</Authors>
-        <PackageProjectUrl>https://github.com/AGhostik/MCLauncher</PackageProjectUrl>
-        <RepositoryUrl>https://github.com/AGhostik/MCLauncher</RepositoryUrl>
+        <PackageProjectUrl>https://github.com/AGhostik/SharpPumpkinLauncher</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/AGhostik/SharpPumpkinLauncher</RepositoryUrl>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
       <DebugType>none</DebugType>

@@ -1,26 +1,26 @@
-﻿Minecraft Launcher
+﻿Sharp Pumpkin Launcher
 =====================
 
 This is a free and open source minecraft launcher.
 
 Its can automatically install and run game with Forge modloader.
 
-Support Forge authors - [Patreon](www.patreon.com/MinecraftForge)
+Support Forge authors - [Patreon](https://www.patreon.com/MinecraftForge)
 
 
 Download
 ------------
 
-[Link](https://github.com/AGhostik/MCLauncher/releases/)
+[Link](https://github.com/AGhostik/SharpPumpkinLauncher/releases/)
 
 
 Screenshot
 ------------
 
-![main screenshot](https://raw.githubusercontent.com/AGhostik/MCLauncher/master/Screenshots/MainView.png)
+![main screenshot](https://raw.githubusercontent.com/AGhostik/SharpPumpkinLauncher/master/Screenshots/MainView.png)
 
 
-![settings screenshot](https://raw.githubusercontent.com/AGhostik/MCLauncher/master/Screenshots/SettingsView.png)
+![settings screenshot](https://raw.githubusercontent.com/AGhostik/SharpPumpkinLauncher/master/Screenshots/SettingsView.png)
 
 Used resources
 ------------
