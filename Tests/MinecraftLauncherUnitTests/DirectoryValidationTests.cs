@@ -1,4 +1,4 @@
-﻿using MinecraftLauncher.Main.Validation;
+﻿using SharpPumpkinLauncher.Main.Validation;
 
 namespace MinecraftLauncherUnitTests;
 

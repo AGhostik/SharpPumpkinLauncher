@@ -1,0 +1,111 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:settings="clr-namespace:SharpPumpkinLauncher.Main.Settings"
+             xmlns:properties="clr-namespace:SharpPumpkinLauncher.Properties"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:DataType="settings:SettingsViewModel"
+             x:CompileBindings="True"
+             x:Class="SharpPumpkinLauncher.Main.Settings.SettingsControl">
+    <Grid 
+        ColumnDefinitions="Auto, 5, *"
+        RowDefinitions="Auto, 5, Auto, 5, Auto, 5 Auto, 5, Auto, 5, Auto"
+        Margin="5">
+        <TextBlock 
+            Grid.Column="0"
+            Grid.Row="0"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Right"
+            Text="{x:Static properties:Localization.DefaultPlayerName}"/>
+        <TextBox
+            Grid.Column="2"
+            Grid.Row="0"
+            Text="{Binding DefaultPlayerName}" />
+        
+        <TextBlock 
+            Grid.Column="0"
+            Grid.Row="2"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Right"
+            Text="{x:Static properties:Localization.Directory}"/>
+        <TextBox
+            Grid.Column="2"
+            Grid.Row="2"
+            Text="{Binding Directory}" />
+        
+        <Grid
+            Grid.Column="2"
+            Grid.Row="4">
+            <Button
+                HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Center"
+                Content="{x:Static properties:Localization.PickDirectory}"
+                Command="{Binding PickFolderCommand}"/>
+        </Grid>
+
+        <TextBlock 
+            Grid.Column="0"
+            Grid.Row="6"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Right"
+            Text="{x:Static properties:Localization.LauncherVisibility}"/>
+        <ComboBox
+            Grid.Column="2"
+            Grid.Row="6"
+            PlaceholderForeground="gray"
+            HorizontalAlignment="Stretch"
+            VirtualizationMode="Simple"
+            Items="{Binding Visibilities}"
+            SelectedItem="{Binding LauncherVisibility}" />
+        
+        <Grid Grid.Column="0" Grid.Row="8" ColumnDefinitions="*, 5, Auto">
+            <TextBlock
+                Grid.Column="0"
+                VerticalAlignment="Center"
+                HorizontalAlignment="Right"
+                Text="{x:Static properties:Localization.Resolution}"/>
+            <CheckBox
+                Name="CustomResolutionCheckBox"
+                Grid.Column="2"
+                VerticalAlignment="Center"
+                HorizontalAlignment="Right"
+                IsChecked="{Binding UseCustomResolution}"/>
+        </Grid>
+        <Grid Grid.Column="2" Grid.Row="8" ColumnDefinitions="*, 5, *">
+            <NumericUpDown 
+                Grid.Column="0"
+                ShowButtonSpinner="False"
+                VerticalAlignment="Center"
+                IsEnabled="{Binding ElementName=CustomResolutionCheckBox, Path=IsChecked}"
+                Value="{Binding ScreenWidth, Mode=TwoWay}"/>
+            <NumericUpDown
+                Grid.Column="2"
+                ShowButtonSpinner="False"
+                VerticalAlignment="Center"
+                IsEnabled="{Binding ElementName=CustomResolutionCheckBox, Path=IsChecked}"
+                Value="{Binding ScreenHeight, Mode=TwoWay}"/>
+        </Grid>
+        
+        <Grid
+            Grid.Column="0"
+            Grid.ColumnSpan="3"
+            Grid.Row="10"
+            ColumnDefinitions="*, *">
+            <Button
+                Grid.Column="0"
+                Margin="5"
+                HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Center"
+                Content="{x:Static properties:Localization.Save}"
+                Command="{Binding SaveCommand}"/>
+            <Button
+                Grid.Column="1"
+                Margin="5"
+                HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Center"
+                Content="{x:Static properties:Localization.Cancel}"
+                Command="{Binding CloseCommand}"/>
+        </Grid>
+    </Grid>
+</UserControl>

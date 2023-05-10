@@ -23,7 +23,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\MinecraftLauncher\MinecraftLauncher.csproj" />
+      <ProjectReference Include="..\..\SharpPumpkinLauncher\SharpPumpkinLauncher.csproj" />
     </ItemGroup>
 
 </Project>
