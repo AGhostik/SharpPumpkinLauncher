@@ -13,10 +13,10 @@ public class MinecraftLauncherTests
     [SetUp]
     public async Task Setup()
     {
-     _temporaryGameFolder = Path.GetTempPath() + "minecraftTests\\";
-     
-     var launcher = new MinecraftLauncher();
-     _availableVersions = await launcher.GetAvailableVersions(_temporaryGameFolder);
+        _temporaryGameFolder = Path.GetTempPath() + "minecraftTests\\";
+
+        var launcher = new MinecraftLauncher();
+        _availableVersions = await launcher.GetAvailableVersions(_temporaryGameFolder);
     }
     
     [Test]
