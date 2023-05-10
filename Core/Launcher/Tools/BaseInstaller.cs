@@ -1,4 +1,5 @@
-﻿using Launcher.Data;
+﻿using System.Diagnostics;
+using Launcher.Data;
 using Launcher.PublicData;
 
 namespace Launcher.Tools;
@@ -62,15 +63,28 @@ internal sealed class BaseInstaller
         int totalFilesCount, long totalSize, CancellationToken cancellationToken)
     {
         var downloadedCount = 0;
+        var bytesPerSecond = 0f;
+        var bytesReceivedPrevious = 0L;
+        var stopwatch = new Stopwatch();
         
-        DownloadingProgress?.Invoke(new DownloadProgress(0, totalSize, 0, totalFilesCount));
-        return await DownloadManager.DownloadFilesParallel(downloadQueue, cancellationToken, BytesReceived,
-            FileDownloaded);
+        DownloadingProgress?.Invoke(new DownloadProgress(0, totalSize, 0, 0, totalFilesCount));
+        stopwatch.Start();
+        var result = 
+            await DownloadManager.DownloadFilesParallel(downloadQueue, BytesReceived, FileDownloaded, cancellationToken);
+        stopwatch.Stop();
+        return result;
         
         void BytesReceived(long bytesReceived)
         {
+            if (stopwatch.ElapsedMilliseconds >= 1000)
+            {
+                bytesPerSecond = (bytesReceived - bytesReceivedPrevious) / (stopwatch.ElapsedMilliseconds / 1000f);
+                stopwatch.Restart();
+                bytesReceivedPrevious = bytesReceived;
+            }
+
             DownloadingProgress?.Invoke(
-                new DownloadProgress(bytesReceived, totalSize, downloadedCount, totalFilesCount));
+                new DownloadProgress(bytesReceived, totalSize, bytesPerSecond, downloadedCount, totalFilesCount));
         }
 
         void FileDownloaded()

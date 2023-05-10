@@ -78,6 +78,15 @@ namespace MinecraftLauncher.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to B/s.
+        /// </summary>
+        public static string BytesPerSecond {
+            get {
+                return ResourceManager.GetString("BytesPerSecond", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cancel.
         /// </summary>
         public static string Cancel {
@@ -159,6 +168,15 @@ namespace MinecraftLauncher.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Kb/s.
+        /// </summary>
+        public static string KbPerSecond {
+            get {
+                return ResourceManager.GetString("KbPerSecond", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Latest.
         /// </summary>
         public static string Latest {
@@ -173,6 +191,15 @@ namespace MinecraftLauncher.Properties {
         public static string LauncherVisibility {
             get {
                 return ResourceManager.GetString("LauncherVisibility", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mb/s.
+        /// </summary>
+        public static string MbPerSecond {
+            get {
+                return ResourceManager.GetString("MbPerSecond", resourceCulture);
             }
         }
         

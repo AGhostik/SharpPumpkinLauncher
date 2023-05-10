@@ -168,4 +168,13 @@
     <data name="ProgressForgeInstallFailed" xml:space="preserve">
         <value>Fail to install Forge</value>
     </data>
+    <data name="MbPerSecond" xml:space="preserve">
+        <value>Mb/s</value>
+    </data>
+    <data name="KbPerSecond" xml:space="preserve">
+        <value>Kb/s</value>
+    </data>
+    <data name="BytesPerSecond" xml:space="preserve">
+        <value>B/s</value>
+    </data>
 </root>

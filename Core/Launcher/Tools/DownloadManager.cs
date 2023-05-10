@@ -59,7 +59,8 @@ public static class DownloadManager
     }
 
     public static async Task<bool> DownloadFilesParallel(IEnumerable<(Uri source, string filename)> download,
-        CancellationToken cancellationToken, Action<long>? bytesReceived = null, Action? fileDownloaded = null)
+        Action<long>? bytesReceived = null, Action? fileDownloaded = null,
+        CancellationToken cancellationToken = default)
     {
         var isSucced = true;
         var totalRead = 0L;

@@ -108,8 +108,10 @@ public sealed class MainWindowModel
         if (downloadProgress.HasValue)
         {
             var value = downloadProgress.Value;
+
+            var speed = GetSpeedString(value.BytesPerSecond);
             progress01 = (float)value.BytesReceived / value.TotalSizeInBytes;
-            additionalInfo = $" ({Localization.DownloadFilesLeft}: {value.TotalFilesCount - value.FilesDownloaded})";
+            additionalInfo = $" ({Localization.DownloadFilesLeft}: {value.TotalFilesCount - value.FilesDownloaded}) ({speed})";
         }
         else if (forgeInstallProfileProgress.HasValue)
         {
@@ -134,5 +136,20 @@ public sealed class MainWindowModel
     public static void SaveSelectedProfile(string profileName)
     {
         SettingsManager.SaveSelectedProfile(profileName);
+    }
+
+    private static string GetSpeedString(float speed)
+    {
+        if (speed > 1024 * 1024)
+        {
+            return $"{speed / (1024 * 1024):F2} {Localization.MbPerSecond}";
+        }
+
+        if (speed > 1024 )
+        {
+            return $"{speed / 1024:F2} {Localization.KbPerSecond}";
+        }
+
+        return $"{speed:F2} {Localization.BytesPerSecond}";
     }
 }
