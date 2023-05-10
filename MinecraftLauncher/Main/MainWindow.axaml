@@ -15,7 +15,7 @@
         Icon="/Resources/icon.ico"
         Title="{x:Static properties:Localization.Title}">
     <Grid ColumnDefinitions="Auto, *" Background="Gainsboro">
-        <Grid Grid.Column="0" RowDefinitions="Auto, Auto, Auto, *, Auto">
+        <Grid Grid.Column="0" RowDefinitions="Auto, Auto, Auto, *, Auto, Auto">
             <Button
                 Grid.Row="0"
                 Margin="5,5,5,2"
@@ -87,6 +87,29 @@
             </Button>
             <Button 
                 Grid.Row="4"
+                Margin="5,2,5,5"
+                HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Center"
+                Command="{Binding OpenAboutCommand}">
+                <Button.Content>
+                    <Grid ColumnDefinitions="Auto, 5, Auto">
+                        <TextBlock
+                            Name="AboutText"
+                            Grid.Column="0"
+                            VerticalAlignment="Center"
+                            Text="{x:Static properties:Localization.About}" />
+                        <Path
+                            Grid.Column="2"
+                            Stretch="Uniform"
+                            Width="16"
+                            Fill="{Binding ElementName=AboutText, Path=Foreground}"
+                            VerticalAlignment="Center"
+                            Data="{x:Static resources:SvgIconsData.InfoIcon}"/>
+                    </Grid>
+                </Button.Content>
+            </Button>
+            <Button 
+                Grid.Row="5"
                 Margin="5,2,5,5"
                 HorizontalAlignment="Stretch"
                 HorizontalContentAlignment="Center"

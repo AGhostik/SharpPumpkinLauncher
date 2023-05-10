@@ -60,6 +60,15 @@ namespace MinecraftLauncher.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to About.
+        /// </summary>
+        public static string About {
+            get {
+                return ResourceManager.GetString("About", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Alpha.
         /// </summary>
         public static string Alpha {
@@ -92,6 +101,15 @@ namespace MinecraftLauncher.Properties {
         public static string Cancel {
             get {
                 return ResourceManager.GetString("Cancel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Close.
+        /// </summary>
+        public static string Close {
+            get {
+                return ResourceManager.GetString("Close", resourceCulture);
             }
         }
         
@@ -447,7 +465,7 @@ namespace MinecraftLauncher.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Minecraft Launcher.
+        ///   Looks up a localized string similar to Sharp Pumpkin Launcher.
         /// </summary>
         public static string Title {
             get {

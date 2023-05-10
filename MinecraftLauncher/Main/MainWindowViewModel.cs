@@ -5,6 +5,7 @@ using System.Reactive.Subjects;
 using Avalonia.Threading;
 using DynamicData;
 using Launcher.PublicData;
+using MinecraftLauncher.Main.About;
 using MinecraftLauncher.Main.Profile;
 using MinecraftLauncher.Main.Progress;
 using MinecraftLauncher.Main.Settings;
@@ -18,6 +19,7 @@ public sealed class MainWindowViewModel : ReactiveObject
     private readonly MainWindowModel _mainWindowModel;
     private readonly ProgressControl _progressControl;
     private readonly SettingsControl _settingsControl;
+    private readonly AboutControl _aboutControl;
     private readonly VersionsLoader _versionsLoader;
     
     private ProfileViewModel? _selectedProfile;
@@ -37,6 +39,9 @@ public sealed class MainWindowViewModel : ReactiveObject
 
         var settingsViewModel = new SettingsViewModel(SettingsSaved, SetDefaultMainContent);
         _settingsControl = new SettingsControl() { DataContext = settingsViewModel };
+
+        var aboutViewModel = new AboutViewModel(SetDefaultMainContent);
+        _aboutControl = new AboutControl() { DataContext = aboutViewModel };
         
         StartGameCommand = ReactiveCommand.Create(StartGame, CanStartGame);
         AbortGameCommand = ReactiveCommand.Create(AbortStartGame, CanAbortGame);
@@ -44,8 +49,10 @@ public sealed class MainWindowViewModel : ReactiveObject
         EditProfileCommand = ReactiveCommand.Create(EditProfile, CanEditProfile);
         DeleteProfileCommand = ReactiveCommand.Create(DeleteProfile, CanDeleteProfile);
         OpenSettingsCommand = ReactiveCommand.Create(OpenSettings, CanOpenSettings);
+        OpenAboutCommand = ReactiveCommand.Create(OpenAbout, CanOpenAbout);
         
         CanOpenSettings.OnNext(true);
+        CanOpenAbout.OnNext(true);
         IsStartGameVisible = true;
         
         settingsViewModel.SetUp(_mainWindowModel.CurrentSettings);
@@ -108,6 +115,10 @@ public sealed class MainWindowViewModel : ReactiveObject
     public ReactiveCommand<Unit, Unit> DeleteProfileCommand { get; }
     
     private Subject<bool> CanDeleteProfile { get; } = new();
+    
+    public ReactiveCommand<Unit, Unit> OpenAboutCommand { get; }
+    
+    private Subject<bool> CanOpenAbout { get; } = new();
 
     public ReactiveCommand<Unit, Unit> OpenSettingsCommand { get; }
     
@@ -152,6 +163,7 @@ public sealed class MainWindowViewModel : ReactiveObject
             UpdateCanDeleteProfile();
             UpdateProfilesComboboxEnabled();
             UpdateCanOpenSettings();
+            UpdateCanOpenAbout();
             UpdateCanAbortGame();
         }
     }
@@ -193,6 +205,11 @@ public sealed class MainWindowViewModel : ReactiveObject
     {
         UpdateCanStartGame();
         SetDefaultMainContent();
+    }
+
+    private void OpenAbout()
+    {
+        MainContent = _aboutControl;
     }
     
     private void SetIsVersionsLoaded(Versions versions)
@@ -316,6 +333,11 @@ public sealed class MainWindowViewModel : ReactiveObject
     private void UpdateCanOpenSettings()
     {
         CanOpenSettings.OnNext(!IsGameStarted);
+    }
+    
+    private void UpdateCanOpenAbout()
+    {
+        CanOpenAbout.OnNext(!IsGameStarted);
     }
     
     private void UpdateCanAbortGame()
