@@ -5,6 +5,8 @@ namespace Launcher.Tools;
 public static class DownloadManager
 {
     private const int MaxAttemptCount = 3;
+
+    private static readonly HttpClient _httpClient = new();
     
     public static async Task<string?> GetRequest(string url, IDictionary<string, string> parameters,
         CancellationToken cancellationToken = default)
@@ -88,8 +90,7 @@ public static class DownloadManager
             {
                 try
                 {
-                    using var client = new HttpClient();
-                    using var response = client
+                    using var response = _httpClient
                         .GetAsync(data.source, HttpCompletionOption.ResponseHeadersRead, token).Result;
                     response.EnsureSuccessStatusCode();
 
