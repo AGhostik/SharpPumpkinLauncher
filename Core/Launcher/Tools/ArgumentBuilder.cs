@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using JsonReader.PublicData.Game;
+using SimpleLogger;
 
 namespace Launcher.Tools;
 
@@ -20,8 +21,12 @@ internal static class ArgumentBuilder
             
             for (var j = 0; j < argument.Values.Count; j++)
             {
-                stringBuilder.Append(argument.Values[j]);
-                
+                var value = argument.Values[j];
+                if (value.Contains(' '))
+                    stringBuilder.Append(EscapeWhitespaces(value));
+                else
+                    stringBuilder.Append(value);
+
                 if (j != argument.Values.Count - 1)
                     stringBuilder.Append(' ');
             }
@@ -101,5 +106,41 @@ internal static class ArgumentBuilder
         classpathStringBuilder.Append('\"');
 
         return classpathStringBuilder.ToString();
+    }
+
+    private static string EscapeWhitespaces(string value)
+    {
+        if (value.Contains('='))
+        {
+            var valueParts = value.Split('=');
+            if (valueParts.Length < 2)
+            {
+                Logger.Log($"Unknown argument: '{value}'");
+                return $"\"{value}\"";
+            }
+
+            var sb = new StringBuilder();
+            for (var i = 0; i < valueParts.Length; i++)
+            {
+                var part = valueParts[i];
+                if (part.Contains(' '))
+                {
+                    sb.Append('\"');
+                    sb.Append(part);
+                    sb.Append('\"');
+                }
+                else
+                {
+                    sb.Append(part);
+                }
+
+                if (i != valueParts.Length - 1)
+                    sb.Append('=');
+            }
+
+            return sb.ToString();
+        }
+        
+        return $"\"{value}\"";
     }
 }

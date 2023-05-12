@@ -620,9 +620,6 @@ public sealed class JsonManager
                     if (string.IsNullOrEmpty(value))
                         continue;
                     
-                    if (value.Contains("Windows 10"))
-                        value = value.Replace("Windows 10", "\"Windows 10\"");
-                    
                     values.Add(value);
                 }
                 
