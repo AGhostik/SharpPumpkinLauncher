@@ -44,7 +44,7 @@ public class ConfirmDeleteViewModel : ReactiveObject
     private void Confirm()
     {
         if (Profile != null)
-            _delete?.Invoke(Profile);
+            _delete.Invoke(Profile);
     }
 
     private void Close()
