@@ -6,7 +6,7 @@
              xmlns:properties="clr-namespace:SharpPumpkinLauncher.Properties"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:DataType="profile:ProfileViewModel"
-             x:CompileBindings="True"
+             x:CompileBindings="False"
              x:Class="SharpPumpkinLauncher.Main.Profile.ProfileControl">
     <UserControl.Resources>
         <DataTemplate x:Key="VersionTemplate" DataType="profile:VersionViewModel">
