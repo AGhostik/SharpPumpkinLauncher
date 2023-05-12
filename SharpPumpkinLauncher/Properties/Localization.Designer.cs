@@ -8,6 +8,9 @@
 //------------------------------------------------------------------------------
 
 namespace SharpPumpkinLauncher.Properties {
+    using System;
+    
+    
     /// <summary>
     ///   A strongly-typed resource class, for looking up localized strings, etc.
     /// </summary>
@@ -111,6 +114,15 @@ namespace SharpPumpkinLauncher.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Confirm delete profile.
+        /// </summary>
+        public static string ConfirmDeleteProfile {
+            get {
+                return ResourceManager.GetString("ConfirmDeleteProfile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Custom.
         /// </summary>
         public static string Custom {
@@ -179,6 +191,15 @@ namespace SharpPumpkinLauncher.Properties {
         public static string ForgeVersion {
             get {
                 return ResourceManager.GetString("ForgeVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Java arguments.
+        /// </summary>
+        public static string JavaArguments {
+            get {
+                return ResourceManager.GetString("JavaArguments", resourceCulture);
             }
         }
         

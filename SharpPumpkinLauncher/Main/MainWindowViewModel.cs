@@ -7,6 +7,7 @@ using DynamicData;
 using Launcher.PublicData;
 using ReactiveUI;
 using SharpPumpkinLauncher.Main.About;
+using SharpPumpkinLauncher.Main.ConfirmDelete;
 using SharpPumpkinLauncher.Main.Profile;
 using SharpPumpkinLauncher.Main.Progress;
 using SharpPumpkinLauncher.Main.Settings;
@@ -20,6 +21,9 @@ public sealed class MainWindowViewModel : ReactiveObject
     private readonly ProgressControl _progressControl;
     private readonly SettingsControl _settingsControl;
     private readonly AboutControl _aboutControl;
+    private readonly ConfirmDeleteControl _confirmDeleteControl;
+    private readonly ConfirmDeleteViewModel _confirmDeleteViewModel;
+    
     private readonly VersionsLoader _versionsLoader;
     
     private ProfileViewModel? _selectedProfile;
@@ -42,6 +46,9 @@ public sealed class MainWindowViewModel : ReactiveObject
 
         var aboutViewModel = new AboutViewModel(SetDefaultMainContent);
         _aboutControl = new AboutControl() { DataContext = aboutViewModel };
+
+        _confirmDeleteViewModel = new ConfirmDeleteViewModel(SetDefaultMainContent, OnDeleteProfile);
+        _confirmDeleteControl = new ConfirmDeleteControl() { DataContext = _confirmDeleteViewModel };
         
         StartGameCommand = ReactiveCommand.Create(StartGame, CanStartGame);
         AbortGameCommand = ReactiveCommand.Create(AbortStartGame, CanAbortGame);
@@ -101,7 +108,16 @@ public sealed class MainWindowViewModel : ReactiveObject
     public object? MainContent
     {
         get => _mainContent;
-        set => this.RaiseAndSetIfChanged(ref _mainContent, value);
+        set
+        {
+            this.RaiseAndSetIfChanged(ref _mainContent, value);
+            UpdateCanCreateProfile();
+            UpdateCanEditProfile();
+            UpdateCanDeleteProfile();
+            UpdateCanOpenSettings();
+            UpdateCanOpenAbout();
+            UpdateCanStartGame();
+        }
     }
 
     public ReactiveCommand<Unit, Unit> NewProfileCommand { get; }
@@ -286,10 +302,18 @@ public sealed class MainWindowViewModel : ReactiveObject
         if (SelectedProfile == null)
             return;
         
-        SelectedProfile.OnDelete();
-        Profiles.Remove(SelectedProfile);
+        _confirmDeleteViewModel.Setup(SelectedProfile);
+        MainContent = _confirmDeleteControl;
+    }
+
+    private void OnDeleteProfile(ProfileViewModel profile)
+    {
+        profile.OnDelete();
+        Profiles.Remove(profile);
 
         IsProfilesComboboxEnabled = Profiles.Count > 0;
+        if (Profiles.Count > 0)
+            SelectedProfile = Profiles[0];
     }
     
     private void SetDefaultMainContent()
@@ -305,24 +329,31 @@ public sealed class MainWindowViewModel : ReactiveObject
             SelectedProfile?.SelectedVersion != null &&
             !string.IsNullOrEmpty(SelectedProfile.SelectedVersion.Id) &&
             PlayerNameValidation.IsPlayerNameValid(SelectedProfile.PlayerName) &&
-            DirectoryValidation.IsDirectoryValid(_mainWindowModel.CurrentSettings.Directory);
+            DirectoryValidation.IsDirectoryValid(_mainWindowModel.CurrentSettings.Directory) &&
+            MainContent?.GetType() == typeof(ProgressControl);
         
         CanStartGame.OnNext(canStartGame);
     }
 
     private void UpdateCanCreateProfile()
     {
-        CanCreateNewProfile.OnNext(IsVersionsLoaded && !IsGameStarted);
+        CanCreateNewProfile.OnNext(IsVersionsLoaded && !IsGameStarted &&
+                                   MainContent?.GetType() != typeof(ProfileControl) &&
+                                   MainContent?.GetType() != typeof(ConfirmDeleteControl));
     }
     
     private void UpdateCanEditProfile()
     {
-        CanEditProfile.OnNext(IsVersionsLoaded && SelectedProfile != null && !IsGameStarted);
+        CanEditProfile.OnNext(IsVersionsLoaded && SelectedProfile != null && !IsGameStarted &&
+                              MainContent?.GetType() != typeof(ProfileControl) &&
+                              MainContent?.GetType() != typeof(ConfirmDeleteControl));
     }
     
     private void UpdateCanDeleteProfile()
     {
-        CanDeleteProfile.OnNext(IsVersionsLoaded && SelectedProfile != null && !IsGameStarted);
+        CanDeleteProfile.OnNext(IsVersionsLoaded && SelectedProfile != null && !IsGameStarted &&
+                                MainContent?.GetType() != typeof(ProfileControl) &&
+                                MainContent?.GetType() != typeof(ConfirmDeleteControl));
     }
 
     private void UpdateProfilesComboboxEnabled()
@@ -332,12 +363,14 @@ public sealed class MainWindowViewModel : ReactiveObject
 
     private void UpdateCanOpenSettings()
     {
-        CanOpenSettings.OnNext(!IsGameStarted);
+        CanOpenSettings.OnNext(!IsGameStarted &&
+                               MainContent?.GetType() != typeof(SettingsControl));
     }
     
     private void UpdateCanOpenAbout()
     {
-        CanOpenAbout.OnNext(!IsGameStarted);
+        CanOpenAbout.OnNext(!IsGameStarted &&
+                            MainContent?.GetType() != typeof(AboutControl));
     }
     
     private void UpdateCanAbortGame()

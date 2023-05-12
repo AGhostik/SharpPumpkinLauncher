@@ -183,4 +183,10 @@
     <data name="Close" xml:space="preserve">
         <value>Close</value>
     </data>
+    <data name="JavaArguments" xml:space="preserve">
+        <value>Java arguments</value>
+    </data>
+    <data name="ConfirmDeleteProfile" xml:space="preserve">
+        <value>Confirm delete profile</value>
+    </data>
 </root>
