@@ -50,3 +50,4 @@ Useful links:
 - [Minecraft game files](https://wiki.vg/Game_files)
 - [Launching the game](https://wiki.vg/Launching_the_game)
 - [Inside a Minecraft launcher](https://ryanccn.dev/posts/inside-a-minecraft-launcher/)
+- [Java 17 Oracle docs](https://docs.oracle.com/en/java/javase/17/docs/specs/man/java.html)
