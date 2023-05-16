@@ -168,6 +168,15 @@ namespace SharpPumpkinLauncher.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Edit java arguments.
+        /// </summary>
+        public static string EditJavaArgs {
+            get {
+                return ResourceManager.GetString("EditJavaArgs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Edit profile.
         /// </summary>
         public static string EditProfile {

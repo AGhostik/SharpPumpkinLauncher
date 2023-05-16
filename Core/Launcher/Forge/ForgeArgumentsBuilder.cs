@@ -1,5 +1,4 @@
-﻿using System.Text;
-using JsonReader.PublicData.Forge;
+﻿using JsonReader.PublicData.Forge;
 using JsonReader.PublicData.Game;
 using Launcher.Tools;
 
@@ -23,17 +22,20 @@ internal static class ForgeArgumentsBuilder
         MinecraftData minecraftVersionData, LaunchArgumentsData launchArgumentsData)
     {
         var jvmArguments = ArgumentBuilder.BuildArguments(minecraftVersionData.Arguments.Jvm);
-        var gameArguments = ArgumentBuilder.BuildArguments(minecraftVersionData.Arguments.Game, launchArgumentsData.Features);
+        var gameArguments = 
+            ArgumentBuilder.BuildArguments(minecraftVersionData.Arguments.Game, launchArgumentsData.Features);
             
-        var forgeJvmArguments = BuildArguments(forgeArguments.Jvm, jvmArguments);
-        var forgeGameArguments = BuildArguments(forgeArguments.Game, gameArguments);
+        var forgeJvmArguments = ArgumentBuilder.BuildArguments(forgeArguments.Jvm, jvmArguments);
+        var forgeGameArguments = ArgumentBuilder.BuildArguments(forgeArguments.Game, gameArguments);
             
         var jvmFilledArguments = ArgumentBuilder.FillJmvParameters(forgeJvmArguments, launchArgumentsData,
             minecraftVersionData.MinimumLauncherVersion);
 
         var gameFilledArguments = ArgumentBuilder.FillGameArguments(forgeGameArguments, launchArgumentsData);
+        
+        var additionalArguments = ArgumentBuilder.BuildArguments(launchArgumentsData.AdditionalArguments);
             
-        return $"{jvmFilledArguments} {mainClass} {gameFilledArguments}";
+        return $"{additionalArguments}{jvmFilledArguments} {mainClass} {gameFilledArguments}";
     }
 
     private static string GetLegacyForgeArguments(ForgeInfo forgeInfo, MinecraftData minecraftVersionData,
@@ -55,24 +57,5 @@ internal static class ForgeArgumentsBuilder
         var gameFilledArguments = ArgumentBuilder.FillGameArguments(forgeInfo.LegacyGameArguments, launchArgumentsData);
         
         return $"{jvmFilledArguments} {forgeInfo.MainClass} {gameFilledArguments}";
-    }
-    
-    private static string? BuildArguments(IReadOnlyList<string>? arguments, string? firstPart)
-    {
-        if (arguments == null)
-            return null;
-        
-        var stringBuilder = new StringBuilder();
-        
-        stringBuilder.Append(firstPart);
-        stringBuilder.Append(' ');
-        
-        for (var i = 0; i < arguments.Count; i++)
-        {
-            stringBuilder.Append(arguments[i]);
-            stringBuilder.Append(' ');
-        }
-
-        return stringBuilder.ToString();
     }
 }

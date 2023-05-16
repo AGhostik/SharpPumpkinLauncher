@@ -189,4 +189,7 @@
     <data name="ConfirmDeleteProfile" xml:space="preserve">
         <value>Confirm delete profile</value>
     </data>
+    <data name="EditJavaArgs" xml:space="preserve">
+        <value>Edit java arguments</value>
+    </data>
 </root>

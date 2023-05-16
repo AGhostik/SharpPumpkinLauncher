@@ -10,6 +10,17 @@ public class MinecraftLauncherTests
     private string _temporaryGameFolder = string.Empty;
     private Versions? _availableVersions;
 
+    private LaunchData GetLaunchData(string versionId)
+    {
+        return new LaunchData(
+            "Steve", 
+            versionId, 
+            null, 
+            _temporaryGameFolder, 
+            _features,
+            Array.Empty<string>());
+    }
+
     [SetUp]
     public async Task Setup()
     {
@@ -34,7 +45,7 @@ public class MinecraftLauncherTests
             return;
     
         var launcher = new MinecraftLauncher();
-        var launchData = new LaunchData("Steve", _availableVersions.Latest.Id, null, _temporaryGameFolder, _features);
+        var launchData = GetLaunchData(_availableVersions.Latest.Id);
         var errorCode = await launcher.LaunchMinecraft(launchData, startedAction: FindAndCloseMinecraft);
     
         Assert.That(errorCode, Is.EqualTo(ErrorCode.NoError));
@@ -49,7 +60,7 @@ public class MinecraftLauncherTests
         var launcher = new MinecraftLauncher();
         foreach (var version in _availableVersions.Release)
         {
-            var launchData = new LaunchData("Steve", version.Id, null, _temporaryGameFolder, _features);
+            var launchData = GetLaunchData(version.Id);
             var errorCode = await launcher.LaunchMinecraft(launchData, startedAction: FindAndCloseMinecraft);
             if (errorCode != ErrorCode.NoError)
                 Assert.Fail($"Failed to run '{version.Id}', errorCode: '{errorCode}'");

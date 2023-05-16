@@ -6,6 +6,28 @@ namespace Launcher.Tools;
 
 internal static class ArgumentBuilder
 {
+    public static string? BuildArguments(IReadOnlyList<string>? arguments, string? firstPart = null)
+    {
+        if (arguments == null)
+            return null;
+        
+        var stringBuilder = new StringBuilder();
+
+        if (!string.IsNullOrEmpty(firstPart))
+        {
+            stringBuilder.Append(firstPart);
+            stringBuilder.Append(' ');
+        }
+
+        for (var i = 0; i < arguments.Count; i++)
+        {
+            stringBuilder.Append(arguments[i]);
+            stringBuilder.Append(' ');
+        }
+
+        return stringBuilder.ToString();
+    }
+    
     public static string? BuildArguments(IReadOnlyList<ArgumentItem>? arguments, Features? features = default)
     {
         if (arguments == null)

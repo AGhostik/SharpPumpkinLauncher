@@ -26,7 +26,9 @@ internal static class VanillaArgumentsBuilder
         var jvmFilledArguments = ArgumentBuilder.FillJmvParameters(jvmArguments, launchArgumentsData, launcherVersion);
         var gameFilledArguments = ArgumentBuilder.FillGameArguments(gameArguments, launchArgumentsData);
 
-        return $"{jvmFilledArguments} {mainClass} {gameFilledArguments}";
+        var additionalArguments = ArgumentBuilder.BuildArguments(launchArgumentsData.AdditionalArguments);
+
+        return $"{additionalArguments}{jvmFilledArguments} {mainClass} {gameFilledArguments}";
     }
     
     private static string GetLegacyArguments(LaunchArgumentsData launchArgumentsData, LegacyArguments legacyArguments,

@@ -6,6 +6,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using ReactiveUI;
+using SharpPumpkinLauncher.Main.JavaArguments;
 using SharpPumpkinLauncher.Main.Validation;
 using SimpleLogger;
 
@@ -13,10 +14,12 @@ namespace SharpPumpkinLauncher.Main.Settings;
 
 public sealed class SettingsViewModel : ReactiveObject
 {
+    private readonly JavaArgumentsViewModel _javaArgumentsViewModel;
     private readonly SettingsManager _settingsManager;
     private readonly Action _saveAction;
     private readonly Action _closeAction;
-    
+    private readonly Action _showJavaEdit;
+
     private string? _directory;
     private string? _defaultPlayerName;
     private LauncherVisibility _launcherVisibility;
@@ -30,16 +33,26 @@ public sealed class SettingsViewModel : ReactiveObject
     private bool _previousUseCustomResolutionValue;
     private int _previousScreenWidthValue;
     private int _previousScreenHeightValue;
+    private string? _javaArguments;
+    private Arguments _arguments;
+    private bool _useJavaArguments;
 
-    public SettingsViewModel(Action saveAction, Action closeAction)
+    public SettingsViewModel(Action saveAction, Action closeAction, Action showJavaEdit,
+        JavaArgumentsViewModel javaArgumentsViewModel)
     {
+        _arguments = new Arguments();
         _settingsManager = ServiceProvider.SettingsManager;
+        _javaArgumentsViewModel = javaArgumentsViewModel;
+        _javaArgumentsViewModel.Setup(JavaArgumentsSaved);
+        _javaArgumentsViewModel.Setup(_arguments);
         
         _saveAction = saveAction;
         _closeAction = closeAction;
+        _showJavaEdit = showJavaEdit;
         SaveCommand = ReactiveCommand.Create(Save, CanSave);
         CloseCommand = ReactiveCommand.Create(Close);
         PickFolderCommand = ReactiveCommand.Create(PickFolder);
+        EditJavaArgsCommand = ReactiveCommand.Create(EditJavaArgs);
     }
 
     [PlayerNameValidation]
@@ -74,6 +87,12 @@ public sealed class SettingsViewModel : ReactiveObject
         }
     }
 
+    public bool UseJavaArguments
+    {
+        get => _useJavaArguments;
+        set => this.RaiseAndSetIfChanged(ref _useJavaArguments, value);
+    }
+
     public int ScreenHeight
     {
         get => _screenHeight;
@@ -94,6 +113,12 @@ public sealed class SettingsViewModel : ReactiveObject
         }
     }
 
+    public string? JavaArguments
+    {
+        get => _javaArguments;
+        set => this.RaiseAndSetIfChanged(ref _javaArguments, value);
+    }
+
     public LauncherVisibility LauncherVisibility
     {
         get => _launcherVisibility;
@@ -110,6 +135,7 @@ public sealed class SettingsViewModel : ReactiveObject
     private Subject<bool> CanSave { get; } = new();
     public ReactiveCommand<Unit, Unit> CloseCommand { get; }
     public ReactiveCommand<Unit, Unit> PickFolderCommand { get; }
+    public ReactiveCommand<Unit, Unit> EditJavaArgsCommand { get; }
 
     public void SetUp(SettingsData settingsData)
     {
@@ -119,6 +145,11 @@ public sealed class SettingsViewModel : ReactiveObject
         UseCustomResolution = settingsData.UseCustomResolution;
         ScreenWidth = settingsData.ScreenWidth;
         ScreenHeight = settingsData.ScreenHeight;
+        UseJavaArguments = settingsData.UseJavaArguments;
+        
+        _arguments = new Arguments(settingsData.Arguments);
+        JavaArguments = _arguments.ToString();
+        _javaArgumentsViewModel.Setup(_arguments);
         
         SavePreviousValues();
     }
@@ -131,7 +162,7 @@ public sealed class SettingsViewModel : ReactiveObject
         SavePreviousValues();
 
         var settings = new SettingsData(DefaultPlayerName, Directory, LauncherVisibility, UseCustomResolution,
-            ScreenHeight, ScreenWidth);
+            ScreenHeight, ScreenWidth, UseJavaArguments, _arguments.EnabledArguments);
         
         _settingsManager.SaveSettingsData(settings);
         
@@ -190,5 +221,19 @@ public sealed class SettingsViewModel : ReactiveObject
             return;
         
         Directory = Path.GetRelativePath(AppContext.BaseDirectory, path) + '\\';
+    }
+
+    private void EditJavaArgs()
+    {
+        _showJavaEdit.Invoke();
+    }
+    
+    private void JavaArgumentsSaved(Arguments arguments)
+    {
+        if (!UseJavaArguments)
+            return;
+        
+        _arguments = arguments;
+        JavaArguments = arguments.ToString();
     }
 }

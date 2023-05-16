@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Launcher;
 using Launcher.PublicData;
 using SharpPumpkinLauncher.Main.Profile;
 using SharpPumpkinLauncher.Main.Progress;
@@ -13,14 +14,14 @@ namespace SharpPumpkinLauncher.Main;
 
 public sealed class MainWindowModel
 {
-    private readonly Launcher.MinecraftLauncher _minecraftLauncher;
+    private readonly MinecraftLauncher _minecraftLauncher;
     private readonly SettingsManager _settingsManager;
 
     private CancellationTokenSource? _cancellationTokenSource;
     
     public event Action<ProgressLocalizationKeys, float, string?>? Progress;
 
-    public MainWindowModel(Launcher.MinecraftLauncher minecraftLauncher, SettingsManager settingsManager)
+    public MainWindowModel(MinecraftLauncher minecraftLauncher, SettingsManager settingsManager)
     {
         _minecraftLauncher = minecraftLauncher;
         _settingsManager = settingsManager;
@@ -45,6 +46,8 @@ public sealed class MainWindowModel
             return;
         }
 
+        var arguments = CurrentSettings.UseJavaArguments ? CurrentSettings.Arguments : Array.Empty<string>();
+
         var features = new LaunchFeaturesData(
             CurrentSettings.UseCustomResolution,
             CurrentSettings.ScreenHeight,
@@ -55,7 +58,8 @@ public sealed class MainWindowModel
             profileViewModel.SelectedVersion.Id,
             profileViewModel.SelectedForgeVersion?.Id,
             CurrentSettings.Directory,
-            features);
+            features,
+            arguments);
 
         _cancellationTokenSource = new CancellationTokenSource();
         

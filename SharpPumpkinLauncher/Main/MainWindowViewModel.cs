@@ -8,6 +8,7 @@ using Launcher.PublicData;
 using ReactiveUI;
 using SharpPumpkinLauncher.Main.About;
 using SharpPumpkinLauncher.Main.ConfirmDelete;
+using SharpPumpkinLauncher.Main.JavaArguments;
 using SharpPumpkinLauncher.Main.Profile;
 using SharpPumpkinLauncher.Main.Progress;
 using SharpPumpkinLauncher.Main.Settings;
@@ -23,6 +24,7 @@ public sealed class MainWindowViewModel : ReactiveObject
     private readonly AboutControl _aboutControl;
     private readonly ConfirmDeleteControl _confirmDeleteControl;
     private readonly ConfirmDeleteViewModel _confirmDeleteViewModel;
+    private readonly JavaArgumentsControl _javaArgumentsControl;
     
     private readonly VersionsLoader _versionsLoader;
     
@@ -40,8 +42,12 @@ public sealed class MainWindowViewModel : ReactiveObject
 
         var progressViewModel = new ProgressViewModel(_mainWindowModel);
         _progressControl = new ProgressControl() { DataContext = progressViewModel };
+        
+        var javaArgumentsViewModel = new JavaArgumentsViewModel(OpenSettings);
+        _javaArgumentsControl = new JavaArgumentsControl() { DataContext = javaArgumentsViewModel };
 
-        var settingsViewModel = new SettingsViewModel(SettingsSaved, SetDefaultMainContent);
+        var settingsViewModel = 
+            new SettingsViewModel(SettingsSaved, SetDefaultMainContent, ShowJavaEdit, javaArgumentsViewModel);
         _settingsControl = new SettingsControl() { DataContext = settingsViewModel };
 
         var aboutViewModel = new AboutViewModel(SetDefaultMainContent);
@@ -49,7 +55,7 @@ public sealed class MainWindowViewModel : ReactiveObject
 
         _confirmDeleteViewModel = new ConfirmDeleteViewModel(SetDefaultMainContent, OnDeleteProfile);
         _confirmDeleteControl = new ConfirmDeleteControl() { DataContext = _confirmDeleteViewModel };
-        
+
         StartGameCommand = ReactiveCommand.Create(StartGame, CanStartGame);
         AbortGameCommand = ReactiveCommand.Create(AbortStartGame, CanAbortGame);
         NewProfileCommand = ReactiveCommand.Create(NewProfile, CanCreateNewProfile);
@@ -315,6 +321,11 @@ public sealed class MainWindowViewModel : ReactiveObject
         if (Profiles.Count > 0)
             SelectedProfile = Profiles[0];
     }
+
+    private void ShowJavaEdit()
+    {
+        MainContent = _javaArgumentsControl;
+    }
     
     private void SetDefaultMainContent()
     {
@@ -364,7 +375,8 @@ public sealed class MainWindowViewModel : ReactiveObject
     private void UpdateCanOpenSettings()
     {
         CanOpenSettings.OnNext(!IsGameStarted &&
-                               MainContent?.GetType() != typeof(SettingsControl));
+                               MainContent?.GetType() != typeof(SettingsControl) &&
+                               MainContent?.GetType() != typeof(JavaArgumentsControl));
     }
     
     private void UpdateCanOpenAbout()

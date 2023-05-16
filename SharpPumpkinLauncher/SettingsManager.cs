@@ -48,6 +48,8 @@ public class SettingsManager
         LauncherSettings.Instance.Data.UseCustomResolution = settingsData.UseCustomResolution;
         LauncherSettings.Instance.Data.ScreenHeight = settingsData.ScreenHeight;
         LauncherSettings.Instance.Data.ScreenWidth = settingsData.ScreenWidth;
+        LauncherSettings.Instance.Data.UseJavaArguments = settingsData.UseJavaArguments;
+        LauncherSettings.Instance.Data.AdditionalArguments = new List<string>(settingsData.Arguments);
         LauncherSettings.Save();
         
         if (directoryChanged)
@@ -173,6 +175,8 @@ public class SettingsManager
         var useCustomResolution = LauncherSettings.Instance.Data.UseCustomResolution;
         var screenWidth = LauncherSettings.Instance.Data.ScreenWidth;
         var screenHeight = LauncherSettings.Instance.Data.ScreenHeight;
+        var useJavaArguments = LauncherSettings.Instance.Data.UseJavaArguments;
+        var arguments = LauncherSettings.Instance.Data.AdditionalArguments ?? new List<string>(0);
 
         if (!string.IsNullOrEmpty(LauncherSettings.Instance.Data.GameDirectory) &&
             DirectoryValidation.IsDirectoryValid(LauncherSettings.Instance.Data.GameDirectory))
@@ -180,7 +184,7 @@ public class SettingsManager
             var gameDirectory = LauncherSettings.Instance.Data.GameDirectory;
             
             settingsData = new SettingsData(LauncherSettings.Instance.Data.DefaultPlayerName, gameDirectory,
-                launcherVisibility, useCustomResolution, screenHeight, screenWidth);
+                launcherVisibility, useCustomResolution, screenHeight, screenWidth, useJavaArguments, arguments);
             
             return true;
         }

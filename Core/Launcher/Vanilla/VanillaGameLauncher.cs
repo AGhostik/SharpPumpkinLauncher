@@ -25,6 +25,7 @@ internal sealed class VanillaGameLauncher : IGameLauncher
             var gameDirectory = launchData.GameDirectory;
             var playerName = launchData.PlayerName;
             var featuresData = launchData.FeaturesData;
+            var additionalArguments = launchData.Arguments;
             
             LaunchMinecraftProgress?.Invoke(LaunchProgress.Prepare);
             
@@ -39,7 +40,8 @@ internal sealed class VanillaGameLauncher : IGameLauncher
             var launchFiles = _installerData.GetLaunchFiles(versionId, minecraftData, minecraftPaths);
 
             var launchArgumentsData = new LaunchArgumentsData(minecraftData, launchFiles, minecraftPaths, versionId, 
-                playerName, featuresData.UseCustomResolution, featuresData.ScreenWidth, featuresData.ScreenHeight);
+                playerName, additionalArguments, featuresData.UseCustomResolution, featuresData.ScreenWidth,
+                featuresData.ScreenHeight);
             
             if (!launchArgumentsData.IsValid)
                 return ErrorCode.LaunchArgument;

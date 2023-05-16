@@ -9,7 +9,7 @@ namespace Launcher.Tools;
 internal sealed class LaunchArgumentsData
 {
     public LaunchArgumentsData(MinecraftData minecraftData, MinecraftLaunchFiles launchFiles,
-        MinecraftPaths minecraftPaths, string versionId, string playerName,
+        MinecraftPaths minecraftPaths, string versionId, string playerName, IReadOnlyList<string> additionalArguments,
         bool useCustomResolution = false, int screenWidth = 0, int screenHeight = 0)
     {
         var isValid = true;
@@ -31,6 +31,8 @@ internal sealed class LaunchArgumentsData
         Libraries = launchFiles.LibraryFiles;
 
         LoggingArgument = minecraftData.LoggingData?.Argument ?? string.Empty;
+
+        AdditionalArguments = additionalArguments;
         
         GameDirectory = FileManager.GetFullPath(minecraftPaths.GameDirectory) ?? string.Empty;
         
@@ -94,6 +96,8 @@ internal sealed class LaunchArgumentsData
     public Features Features { get; }
     
     public IReadOnlyList<string> Libraries { get; }
+    
+    public IReadOnlyList<string> AdditionalArguments { get; }
     
     private static string? GetUuid(string? nickname)
     {

@@ -1,0 +1,165 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+            
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <data name="NameUseG1Gc" xml:space="preserve">
+        <value>Use G1GC</value>
+    </data>
+    <data name="NameUsePerfData" xml:space="preserve">
+        <value>Use PerfData</value>
+    </data>
+    <data name="NameAggressiveHeap" xml:space="preserve">
+        <value>Aggressive Heap</value>
+    </data>
+    <data name="NameAggressiveOpts" xml:space="preserve">
+        <value>Aggressive Opts</value>
+    </data>
+    <data name="NameAlwaysPreTouch" xml:space="preserve">
+        <value>Always PreTouch</value>
+    </data>
+    <data name="NameUseCompressedOops" xml:space="preserve">
+        <value>Use CompressedOops</value>
+    </data>
+    <data name="NameDisableExplicitGc" xml:space="preserve">
+        <value>Disable Explicit GC</value>
+    </data>
+    <data name="NameG1UseAdaptiveIhop" xml:space="preserve">
+        <value>G1 Use Adaptive IHOP</value>
+    </data>
+    <data name="NamePerfDisableSharedMem" xml:space="preserve">
+        <value>Perf Disable SharedMem</value>
+    </data>
+    <data name="NameParallelRefProcEnabled" xml:space="preserve">
+        <value>Parallel RefProc Enabled</value>
+    </data>
+    <data name="NameUseStringDeduplication" xml:space="preserve">
+        <value>Use String Deduplication</value>
+    </data>
+    <data name="NameUnlockExperimentalVmOptions" xml:space="preserve">
+        <value>Unlock Experimental Vm Options</value>
+    </data>
+    <data name="NameXmn" xml:space="preserve">
+        <value>Minimum heap size (Xmn)</value>
+    </data>
+    <data name="NameXmx" xml:space="preserve">
+        <value>Maximum heap size (Xmx)</value>
+    </data>
+    <data name="NameXms" xml:space="preserve">
+        <value>Maximum GC memory size (Xms)</value>
+    </data>
+    <data name="NameConcGcThreads" xml:space="preserve">
+        <value>Conc Gc Threads</value>
+    </data>
+    <data name="NameMaxGcPauseMillis" xml:space="preserve">
+        <value>Max Gc Pause Millis</value>
+    </data>
+    <data name="NameG1HeapRegionSize" xml:space="preserve">
+        <value>G1 Heap Region Size</value>
+    </data>
+    <data name="NameG1NewSizePercent" xml:space="preserve">
+        <value>G1 New Size Percent</value>
+    </data>
+    <data name="NameG1ReservePercent" xml:space="preserve">
+        <value>G1 Reserve Percent</value>
+    </data>
+    <data name="NameParallelGcThreads" xml:space="preserve">
+        <value>Parallel Gc Threads</value>
+    </data>
+    <data name="NameG1MaxNewSizePercent" xml:space="preserve">
+        <value>G1 Max New Size Percent</value>
+    </data>
+    <data name="NameG1MixedGcCountTarget" xml:space="preserve">
+        <value>G1 Mixed Gc Count Target</value>
+    </data>
+    <data name="NameG1MixedGcLiveThresholdPercent" xml:space="preserve">
+        <value>G1 Mixed Gc Live Threshold Percent</value>
+    </data>
+    <data name="NameInitiatingHeapOccupancyPercent" xml:space="preserve">
+        <value>Initiating Heap Occupancy Percent</value>
+    </data>
+    <data name="DescriptionXmx" xml:space="preserve">
+        <value>Specifies the maximum size (in bytes) of the heap. This value must be a multiple of 1024 and greater than 2 MB</value>
+    </data>
+    <data name="DescriptionXms" xml:space="preserve">
+        <value>Sets the minimum and the initial size (in bytes) of the heap. This value must be a multiple of 1024 and greater than 1 MB</value>
+    </data>
+    <data name="DescriptionXmn" xml:space="preserve">
+        <value>Sets the initial and maximum size (in bytes) of the heap for the young generation (nursery) in the generational collectors. The young generation region of the heap is used for new objects. GC is performed in this region more often than in other regions. If the size for the young generation is too small, then a lot of minor garbage collections are performed. If the size is too large, then only full garbage collections are performed, which can take a long time to complete. It is recommended that you do not set the size for the young generation for the G1 collector, and keep the size for the young generation greater than 25% and less than 50% of the overall heap size for other collectors.</value>
+    </data>
+    <data name="DescriptionAggressiveHeap" xml:space="preserve">
+        <value>Enables Java heap optimization. This sets various parameters to be optimal for long-running jobs with intensive memory allocation, based on the configuration of the computer (RAM and CPU). By default, the option is disabled and the heap sizes are configured less aggressively.</value>
+    </data>
+    <data name="DescriptionAlwaysPreTouch" xml:space="preserve">
+        <value>Requests the VM to touch every page on the Java heap after requesting it from the operating system and before handing memory out to the application. By default, this option is disabled and all pages are committed as the application uses the heap space. </value>
+    </data>
+    <data name="DescriptionConcGcThreads" xml:space="preserve">
+        <value>Sets the number of threads used for concurrent GC. Sets value to approximately 1/4 of the number of parallel garbage collection threads. The default value depends on the number of CPUs available to the JVM.</value>
+    </data>
+    <data name="DescriptionDisableExplicitGc" xml:space="preserve">
+        <value>Enables the option that disables processing of calls to the System.gc() method. This option is disabled by default, meaning that calls to System.gc() are processed. If processing of calls to System.gc() is disabled, then the JVM still performs GC when necessary.</value>
+    </data>
+    <data name="DescriptionUseG1Gc" xml:space="preserve">
+        <value>The Garbage-First (G1) garbage collector is a server-style garbage collector, targeted for multiprocessor machines with large memories. It attempts to meet garbage collection (GC) pause time goals with high probability while achieving high throughput. Whole-heap operations, such as global marking, are performed concurrently with the application threads. This prevents interruptions proportional to heap or live-data size.</value>
+    </data>
+    <data name="DescriptionUseCompressedOops" xml:space="preserve">
+        <value>Disables the use of compressed pointers and object references are represented as 32-bit offsets instead of 64-bit pointers, which typically increases performance when running the application with Java heap sizes less than 32 GB. This option works only for 64-bit JVMs.</value>
+    </data>
+    <data name="DescriptionG1UseAdaptiveIhop" xml:space="preserve">
+        <value>Controls adaptive calculation of the old generation occupancy to start background work preparing for an old generation collection. If enabled, G1 uses -XX:InitiatingHeapOccupancyPercent for the first few times as specified by the value of -XX:G1AdaptiveIHOPNumInitialSamples, and after that adaptively calculates a new optimum value for the initiating occupancy automatically. Otherwise, the old generation collection process always starts at the old generation occupancy determined by -XX:InitiatingHeapOccupancyPercent.</value>
+    </data>
+    <data name="DescriptionPerfDisableSharedMem" xml:space="preserve">
+        <value>Forces JVM to use anonymous memory for Performance Counters instead of a mapped file. This helps to avoid random VM pauses caused by spontaneous disk I/O.</value>
+    </data>
+    <data name="DescriptionParallelRefProcEnabled" xml:space="preserve">
+        <value>Enables parallel reference processing</value>
+    </data>
+    <data name="DescriptionUseStringDeduplication" xml:space="preserve">
+        <value>Enables string deduplication. By default, this option is disabled. To use this option, you must enable the garbage-first (G1) garbage collector. String deduplication reduces the memory footprint of String objects on the Java heap by taking advantage of the fact that many String objects are identical. Instead of each String object pointing to its own character array, identical String objects can point to and share the same character array</value>
+    </data>
+    <data name="DescriptionUnlockExperimentalVmOptions" xml:space="preserve">
+        <value>Unlocks the options that provide experimental features in the JVM. By default, this option is disabled and experimental features aren't available</value>
+    </data>
+    <data name="DescriptionMaxGcPauseMillis" xml:space="preserve">
+        <value>Sets a target for the maximum GC pause time (in milliseconds). This is a soft goal, and the JVM will make its best effort to achieve it. The specified value doesn't adapt to your heap size. By default, for G1 the maximum pause time target is 200 milliseconds. The other generational collectors do not use a pause time goal by default.</value>
+    </data>
+    <data name="DescriptionG1HeapRegionSize" xml:space="preserve">
+        <value>Sets the size of the regions into which the Java heap is subdivided when using the garbage-first (G1) collector. The value is a power of 2 and can range from 1 MB to 32 MB. The default region size is determined ergonomically based on the heap size with a goal of approximately 2048 regions.</value>
+    </data>
+    <data name="DescriptionG1NewSizePercent" xml:space="preserve">
+        <value>Sets the percentage of the heap to use as the minimum for the young generation size. The default value is 5 percent of your Java heap.</value>
+    </data>
+    <data name="DescriptionG1ReservePercent" xml:space="preserve">
+        <value>Sets the percentage of the heap (0 to 50) that's reserved as a false ceiling to reduce the possibility of promotion failure for the G1 collector. When you increase or decrease the percentage, ensure that you adjust the total Java heap by the same amount. By default, this option is set to 10%.</value>
+    </data>
+    <data name="DescriptionParallelGcThreads" xml:space="preserve">
+        <value>Sets the number of the stop-the-world (STW) worker threads. The default value depends on the number of CPUs available to the JVM and the garbage collector selected</value>
+    </data>
+    <data name="DescriptionG1MaxNewSizePercent" xml:space="preserve">
+        <value>Sets the percentage of the heap size to use as the maximum for the young generation size. The default value is 60 percent of your Java heap.</value>
+    </data>
+    <data name="DescriptionG1MixedGcCountTarget" xml:space="preserve">
+        <value>Sets the target number of mixed garbage collections after a marking cycle to collect old regions with at most G1MixedGCLIveThresholdPercent live data. The default is 8 mixed garbage collections. The goal for mixed collections is to be within this target number.</value>
+    </data>
+    <data name="DescriptionG1MixedGcLiveThresholdPercent" xml:space="preserve">
+        <value>Sets the occupancy threshold for an old region to be included in a mixed garbage collection cycle. The default occupancy is 85 percent.</value>
+    </data>
+    <data name="DescriptionInitiatingHeapOccupancyPercent" xml:space="preserve">
+        <value>Sets the percentage of the old generation occupancy (0 to 100) at which to start the first few concurrent marking cycles for the G1 garbage collector. By default, the initiating value is set to 45%. A value of 0 implies nonstop concurrent GC cycles from the beginning until G1 adaptively sets this value.</value>
+    </data>
+</root>
