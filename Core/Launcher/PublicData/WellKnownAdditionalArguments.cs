@@ -9,7 +9,7 @@ public static class WellKnownAdditionalArguments
     public const string UseCompressedOops = "-XX:+UseCompressedOops";
     public const string UseG1Gc = "-XX:+UseG1GC";
     public const string UnlockExperimentalVmOptions = "-XX:+UnlockExperimentalVMOptions";
-    public const string G1UseAdaptiveIhop = "-XX:G1UseAdaptiveIHOP";
+    public const string G1UseAdaptiveIhop = "-XX:+G1UseAdaptiveIHOP";
     public const string UseStringDeduplication = "-XX:+UseStringDeduplication";
     public const string PerfDisableSharedMem = "-XX:+PerfDisableSharedMem";
     
