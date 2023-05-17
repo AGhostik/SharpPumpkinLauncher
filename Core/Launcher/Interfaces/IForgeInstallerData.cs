@@ -20,8 +20,8 @@ internal interface IForgeInstallerData : IInstallerData
     Task<(ForgeInfo?, ErrorCode)> ReadForgeInfo(string forgeVersionId, MinecraftPaths minecraftPaths, 
         CancellationToken cancellationToken);
     
-    ErrorCode GetForgeMissingInfo(ForgeInfo forgeInfo, MinecraftForgeFileList minecraftFileList, MinecraftPaths minecraftPaths,
-        out MinecraftMissedInfo minecraftMissedInfo);
+    (MinecraftMissedInfo?, ErrorCode) GetForgeMissingInfo(ForgeInfo forgeInfo, MinecraftForgeFileList minecraftFileList, 
+        MinecraftPaths minecraftPaths);
 
     MinecraftLaunchFiles GetForgeLaunchFiles(string versionId, MinecraftData data, ForgeInfo forgeInfo,
         MinecraftPaths minecraftPaths);

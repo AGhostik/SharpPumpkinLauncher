@@ -30,8 +30,8 @@ internal interface IInstallerData
     MinecraftFileList GetFileList(string versionId, MinecraftData data, RuntimeFiles runtimeFiles,
         IReadOnlyList<Asset> assets, MinecraftPaths minecraftPaths);
 
-    ErrorCode GetMissingInfo(IMinecraftFileList minecraftFileList, MinecraftPaths minecraftPaths,
-        out MinecraftMissedInfo minecraftMissedInfo);
+    (MinecraftMissedInfo?, ErrorCode) GetMissingInfo(IMinecraftFileList minecraftFileList, 
+        MinecraftPaths minecraftPaths);
 
     MinecraftLaunchFiles GetLaunchFiles(string versionId, MinecraftData data, MinecraftPaths minecraftPaths);
 }

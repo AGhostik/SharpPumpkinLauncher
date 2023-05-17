@@ -2,13 +2,28 @@
 
 public sealed class MinecraftMissedInfo
 {
-    public long TotalDownloadSize { get; set; }
-    public List<string> DirectoriesToCreate { get; } = new();
-    public List<(Uri source, string fileName)> DownloadQueue { get; } = new();
-    public List<(string fileName, string unpackDirectory)> UnpackItems { get; } = new();
-    public List<string> PathsToDelete { get; } = new();
-    public List<string> CorruptedFiles { get; } = new();
-    public ForgeProfileInstallInfo? ForgeProfileInstallInfo { get; set; }
+    public MinecraftMissedInfo(long totalDownloadSize, IReadOnlyList<string> directoriesToCreate, 
+        IReadOnlyList<(Uri source, string fileName)> downloadQueue, 
+        IReadOnlyList<(string fileName, string unpackDirectory)> unpackItems, 
+        IReadOnlyList<string> pathsToDelete, IReadOnlyList<string> corruptedFiles, 
+        ForgeProfileInstallInfo? forgeProfileInstallInfo = null)
+    {
+        TotalDownloadSize = totalDownloadSize;
+        DirectoriesToCreate = directoriesToCreate;
+        DownloadQueue = downloadQueue;
+        UnpackItems = unpackItems;
+        PathsToDelete = pathsToDelete;
+        CorruptedFiles = corruptedFiles;
+        ForgeProfileInstallInfo = forgeProfileInstallInfo;
+    }
+
+    public long TotalDownloadSize { get; }
+    public IReadOnlyList<string> DirectoriesToCreate { get; }
+    public IReadOnlyList<(Uri source, string fileName)> DownloadQueue { get; }
+    public IReadOnlyList<(string fileName, string unpackDirectory)> UnpackItems { get; }
+    public IReadOnlyList<string> PathsToDelete { get; }
+    public IReadOnlyList<string> CorruptedFiles { get; }
+    public ForgeProfileInstallInfo? ForgeProfileInstallInfo { get; }
 
     public bool IsEmpty => DirectoriesToCreate.Count == 0 &&
                            DownloadQueue.Count == 0 &&

@@ -471,12 +471,20 @@ internal sealed class InstallerData : IForgeInstallerData
         return files;
     }
     
-    public ErrorCode GetForgeMissingInfo(ForgeInfo forgeInfo, MinecraftForgeFileList minecraftFileList, 
-        MinecraftPaths minecraftPaths, out MinecraftMissedInfo minecraftMissedInfo)
+    public (MinecraftMissedInfo?, ErrorCode) GetForgeMissingInfo(ForgeInfo forgeInfo, 
+        MinecraftForgeFileList minecraftFileList, MinecraftPaths minecraftPaths)
     {
-        var error = GetMissingInfo(minecraftFileList, minecraftPaths, out minecraftMissedInfo);
-        if (error != ErrorCode.NoError)
-            return error;
+        var (minecraftMissedInfo, error) = GetMissingInfo(minecraftFileList, minecraftPaths);
+        
+        if (minecraftMissedInfo == null)
+            return (null, error);
+        
+        var totalDownloadSize = minecraftMissedInfo.TotalDownloadSize;
+        var directoriesToCreate = new List<string>(minecraftMissedInfo.DirectoriesToCreate);
+        var downloadQueue = new List<(Uri source, string fileName)>(minecraftMissedInfo.DownloadQueue);
+        var unpackItems = minecraftMissedInfo.UnpackItems;
+        var pathsToDelete = minecraftMissedInfo.PathsToDelete;
+        var corruptedFiles = new List<string>(minecraftMissedInfo.CorruptedFiles);
         
         // some of this libraries required to Install process
         // and some required to launch Forge
@@ -485,9 +493,11 @@ internal sealed class InstallerData : IForgeInstallerData
         for (var i = 0; i < minecraftFileList.ProfileLibraryFiles.Count; i++)
         {
             var libraryFile = minecraftFileList.ProfileLibraryFiles[i];
-            var libraryFileError = CheckFileAndDirectoryMissed(ref minecraftMissedInfo, libraryFile);
+            var libraryFileError = CheckFileAndDirectoryMissed(libraryFile, directoriesToCreate, corruptedFiles,
+                downloadQueue, ref totalDownloadSize);
+            
             if (libraryFileError != ErrorCode.NoError)
-                return libraryFileError;
+                return (null, libraryFileError);
         }
 
         var srgCheckFileResult = CheckFileResult.Ok;
@@ -497,74 +507,90 @@ internal sealed class InstallerData : IForgeInstallerData
         if (minecraftFileList.Srg != null)
         {
             srgCheckFileResult = CheckFile(minecraftFileList.Srg);
-            if (!TryCheckDirectory(minecraftFileList.Srg, minecraftMissedInfo.DirectoriesToCreate))
-                return ErrorCode.Check;
+            if (!TryCheckDirectory(minecraftFileList.Srg, directoriesToCreate))
+                return (null, ErrorCode.Check);
         }
 
         if (minecraftFileList.Extra != null)
         {
             extraCheckFileResult = CheckFile(minecraftFileList.Extra);
-            if (!TryCheckDirectory(minecraftFileList.Extra, minecraftMissedInfo.DirectoriesToCreate))
-                return ErrorCode.Check;
+            if (!TryCheckDirectory(minecraftFileList.Extra, directoriesToCreate))
+                return (null, ErrorCode.Check);
         }
         
         if (minecraftFileList.ForgeClient != null)
         {
             forgeClientCheckFileResult = CheckFile(minecraftFileList.ForgeClient);
-            if (!TryCheckDirectory(minecraftFileList.ForgeClient, minecraftMissedInfo.DirectoriesToCreate))
-                return ErrorCode.Check;
+            if (!TryCheckDirectory(minecraftFileList.ForgeClient, directoriesToCreate))
+                return (null, ErrorCode.Check);
         }
 
+        ForgeProfileInstallInfo? forgeProfileInstallInfo = null;
         if (srgCheckFileResult != CheckFileResult.Ok || extraCheckFileResult != CheckFileResult.Ok ||
             forgeClientCheckFileResult != CheckFileResult.Ok)
         {
             var javaFile = minecraftFileList.JavaFilePath;
             var minecraftJar = minecraftFileList.Client.FileName;
             
-            minecraftMissedInfo.ForgeProfileInstallInfo = new ForgeProfileInstallInfo(javaFile, minecraftJar,
+            forgeProfileInstallInfo = new ForgeProfileInstallInfo(javaFile, minecraftJar,
                 minecraftPaths.LibrariesDirectory, forgeInfo.ForgeInstall);
         }
+        
+        var result = new MinecraftMissedInfo(totalDownloadSize, directoriesToCreate, downloadQueue, unpackItems,
+            pathsToDelete, corruptedFiles, forgeProfileInstallInfo);
 
-        return ErrorCode.NoError;
+        return (result, ErrorCode.NoError);
     }
     
-    public ErrorCode GetMissingInfo(IMinecraftFileList minecraftFileList, MinecraftPaths minecraftPaths,
-        out MinecraftMissedInfo minecraftMissedInfo)
+    public (MinecraftMissedInfo?, ErrorCode) GetMissingInfo(IMinecraftFileList minecraftFileList, MinecraftPaths minecraftPaths)
     {
-        minecraftMissedInfo = new MinecraftMissedInfo();
+        long totalDownloadSize = 0;
+        var directoriesToCreate = new List<string>();
+        var downloadQueue = new List<(Uri source, string fileName)>();
+        var unpackItems = new List<(string fileName, string unpackDirectory)>();
+        var pathsToDelete = new List<string>();
+        var corruptedFiles = new List<string>();
         
-        var clientFileError = CheckFileAndDirectoryMissed(ref minecraftMissedInfo, minecraftFileList.Client);
+        var clientFileError = CheckFileAndDirectoryMissed(minecraftFileList.Client, directoriesToCreate, corruptedFiles,
+            downloadQueue, ref totalDownloadSize);
+        
         if (clientFileError != ErrorCode.NoError)
-            return clientFileError;
+            return (null, clientFileError);
 
         if (minecraftFileList.Server != null)
         {
-            var serverFileError = CheckFileAndDirectoryMissed(ref minecraftMissedInfo, minecraftFileList.Server);
+            var serverFileError = CheckFileAndDirectoryMissed(minecraftFileList.Server, directoriesToCreate, 
+                corruptedFiles, downloadQueue, ref totalDownloadSize);
+            
             if (serverFileError != ErrorCode.NoError)
-                return serverFileError;
+                return (null, serverFileError);
         }
 
         if (minecraftFileList.Logging != null)
         {
-            var loggingFileError = CheckFileAndDirectoryMissed(ref minecraftMissedInfo, minecraftFileList.Logging);
+            var loggingFileError = CheckFileAndDirectoryMissed(minecraftFileList.Logging, directoriesToCreate, 
+                corruptedFiles, downloadQueue, ref totalDownloadSize);
+            
             if (loggingFileError != ErrorCode.NoError)
-                return loggingFileError;
+                return (null, loggingFileError);
         }
 
         for (var i = 0; i < minecraftFileList.LibraryFiles.Count; i++)
         {
             var libraryFile = minecraftFileList.LibraryFiles[i];
-            var libraryFileError = CheckFileAndDirectoryMissed(ref minecraftMissedInfo, libraryFile);
+            var libraryFileError = CheckFileAndDirectoryMissed(libraryFile, directoriesToCreate, corruptedFiles,
+                downloadQueue, ref totalDownloadSize);
+            
             if (libraryFileError != ErrorCode.NoError)
-                return libraryFileError;
+                return (null, libraryFileError);
 
             if (libraryFile.NeedUnpack)
             {
                 var natives = minecraftPaths.NativesDirectory;
-                if (!FileManager.DirectoryExist(natives) && !minecraftMissedInfo.DirectoriesToCreate.Contains(natives))
-                    minecraftMissedInfo.DirectoriesToCreate.Add(natives);
+                if (!FileManager.DirectoryExist(natives) && !directoriesToCreate.Contains(natives))
+                    directoriesToCreate.Add(natives);
 
-                minecraftMissedInfo.UnpackItems.Add((libraryFile.FileName, natives));
+                unpackItems.Add((libraryFile.FileName, natives));
             }
 
             if (libraryFile.Delete != null)
@@ -573,27 +599,33 @@ internal sealed class InstallerData : IForgeInstallerData
                 for (var j = 0; j < libraryFile.Delete.Count; j++)
                 {
                     var path = $"{unpackDirectory}\\{libraryFile.Delete[j]}";
-                    minecraftMissedInfo.PathsToDelete.Add(path);
+                    pathsToDelete.Add(path);
                 }
             }
         }
 
         for (var i = 0; i < minecraftFileList.AssetFiles.Count; i++)
         {
-            var assetFileError = CheckFileAndDirectoryMissed(ref minecraftMissedInfo, minecraftFileList.AssetFiles[i]);
+            var assetFileError = CheckFileAndDirectoryMissed(minecraftFileList.AssetFiles[i], directoriesToCreate, 
+                corruptedFiles, downloadQueue, ref totalDownloadSize);
+            
             if (assetFileError != ErrorCode.NoError)
-                return assetFileError;
+                return (null, assetFileError);
         }
 
         for (var i = 0; i < minecraftFileList.JavaRuntimeFiles.Count; i++)
         {
-            var javaRuntimeFileError =
-                CheckFileAndDirectoryMissed(ref minecraftMissedInfo, minecraftFileList.JavaRuntimeFiles[i]);
+            var javaRuntimeFileError = CheckFileAndDirectoryMissed(minecraftFileList.JavaRuntimeFiles[i], 
+                directoriesToCreate, corruptedFiles, downloadQueue, ref totalDownloadSize);
+            
             if (javaRuntimeFileError != ErrorCode.NoError)
-                return javaRuntimeFileError;
+                return (null, javaRuntimeFileError);
         }
 
-        return ErrorCode.NoError;
+        var result = new MinecraftMissedInfo(totalDownloadSize, directoriesToCreate, downloadQueue, unpackItems,
+            pathsToDelete, corruptedFiles);
+
+        return (result, ErrorCode.NoError);
     }
     
     private static CheckFileResult CheckFile(IMinecraftFile minecraftFile)
@@ -633,6 +665,39 @@ internal sealed class InstallerData : IForgeInstallerData
 
         return CheckDirectoryResult.Ok;
     }
+
+    private static bool TryCheckFile(IMinecraftFile minecraftFile, ICollection<string> corruptedFiles, 
+        ICollection<(Uri, string)> downloadQueue, ref long size)
+    {
+        var checkFileResult = CheckFile(minecraftFile);
+        
+        switch (checkFileResult)
+        {
+            case CheckFileResult.Ok:
+                return true;
+            case CheckFileResult.Corrupted:
+                corruptedFiles.Add(minecraftFile.FileName);
+
+                if (!string.IsNullOrEmpty(minecraftFile.Url))
+                {
+                    downloadQueue.Add((new Uri(minecraftFile.Url), minecraftFile.FileName));
+                    size += minecraftFile.Size;
+                }
+
+                return true;
+            case CheckFileResult.Missing:
+                if (!string.IsNullOrEmpty(minecraftFile.Url))
+                {
+                    downloadQueue.Add((new Uri(minecraftFile.Url), minecraftFile.FileName));
+                    size += minecraftFile.Size;
+                }
+                
+                return true;
+            default:
+                Logger.Log($"Unknown CheckFileResult: '{checkFileResult}'");
+                return false;
+        }
+    }
     
     private static bool TryCheckDirectory(IMinecraftFile minecraftFile, ICollection<string> directoriesToCreate)
     {
@@ -654,38 +719,14 @@ internal sealed class InstallerData : IForgeInstallerData
         }
     }
 
-    private static ErrorCode CheckFileAndDirectoryMissed(ref MinecraftMissedInfo missedInfo, IMinecraftFile minecraftFile)
+    private static ErrorCode CheckFileAndDirectoryMissed(IMinecraftFile minecraftFile, 
+        ICollection<string> directoriesToCreate, ICollection<string> corruptedFiles, 
+        ICollection<(Uri, string)> downloadQueue, ref long size)
     {
-        var checkFileResult = CheckFile(minecraftFile);
+        if (!TryCheckFile(minecraftFile, corruptedFiles, downloadQueue, ref size))
+            return ErrorCode.Check;
         
-        switch (checkFileResult)
-        {
-            case CheckFileResult.Ok:
-                break;
-            case CheckFileResult.Corrupted:
-                missedInfo.CorruptedFiles.Add(minecraftFile.FileName);
-
-                if (!string.IsNullOrEmpty(minecraftFile.Url))
-                {
-                    missedInfo.DownloadQueue.Add((new Uri(minecraftFile.Url), minecraftFile.FileName));
-                    missedInfo.TotalDownloadSize += minecraftFile.Size;
-                }
-
-                break;
-            case CheckFileResult.Missing:
-                if (!string.IsNullOrEmpty(minecraftFile.Url))
-                {
-                    missedInfo.DownloadQueue.Add((new Uri(minecraftFile.Url), minecraftFile.FileName));
-                    missedInfo.TotalDownloadSize += minecraftFile.Size;
-                }
-                
-                break;
-            default:
-                Logger.Log($"Unknown CheckFileResult: '{checkFileResult}'");
-                break;
-        }
-        
-        if (!TryCheckDirectory(minecraftFile, missedInfo.DirectoriesToCreate))
+        if (!TryCheckDirectory(minecraftFile, directoriesToCreate))
             return ErrorCode.Check;
 
         return ErrorCode.NoError;

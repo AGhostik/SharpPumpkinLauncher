@@ -67,8 +67,8 @@ internal sealed class ForgeInstaller : IInstaller
         var fileList = _installerData.GetForgeFileList(versionId, minecraftData, forgeInfo, runtimeFiles, assetsData, 
             minecraftPaths);
             
-        var missingInfoError = 
-            _installerData.GetForgeMissingInfo(forgeInfo, fileList, minecraftPaths, out var minecraftMissedInfo);
+        var (minecraftMissedInfo, missingInfoError) = 
+            _installerData.GetForgeMissingInfo(forgeInfo, fileList, minecraftPaths);
         
         if (missingInfoError != ErrorCode.NoError)
             return null;
@@ -167,8 +167,8 @@ internal sealed class ForgeInstaller : IInstaller
         var fileList = _installerData.GetForgeFileList(versionId, minecraftData, forgeInfo, runtimeFiles, assetsData, 
             minecraftPaths);
         
-        var missingInfoError = 
-            _installerData.GetForgeMissingInfo(forgeInfo, fileList, minecraftPaths, out var minecraftMissedInfo);
+        var (minecraftMissedInfo, missingInfoError) = 
+            _installerData.GetForgeMissingInfo(forgeInfo, fileList, minecraftPaths);
         
         if (missingInfoError != ErrorCode.NoError)
             return (null, missingInfoError);

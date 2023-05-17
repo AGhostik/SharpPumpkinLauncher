@@ -48,7 +48,7 @@ internal sealed class VanillaInstaller : IInstaller
         
         var fileList = _installerData.GetFileList(versionId, minecraftData, runtimeFiles, assetsData, minecraftPaths);
             
-        var missingInfoError = _installerData.GetMissingInfo(fileList, minecraftPaths, out var minecraftMissedInfo);
+        var (minecraftMissedInfo, missingInfoError) = _installerData.GetMissingInfo(fileList, minecraftPaths);
         if (missingInfoError != ErrorCode.NoError)
             return null;
 
@@ -125,8 +125,9 @@ internal sealed class VanillaInstaller : IInstaller
 
         var fileList = _installerData.GetFileList(versionId, minecraftData, runtimeFiles, assetsData, minecraftPaths);
         
-        var missingInfoError = _installerData.GetMissingInfo(fileList, minecraftPaths, out var minecraftMissedInfo);
-        if (missingInfoError != ErrorCode.NoError)
+        var (minecraftMissedInfo, missingInfoError) = _installerData.GetMissingInfo(fileList, minecraftPaths);
+        
+        if (minecraftMissedInfo == null)
             return (null, missingInfoError);
 
         return (minecraftMissedInfo, ErrorCode.NoError);
