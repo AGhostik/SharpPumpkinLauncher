@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using Launcher.Data;
+using Launcher.Forge;
 using Launcher.PublicData;
 
 namespace Launcher.Tools;
@@ -8,8 +9,28 @@ internal sealed class BaseInstaller
 {
     public event Action<DownloadProgress>? DownloadingProgress;
     
+    public async Task<ErrorCode> RestoreMissedItems(MinecraftMissedInfo missedInfo, 
+        ForgeProfileInstaller forgeProfileInstaller, CancellationToken cancellationToken = default)
+    {
+        var result = await RestoreMissedItems(missedInfo, cancellationToken);
+        if (result != ErrorCode.NoError)
+            return result;
+
+        if (missedInfo.ForgeProfileInstallInfo != null)
+        {
+            var installResult = await forgeProfileInstaller.Install(missedInfo.ForgeProfileInstallInfo.ForgeInstall, 
+                missedInfo.ForgeProfileInstallInfo.JavaFile, missedInfo.ForgeProfileInstallInfo.MinecraftJar,
+                missedInfo.ForgeProfileInstallInfo.LibrariesPath, cancellationToken);
+            
+            if (!installResult)
+                return ErrorCode.AfterInstallTask;
+        }
+
+        return ErrorCode.NoError;
+    }
+    
     public async Task<ErrorCode> RestoreMissedItems(MinecraftMissedInfo missedInfo,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken = default)
     {
         for (var i = 0; i < missedInfo.DirectoriesToCreate.Count; i++)
         {
@@ -46,14 +67,6 @@ internal sealed class BaseInstaller
             var result = FileManager.Delete(missedInfo.PathsToDelete[i]);
             if (!result)
                 return ErrorCode.DeleteFileOrDirectory;
-        }
-
-        if (missedInfo.AfterInstallTask != null)
-        {
-            missedInfo.AfterInstallTask.Start();
-            var result = await missedInfo.AfterInstallTask.WaitAsync(cancellationToken);
-            if (!result)
-                return ErrorCode.AfterInstallTask;
         }
 
         return ErrorCode.NoError;

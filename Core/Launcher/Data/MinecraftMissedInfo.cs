@@ -8,16 +8,16 @@ public sealed class MinecraftMissedInfo
     public List<(string fileName, string unpackDirectory)> UnpackItems { get; } = new();
     public List<string> PathsToDelete { get; } = new();
     public List<string> CorruptedFiles { get; } = new();
-    public Task<bool>? AfterInstallTask { get; set; }
+    public ForgeProfileInstallInfo? ForgeProfileInstallInfo { get; set; }
 
     public bool IsEmpty => DirectoriesToCreate.Count == 0 &&
                            DownloadQueue.Count == 0 &&
                            UnpackItems.Count == 0 &&
                            PathsToDelete.Count == 0 &&
                            CorruptedFiles.Count == 0 &&
-                           AfterInstallTask == null;
+                           ForgeProfileInstallInfo == null;
     
     public bool IsDownloadingNotNeeded => DownloadQueue.Count == 0 &&
                                         CorruptedFiles.Count == 0 &&
-                                        AfterInstallTask == null;
+                                        ForgeProfileInstallInfo == null;
 }

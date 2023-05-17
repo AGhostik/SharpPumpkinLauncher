@@ -17,10 +17,9 @@ internal class ForgeProfileInstaller
 
     public event Action<ForgeInstallProfileProgress>? Progress;
 
-    public async Task<bool> Install(ForgeInfo forgeInfo, string jre, string minecraftJar, string librariesDirectory,
-        CancellationToken cancellationToken)
+    public async Task<bool> Install(ForgeInstall forgeInstall, string jre, string minecraftJar,
+        string librariesDirectory, CancellationToken cancellationToken = default)
     {
-        var forgeInstall = forgeInfo.ForgeInstall;
         if (forgeInstall.Processors == null || forgeInstall.Data == null)
             return true;
 
@@ -74,8 +73,9 @@ internal class ForgeProfileInstaller
                 }
             }
         }
-
+        
         _libraries.Clear();
+        
         return isSuccess;
     }
 

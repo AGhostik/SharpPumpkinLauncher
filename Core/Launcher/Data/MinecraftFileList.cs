@@ -1,6 +1,6 @@
 ﻿namespace Launcher.Data;
 
-internal sealed class MinecraftFileList
+internal sealed class MinecraftFileList : IMinecraftFileList
 {
     public MinecraftFileList(MinecraftFile client, MinecraftFile? server, 
         IReadOnlyList<MinecraftLibraryFile> libraryFiles, IReadOnlyList<MinecraftFile> assetFiles,

@@ -1,6 +1,4 @@
-﻿using JsonReader.PublicData.Forge;
-using JsonReader.PublicData.Game;
-using Launcher.Data;
+﻿using Launcher.Data;
 using Launcher.Interfaces;
 using Launcher.PublicData;
 using Launcher.Tools;
@@ -69,12 +67,11 @@ internal sealed class ForgeInstaller : IInstaller
         var fileList = _installerData.GetForgeFileList(versionId, minecraftData, forgeInfo, runtimeFiles, assetsData, 
             minecraftPaths);
             
-        var missingInfoError = _installerData.GetMissingInfo(fileList, minecraftPaths, out var minecraftMissedInfo);
+        var missingInfoError = 
+            _installerData.GetForgeMissingInfo(forgeInfo, fileList, minecraftPaths, out var minecraftMissedInfo);
+        
         if (missingInfoError != ErrorCode.NoError)
             return null;
-
-        minecraftMissedInfo.AfterInstallTask = 
-            GetAfterInstallTask(versionId, forgeInfo, minecraftData, minecraftPaths, cancellationToken);
 
         return minecraftMissedInfo;
     }
@@ -120,7 +117,8 @@ internal sealed class ForgeInstaller : IInstaller
             if (minecraftMissedInfo.IsEmpty)
                 return ErrorCode.NoError;
             
-            var restoreResult = await _baseInstaller.RestoreMissedItems(minecraftMissedInfo, cancellationToken);
+            var restoreResult = 
+                await _baseInstaller.RestoreMissedItems(minecraftMissedInfo, _forgeProfileInstaller, cancellationToken);
             
             if (restoreResult != ErrorCode.NoError)
                 return restoreResult;
@@ -169,48 +167,12 @@ internal sealed class ForgeInstaller : IInstaller
         var fileList = _installerData.GetForgeFileList(versionId, minecraftData, forgeInfo, runtimeFiles, assetsData, 
             minecraftPaths);
         
-        var missingInfoError = _installerData.GetMissingInfo(fileList, minecraftPaths, out var minecraftMissedInfo);
+        var missingInfoError = 
+            _installerData.GetForgeMissingInfo(forgeInfo, fileList, minecraftPaths, out var minecraftMissedInfo);
+        
         if (missingInfoError != ErrorCode.NoError)
             return (null, missingInfoError);
         
-        var javaFile =
-            $"{minecraftPaths.RuntimeDirectory}\\{minecraftData.JavaVersion.Component}\\{OsRuleManager.GetJavaExecutablePath()}";
-        
-        minecraftMissedInfo.AfterInstallTask = new Task<bool>(() =>
-            _forgeProfileInstaller
-                .Install(forgeInfo, javaFile, $"{minecraftPaths.VersionDirectory}\\{versionId}.jar",
-                    minecraftPaths.LibrariesDirectory, cancellationToken).Result);
-
         return (minecraftMissedInfo, ErrorCode.NoError);
-    }
-
-    private Task<bool>? GetAfterInstallTask(string versionId, ForgeInfo forgeInfo, MinecraftData minecraftData, 
-        MinecraftPaths minecraftPaths, CancellationToken cancellationToken)
-    {
-        var forgeData = forgeInfo.ForgeInstall.Data;
-        if (forgeData == null)
-            return null;
-        
-        var srgFile = ForgeProfileInstaller.GetPathFromPackageName(forgeData.McSrg.Client,
-            minecraftPaths.LibrariesDirectory);
-        var extraFile = ForgeProfileInstaller.GetPathFromPackageName(forgeData.McExtra.Client,
-            minecraftPaths.LibrariesDirectory);
-        var forgeJarFile = ForgeProfileInstaller.GetPathFromPackageName(forgeData.Patched.Client,
-            minecraftPaths.LibrariesDirectory);
-
-        if (string.IsNullOrEmpty(srgFile) || string.IsNullOrEmpty(extraFile) || string.IsNullOrEmpty(forgeJarFile))
-            return null;
-
-        if (FileManager.FileExist(srgFile) && FileManager.FileExist(extraFile) && FileManager.FileExist(forgeJarFile))
-            return null;
-            
-        var javaFile =
-            $"{minecraftPaths.RuntimeDirectory}\\{minecraftData.JavaVersion.Component}\\{OsRuleManager.GetJavaExecutablePath()}";
-
-        return new Task<bool>(() =>
-            _forgeProfileInstaller
-                .Install(forgeInfo, javaFile, $"{minecraftPaths.VersionDirectory}\\{versionId}.jar",
-                    minecraftPaths.LibrariesDirectory, cancellationToken).Result);
-
     }
 }
