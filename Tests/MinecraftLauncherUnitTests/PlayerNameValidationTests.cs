@@ -9,7 +9,7 @@ public class PlayerNameValidationTests
     {
         const string shortPlayerName = "AaAaAaAaAaAaAaAa";
         var result = PlayerNameValidation.IsPlayerNameValid(shortPlayerName);
-        Assert.IsTrue(result);
+        Assert.That(result, Is.True);
     }
     
     [Test]
@@ -17,7 +17,7 @@ public class PlayerNameValidationTests
     {
         const string shortPlayerName = "_AaAa_";
         var result = PlayerNameValidation.IsPlayerNameValid(shortPlayerName);
-        Assert.IsTrue(result);
+        Assert.That(result, Is.True);
     }
 
     [Test]
@@ -25,7 +25,7 @@ public class PlayerNameValidationTests
     {
         const string shortPlayerName = "Aa";
         var result = PlayerNameValidation.IsPlayerNameValid(shortPlayerName);
-        Assert.IsFalse(result);
+        Assert.That(result, Is.False);
     }
     
     [Test]
@@ -33,21 +33,21 @@ public class PlayerNameValidationTests
     {
         const string shortPlayerName = "AaAaAaAaAaAaAaAaA";
         var result = PlayerNameValidation.IsPlayerNameValid(shortPlayerName);
-        Assert.IsFalse(result);
+        Assert.That(result, Is.False);
     }
     
     [Test]
     public void PlayerNameValidation_False_NameIsEmptyString()
     {
         var result = PlayerNameValidation.IsPlayerNameValid(string.Empty);
-        Assert.IsFalse(result);
+        Assert.That(result, Is.False);
     }
     
     [Test]
     public void PlayerNameValidation_False_NameIsNull()
     {
         var result = PlayerNameValidation.IsPlayerNameValid(null);
-        Assert.IsFalse(result);
+        Assert.That(result, Is.False);
     }
     
     [Test]
@@ -55,7 +55,7 @@ public class PlayerNameValidationTests
     {
         const string shortPlayerName = "Aaa!";
         var result = PlayerNameValidation.IsPlayerNameValid(shortPlayerName);
-        Assert.IsFalse(result);
+        Assert.That(result, Is.False);
     }
     
     [Test]
@@ -63,7 +63,7 @@ public class PlayerNameValidationTests
     {
         const string shortPlayerName = "Aaa@";
         var result = PlayerNameValidation.IsPlayerNameValid(shortPlayerName);
-        Assert.IsFalse(result);
+        Assert.That(result, Is.False);
     }
     
     [Test]
@@ -71,7 +71,7 @@ public class PlayerNameValidationTests
     {
         const string shortPlayerName = "Aaa\'";
         var result = PlayerNameValidation.IsPlayerNameValid(shortPlayerName);
-        Assert.IsFalse(result);
+        Assert.That(result, Is.False);
     }
     
     [Test]
@@ -79,7 +79,7 @@ public class PlayerNameValidationTests
     {
         const string shortPlayerName = "Aaa\"";
         var result = PlayerNameValidation.IsPlayerNameValid(shortPlayerName);
-        Assert.IsFalse(result);
+        Assert.That(result, Is.False);
     }
     
     [Test]
@@ -87,7 +87,7 @@ public class PlayerNameValidationTests
     {
         const string shortPlayerName = "Aaa#";
         var result = PlayerNameValidation.IsPlayerNameValid(shortPlayerName);
-        Assert.IsFalse(result);
+        Assert.That(result, Is.False);
     }
     
     [Test]
@@ -95,7 +95,7 @@ public class PlayerNameValidationTests
     {
         const string shortPlayerName = "Aaa№";
         var result = PlayerNameValidation.IsPlayerNameValid(shortPlayerName);
-        Assert.IsFalse(result);
+        Assert.That(result, Is.False);
     }
     
     [Test]
@@ -103,7 +103,7 @@ public class PlayerNameValidationTests
     {
         const string shortPlayerName = "Aaa$";
         var result = PlayerNameValidation.IsPlayerNameValid(shortPlayerName);
-        Assert.IsFalse(result);
+        Assert.That(result, Is.False);
     }
 
     [Test]
@@ -111,7 +111,7 @@ public class PlayerNameValidationTests
     {
         const string shortPlayerName = "Aaa;";
         var result = PlayerNameValidation.IsPlayerNameValid(shortPlayerName);
-        Assert.IsFalse(result);
+        Assert.That(result, Is.False);
     }
     
     [Test]
@@ -119,7 +119,7 @@ public class PlayerNameValidationTests
     {
         const string shortPlayerName = "Aaa%";
         var result = PlayerNameValidation.IsPlayerNameValid(shortPlayerName);
-        Assert.IsFalse(result);
+        Assert.That(result, Is.False);
     }
     
     [Test]
@@ -127,7 +127,7 @@ public class PlayerNameValidationTests
     {
         const string shortPlayerName = "Aaa^";
         var result = PlayerNameValidation.IsPlayerNameValid(shortPlayerName);
-        Assert.IsFalse(result);
+        Assert.That(result, Is.False);
     }
     
     [Test]
@@ -135,7 +135,7 @@ public class PlayerNameValidationTests
     {
         const string shortPlayerName = "Aaa:";
         var result = PlayerNameValidation.IsPlayerNameValid(shortPlayerName);
-        Assert.IsFalse(result);
+        Assert.That(result, Is.False);
     }
     
     [Test]
@@ -143,7 +143,7 @@ public class PlayerNameValidationTests
     {
         const string shortPlayerName = "Aaa&";
         var result = PlayerNameValidation.IsPlayerNameValid(shortPlayerName);
-        Assert.IsFalse(result);
+        Assert.That(result, Is.False);
     }
     
     [Test]
@@ -151,7 +151,7 @@ public class PlayerNameValidationTests
     {
         const string shortPlayerName = "Aaa?";
         var result = PlayerNameValidation.IsPlayerNameValid(shortPlayerName);
-        Assert.IsFalse(result);
+        Assert.That(result, Is.False);
     }
     
     [Test]
@@ -159,7 +159,7 @@ public class PlayerNameValidationTests
     {
         const string shortPlayerName = "Aaa*";
         var result = PlayerNameValidation.IsPlayerNameValid(shortPlayerName);
-        Assert.IsFalse(result);
+        Assert.That(result, Is.False);
     }
     
     [Test]
@@ -167,7 +167,7 @@ public class PlayerNameValidationTests
     {
         const string shortPlayerName = "Aaa(";
         var result = PlayerNameValidation.IsPlayerNameValid(shortPlayerName);
-        Assert.IsFalse(result);
+        Assert.That(result, Is.False);
     }
     
     [Test]
@@ -175,7 +175,7 @@ public class PlayerNameValidationTests
     {
         const string shortPlayerName = "Aaa)";
         var result = PlayerNameValidation.IsPlayerNameValid(shortPlayerName);
-        Assert.IsFalse(result);
+        Assert.That(result, Is.False);
     }
     
     [Test]
@@ -183,7 +183,7 @@ public class PlayerNameValidationTests
     {
         const string shortPlayerName = "Aaa-";
         var result = PlayerNameValidation.IsPlayerNameValid(shortPlayerName);
-        Assert.IsFalse(result);
+        Assert.That(result, Is.False);
     }
     
     [Test]
@@ -191,7 +191,7 @@ public class PlayerNameValidationTests
     {
         const string shortPlayerName = "Aaa+";
         var result = PlayerNameValidation.IsPlayerNameValid(shortPlayerName);
-        Assert.IsFalse(result);
+        Assert.That(result, Is.False);
     }
     
     [Test]
@@ -199,7 +199,7 @@ public class PlayerNameValidationTests
     {
         const string shortPlayerName = "Aaa=";
         var result = PlayerNameValidation.IsPlayerNameValid(shortPlayerName);
-        Assert.IsFalse(result);
+        Assert.That(result, Is.False);
     }
     
     [Test]
@@ -207,7 +207,7 @@ public class PlayerNameValidationTests
     {
         const string shortPlayerName = "Aaa|";
         var result = PlayerNameValidation.IsPlayerNameValid(shortPlayerName);
-        Assert.IsFalse(result);
+        Assert.That(result, Is.False);
     }
     
     [Test]
@@ -215,7 +215,7 @@ public class PlayerNameValidationTests
     {
         const string shortPlayerName = "Aaa\\";
         var result = PlayerNameValidation.IsPlayerNameValid(shortPlayerName);
-        Assert.IsFalse(result);
+        Assert.That(result, Is.False);
     }
     
     [Test]
@@ -223,7 +223,7 @@ public class PlayerNameValidationTests
     {
         const string shortPlayerName = "Aaa/";
         var result = PlayerNameValidation.IsPlayerNameValid(shortPlayerName);
-        Assert.IsFalse(result);
+        Assert.That(result, Is.False);
     }
     
     [Test]
@@ -231,7 +231,7 @@ public class PlayerNameValidationTests
     {
         const string shortPlayerName = "Aaa`";
         var result = PlayerNameValidation.IsPlayerNameValid(shortPlayerName);
-        Assert.IsFalse(result);
+        Assert.That(result, Is.False);
     }
     
     [Test]
@@ -239,7 +239,7 @@ public class PlayerNameValidationTests
     {
         const string shortPlayerName = "Aaa~";
         var result = PlayerNameValidation.IsPlayerNameValid(shortPlayerName);
-        Assert.IsFalse(result);
+        Assert.That(result, Is.False);
     }
     
     [Test]
@@ -247,7 +247,7 @@ public class PlayerNameValidationTests
     {
         const string shortPlayerName = "Aaa<";
         var result = PlayerNameValidation.IsPlayerNameValid(shortPlayerName);
-        Assert.IsFalse(result);
+        Assert.That(result, Is.False);
     }
     
     [Test]
@@ -255,7 +255,7 @@ public class PlayerNameValidationTests
     {
         const string shortPlayerName = "Aaa>";
         var result = PlayerNameValidation.IsPlayerNameValid(shortPlayerName);
-        Assert.IsFalse(result);
+        Assert.That(result, Is.False);
     }
     
     [Test]
@@ -263,7 +263,7 @@ public class PlayerNameValidationTests
     {
         const string shortPlayerName = "Aaa.";
         var result = PlayerNameValidation.IsPlayerNameValid(shortPlayerName);
-        Assert.IsFalse(result);
+        Assert.That(result, Is.False);
     }
     
     [Test]
@@ -271,6 +271,6 @@ public class PlayerNameValidationTests
     {
         const string shortPlayerName = "Aaa,";
         var result = PlayerNameValidation.IsPlayerNameValid(shortPlayerName);
-        Assert.IsFalse(result);
+        Assert.That(result, Is.False);
     }
 }

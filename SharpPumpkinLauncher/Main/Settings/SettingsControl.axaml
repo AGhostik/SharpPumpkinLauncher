@@ -55,8 +55,7 @@
             Grid.Row="6"
             PlaceholderForeground="gray"
             HorizontalAlignment="Stretch"
-            VirtualizationMode="Simple"
-            Items="{Binding Visibilities}"
+            ItemsSource="{Binding Visibilities}"
             SelectedItem="{Binding LauncherVisibility}" />
         
         <Grid Grid.Column="0" Grid.Row="8" ColumnDefinitions="*, 5, Auto">

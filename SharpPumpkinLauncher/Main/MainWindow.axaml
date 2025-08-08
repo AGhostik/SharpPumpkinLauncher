@@ -140,7 +140,7 @@
                 MinWidth="350"
                 IsEnabled="{Binding IsProfilesComboboxEnabled}"
                 SelectedItem="{Binding SelectedProfile}"
-                Items="{Binding Profiles}">
+                ItemsSource="{Binding Profiles}">
                 <ComboBox.ItemTemplate>
                     <DataTemplate DataType="profile:ProfileViewModel">
                         <Grid ColumnDefinitions="*, Auto, Auto">
@@ -151,7 +151,7 @@
                             <ItemsControl
                                 Grid.Column="1"
                                 IsVisible="{Binding SelectedVersion, Converter={x:Static ObjectConverters.IsNotNull}}"
-                                Items="{Binding SelectedVersion.Tags, FallbackValue=''}">
+                                ItemsSource="{Binding SelectedVersion.Tags, FallbackValue=''}">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
                                         <StackPanel Orientation="Horizontal"/>

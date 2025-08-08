@@ -43,7 +43,7 @@
                         </Style>
                     </Canvas.Styles>
                     <ToolTip.Tip>
-                        <ItemsControl Items="{Binding}">
+                        <ItemsControl ItemsSource="{Binding}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate DataType="system:String">
                                     <TextBlock Text="{Binding .}" TextWrapping="Wrap" />

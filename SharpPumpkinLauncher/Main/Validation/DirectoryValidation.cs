@@ -19,6 +19,16 @@ public static class DirectoryValidation
             return false;
         }
 
+        var fileName = Path.GetFileName(path);
+        if (!string.IsNullOrEmpty(fileName))
+        {
+            if (fileName.Contains('.'))
+            {
+                errorKey = Localization.ValidationDirectoryInvalidPath;
+                return false;
+            }
+        }
+
         var invalidPathChars = Path.GetInvalidPathChars();
         var previousPreviousChar = '\0';
         var previousChar = '\0';

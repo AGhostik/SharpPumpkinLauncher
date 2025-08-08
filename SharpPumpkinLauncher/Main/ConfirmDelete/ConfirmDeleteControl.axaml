@@ -30,7 +30,7 @@
                 <ItemsControl
                     Grid.Column="1"
                     IsVisible="{Binding Profile.SelectedVersion, Converter={x:Static ObjectConverters.IsNotNull}, FallbackValue=''}"
-                    Items="{Binding Profile.SelectedVersion.Tags, FallbackValue=''}">
+                    ItemsSource="{Binding Profile.SelectedVersion.Tags, FallbackValue=''}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
                             <StackPanel Orientation="Horizontal"/>

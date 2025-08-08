@@ -18,7 +18,7 @@ public class MinecraftLauncherTests
             null, 
             _temporaryGameFolder, 
             _features,
-            Array.Empty<string>());
+            []);
     }
 
     [SetUp]
@@ -74,7 +74,7 @@ public class MinecraftLauncherTests
         const int attemptCount = 15;
 
         var currentAttempt = 0;
-        Process? minecraftProces = null;
+        Process? minecraftProcess = null;
 
         do
         {
@@ -83,22 +83,22 @@ public class MinecraftLauncherTests
             foreach (var process in processes)
             {
                 if (process.MainWindowTitle.Contains("Minecraft"))
-                    minecraftProces = process;
+                    minecraftProcess = process;
             }
 
             currentAttempt++;
-        } while (minecraftProces == null && currentAttempt < attemptCount);
+        } while (minecraftProcess == null && currentAttempt < attemptCount);
 
-        if (minecraftProces != null)
+        if (minecraftProcess != null)
         {
             do
             {
-                minecraftProces.Refresh();
-                if (minecraftProces.Responding)
-                    minecraftProces.CloseMainWindow();
+                minecraftProcess.Refresh();
+                if (minecraftProcess.Responding)
+                    minecraftProcess.CloseMainWindow();
                 else
                     await Task.Delay(1000);
-            } while (!minecraftProces.Responding);
+            } while (!minecraftProcess.Responding);
         }
     }
 }

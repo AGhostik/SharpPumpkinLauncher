@@ -13,7 +13,7 @@
             <Grid ColumnDefinitions="Auto, *">
                 <ItemsControl
                     Grid.Column="0"
-                    Items="{Binding Tags}">
+                    ItemsSource="{Binding Tags}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
                             <StackPanel Orientation="Horizontal"/>
@@ -76,8 +76,7 @@
                 PlaceholderText="{x:Static properties:Localization.MinecraftVersion}"
                 PlaceholderForeground="gray"
                 HorizontalAlignment="Stretch"
-                VirtualizationMode="Simple"
-                Items="{Binding Versions}"
+                ItemsSource="{Binding Versions}"
                 SelectedItem="{Binding SelectedVersion}"
                 ItemTemplate="{StaticResource VersionTemplate}" />
 
@@ -86,10 +85,9 @@
                 PlaceholderText="{x:Static properties:Localization.ForgeVersion}"
                 PlaceholderForeground="gray"
                 HorizontalAlignment="Stretch"
-                VirtualizationMode="Simple"
                 IsVisible="{Binding Forge}"
                 IsEnabled="{Binding SelectedVersion, Converter={x:Static ObjectConverters.IsNotNull}}"
-                Items="{Binding ForgeVersions}"
+                ItemsSource="{Binding ForgeVersions}"
                 SelectedItem="{Binding SelectedForgeVersion}"
                 ItemTemplate="{StaticResource VersionTemplate}" />
             

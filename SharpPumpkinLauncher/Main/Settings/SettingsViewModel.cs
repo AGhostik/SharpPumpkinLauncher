@@ -3,8 +3,8 @@ using System.IO;
 using System.Reactive;
 using System.Reactive.Subjects;
 using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Platform.Storage;
 using ReactiveUI;
 using SharpPumpkinLauncher.Main.JavaArguments;
 using SharpPumpkinLauncher.Main.Validation;
@@ -205,22 +205,40 @@ public sealed class SettingsViewModel : ReactiveObject
     
     private async void PickFolder()
     {
-        if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop)
+        try
         {
-            Logger.Log("Current application is not IClassicDesktopStyleApplicationLifetime");
-            return;
+            if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop)
+            {
+                Logger.Log("Current application is not IClassicDesktopStyleApplicationLifetime");
+                return;
+            }
+
+            if (desktop.MainWindow is null)
+            {
+                Logger.Log("MainWindow is null");
+                return;
+            }
+
+            var storageProvider = desktop.MainWindow.StorageProvider;
+            var startLocation = await storageProvider.TryGetFolderFromPathAsync(new Uri(AppContext.BaseDirectory));
+
+            var options = new FolderPickerOpenOptions()
+            {
+                AllowMultiple = false,
+                SuggestedStartLocation = startLocation,
+            };
+
+            var result = await storageProvider.OpenFolderPickerAsync(options);
+            
+            if (result.Count == 0)
+                return;
+        
+            Directory = Path.GetRelativePath(AppContext.BaseDirectory, result[0].Path.AbsolutePath) + '\\';
         }
-        
-        var openFolder = new OpenFolderDialog
+        catch (Exception e)
         {
-            Directory = AppContext.BaseDirectory
-        };
-        
-        var path = await openFolder.ShowAsync(desktop.MainWindow);
-        if (string.IsNullOrEmpty(path))
-            return;
-        
-        Directory = Path.GetRelativePath(AppContext.BaseDirectory, path) + '\\';
+            Logger.Log(e);
+        }
     }
 
     private void EditJavaArgs()
