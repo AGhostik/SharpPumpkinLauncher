@@ -287,10 +287,12 @@ public sealed class JsonManager
         var javaRuntimeAlpha = GetRuntime(runtimesData?.JavaRuntimeAlpha);
         var javaRuntimeBeta = GetRuntime(runtimesData?.JavaRuntimeBeta);
         var javaRuntimeGamma = GetRuntime(runtimesData?.JavaRuntimeGamma);
+        var javaRuntimeDelta = GetRuntime(runtimesData?.JavaRuntimeDelta);
         var jreLegacy = GetRuntime(runtimesData?.JreLegacy);
         var minecraftJavaExe = GetRuntime(runtimesData?.MinecraftJavaExe);
 
-        return new OsRuntime(javaRuntimeAlpha, javaRuntimeBeta, javaRuntimeGamma, jreLegacy, minecraftJavaExe);
+        return new OsRuntime(javaRuntimeAlpha, javaRuntimeBeta, javaRuntimeGamma, javaRuntimeDelta, jreLegacy, 
+            minecraftJavaExe);
     }
 
     private static Runtime? GetRuntime(IReadOnlyList<RuntimeData>? runtimeData)

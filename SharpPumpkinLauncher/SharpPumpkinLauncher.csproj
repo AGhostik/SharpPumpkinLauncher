@@ -8,7 +8,7 @@
         <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
         <ApplicationIcon>Resources\icon.ico</ApplicationIcon>
         <PublishSingleFile>true</PublishSingleFile>
-        <Version>0.4.1</Version>
+        <Version>0.4.2</Version>
         <Authors>AGhostik</Authors>
         <PackageProjectUrl>https://github.com/AGhostik/SharpPumpkinLauncher</PackageProjectUrl>
         <RepositoryUrl>https://github.com/AGhostik/SharpPumpkinLauncher</RepositoryUrl>

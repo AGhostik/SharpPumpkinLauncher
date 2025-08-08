@@ -119,6 +119,12 @@ internal sealed class InstallerData : IForgeInstallerData
                 
                 currentRuntime = osRuntime.JavaRuntimeGamma;
                 break;
+            case WellKnownRuntimeTypes.JavaRuntimeDelta:
+                if (osRuntime.JavaRuntimeDelta == null)
+                    return (null, ErrorCode.RuntimeDataNotFound);
+                
+                currentRuntime = osRuntime.JavaRuntimeDelta;
+                break;
             case WellKnownRuntimeTypes.JreLegacy:
                 if (osRuntime.JreLegacy == null)
                     return (null, ErrorCode.RuntimeDataNotFound);

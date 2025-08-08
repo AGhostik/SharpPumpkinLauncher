@@ -13,6 +13,9 @@ internal class RuntimesData
     [JsonPropertyName("java-runtime-gamma")]
     public RuntimeData[]? JavaRuntimeGamma { get; set; }
     
+    [JsonPropertyName("java-runtime-delta")]
+    public RuntimeData[]? JavaRuntimeDelta { get; set; }
+    
     [JsonPropertyName("jre-legacy")]
     public RuntimeData[]? JreLegacy { get; set; }
     
