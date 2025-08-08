@@ -22,31 +22,31 @@ internal sealed class OsRuleManager
     private const string IsQuickPlayMultiplayer = "is_quick_play_multiplayer";
     private const string IsQuickPlayRealm = "is_quick_play_realms";
 
-    private static readonly string _currentOsName;
-    private static readonly string _currentOsVersion;
-    private static readonly string _currentOsArchitecture;
+    private static readonly string CurrentOs;
+    private static readonly string CurrentOsVersion;
+    private static readonly string CurrentOsArchitecture;
 
     static OsRuleManager()
     {
         if (OperatingSystem.IsWindows())
-            _currentOsName = OsWindows;
+            CurrentOs = OsWindows;
         else if (OperatingSystem.IsLinux())
-            _currentOsName = OsLinux;
+            CurrentOs = OsLinux;
         else if (OperatingSystem.IsMacOS())
-            _currentOsName = OsOsx;
+            CurrentOs = OsOsx;
         else
-            _currentOsName = string.Empty;
+            CurrentOs = string.Empty;
 
         if (Environment.Is64BitOperatingSystem)
-            _currentOsArchitecture = OsArchitecture64;
+            CurrentOsArchitecture = OsArchitecture64;
         else
-            _currentOsArchitecture = OsArchitecture86;
+            CurrentOsArchitecture = OsArchitecture86;
 
         //osx version: "^10\\.5\\.\\d$"
-        _currentOsVersion = $"^{Environment.OSVersion.Version.Major}\\.";
+        CurrentOsVersion = $"^{Environment.OSVersion.Version.Major}\\.";
     }
 
-    public static string CurrentOsName => _currentOsName;
+    public static string CurrentOsName => CurrentOs;
 
     public static bool IsAllowed(IReadOnlyList<Rule>? rules, Features? features = null)
     {
@@ -95,17 +95,21 @@ internal sealed class OsRuleManager
                     case Disallow:
                         isAllowed = false;
                         break;
+                    
+                    default:
+                        Logger.Log($"Unknown action '{rule.Action}'");
+                        break;
                 }
                 continue;
             }
             
-            if (!string.IsNullOrEmpty(rule.Os.Name) && rule.Os.Name != _currentOsName)
+            if (!string.IsNullOrEmpty(rule.Os.Name) && rule.Os.Name != CurrentOs)
                 continue;
 
-            if (!string.IsNullOrEmpty(rule.Os.Version) && rule.Os.Version != _currentOsVersion)
+            if (!string.IsNullOrEmpty(rule.Os.Version) && rule.Os.Version != CurrentOsVersion)
                 continue;
 
-            if (!string.IsNullOrEmpty(rule.Os.Architecture) && rule.Os.Architecture != _currentOsArchitecture)
+            if (!string.IsNullOrEmpty(rule.Os.Architecture) && rule.Os.Architecture != CurrentOsArchitecture)
                 continue;
 
             switch (rule.Action)
@@ -123,10 +127,10 @@ internal sealed class OsRuleManager
 
     public static OsRuntime? GetOsRuntime(OsRuntimes osRuntimes)
     {
-        switch (_currentOsName)
+        switch (CurrentOs)
         {
             case OsWindows:
-                switch (_currentOsArchitecture)
+                switch (CurrentOsArchitecture)
                 {
                     case OsArchitecture64:
                         return osRuntimes.Windows64;
@@ -149,7 +153,7 @@ internal sealed class OsRuleManager
 
     public static string? GetJavaExecutablePath()
     {
-        switch (_currentOsName)
+        switch (CurrentOs)
         {
             case OsWindows:
                 return $"{OsWindows}\\bin\\javaw.exe";
