@@ -6,7 +6,7 @@ public static class DownloadManager
 {
     private const int MaxAttemptCount = 3;
 
-    private static readonly HttpClient _httpClient = new();
+    private static readonly HttpClient HttpClient = new();
     
     public static async Task<string?> GetRequest(string url, IDictionary<string, string> parameters,
         CancellationToken cancellationToken = default)
@@ -90,7 +90,7 @@ public static class DownloadManager
             {
                 try
                 {
-                    using var response = _httpClient
+                    using var response = HttpClient
                         .GetAsync(data.source, HttpCompletionOption.ResponseHeadersRead, token).Result;
                     response.EnsureSuccessStatusCode();
 
@@ -129,7 +129,7 @@ public static class DownloadManager
                         localRead = 0;
                         bytesReceived?.Invoke(totalRead);
 
-                        await Delay(1000 * currentAttempt, cancellationToken);
+                        await Delay(1000 * currentAttempt, token);
                     }
                     else
                     {
