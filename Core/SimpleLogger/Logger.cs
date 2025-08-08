@@ -5,12 +5,12 @@ namespace SimpleLogger;
 
 public static class Logger
 {
-    private static readonly string _fileName;
-    private static object _locker = new();
+    private static readonly string FileName;
+    private static readonly object Locker = new();
 
     static Logger()
     {
-        _fileName = $"launcher_logs_{DateTime.Now:dd_MM_yyyy_hh_mm_ss}.txt";
+        FileName = $"launcher_logs_{DateTime.Now:dd_MM_yyyy_hh_mm_ss}.txt";
     }
     
     public static void Log(object? value)
@@ -31,9 +31,9 @@ public static class Logger
         stringBuilder.Append("] ");
         stringBuilder.AppendLine(text);
 
-        lock (_locker)
+        lock (Locker)
         {
-            File.AppendAllText(_fileName, stringBuilder.ToString());
+            File.AppendAllText(FileName, stringBuilder.ToString());
         }
     }
 
@@ -67,9 +67,9 @@ public static class Logger
 
         stringBuilder.AppendLine("\t= end of exception log =");
 
-        lock (_locker)
+        lock (Locker)
         {
-            File.AppendAllText(_fileName, stringBuilder.ToString());
+            File.AppendAllText(FileName, stringBuilder.ToString());
         }
     }
 }
